@@ -222,6 +222,11 @@ public class FileSystemManager extends Thread {
 		watchedDirectories=new HashSet<String>();
 		hashMap=new HashMap<String,HashSet<String>>();
 		File file = new File(root);
+		if (!file.exists()) {
+			log.info("creating root directory.");
+			file.mkdir();
+		}
+
 		if(!file.exists() || !file.isDirectory()) {
 			log.severe("incorrect root given: "+root);
 			return;
