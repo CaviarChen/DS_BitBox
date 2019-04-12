@@ -17,11 +17,11 @@ import java.util.logging.Logger;
  * String[] peers = Configuration.getConfigurationValue("peers").split(",");
  * }
  * </pre>
- * @author aaron
  *
+ * @author aaron
  */
 public class Configuration {
-	private static Logger log = Logger.getLogger(Configuration.class.getName());
+    private static Logger log = Logger.getLogger(Configuration.class.getName());
     // the configuration file is stored in the root of the class path as a .properties file
     private static final String CONFIGURATION_FILE = "configuration.properties";
 
@@ -37,8 +37,8 @@ public class Configuration {
         }
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-	public static Map<String, String> getConfiguration() {
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public static Map<String, String> getConfiguration() {
         // ugly workaround to get String as generics
         Map temp = properties;
         Map<String, String> map = new HashMap<String, String>(temp);
