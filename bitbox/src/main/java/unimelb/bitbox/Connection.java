@@ -1,14 +1,10 @@
 package unimelb.bitbox;
 
-import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
 import unimelb.bitbox.util.HostPort;
 
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.Socket;
-import java.util.logging.Logger;
+import java.nio.charset.StandardCharsets;
 
 public class Connection {
 
@@ -16,16 +12,17 @@ public class Connection {
 
     private Socket socket;
     private BufferedReader bufferedReader;
-    private DataOutputStream dataOutputStream;
+    private BufferedWriter bufferedWriter;
 
-    private boolean initialized = false;
+    private boolean initialized;
     private HostPort hostPort;
 
     public Connection(ConnectionType type, Socket socket) throws IOException {
         this.type = type;
         this.socket = socket;
         bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        dataOutputStream = new DataOutputStream(socket.getOutputStream());
+        bufferedWriter =  new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8));
+        initialized = false;
         hostPort = null;
     }
 
@@ -33,15 +30,31 @@ public class Connection {
         try {
             return bufferedReader.readLine();
         } catch (IOException e) {
-            // TODO: close connection
+            // log
+            close();
             return null;
         }
+    }
 
+    public void sendResponse(String msg) {
+        // TODO: lock
+        try {
+            bufferedWriter.write(msg);
+            bufferedWriter.flush();
+        } catch (IOException e) {
+            // log
+            close();
+        }
+    }
+
+    public void close() {
+        // TODO: implement
     }
 
     public void init(HostPort hostPort) {
         if (!initialized) {
             this.hostPort = hostPort;
+            initialized = true;
         }
     }
 
