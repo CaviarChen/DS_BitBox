@@ -1,5 +1,7 @@
 package unimelb.bitbox.util;
 
+import java.util.Objects;
+
 /**
  * Simple class to manage a host string and port number. Provides conversion to and from a {@link Document}
  * which further provides conversion to a JSON string.
@@ -46,5 +48,11 @@ public class HostPort {
         }
         HostPort c = (HostPort) o;
         return host.equals(c.host) && port == c.port;
+    }
+
+    // for hashmap
+    @Override
+    public int hashCode() {
+        return Objects.hash(host, port);
     }
 }
