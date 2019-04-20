@@ -1,14 +1,21 @@
 package unimelb.bitbox.util.ThreadPool;
 
 
+import java.util.logging.Logger;
+
+
 public class PriorityTask implements Runnable, Comparable<PriorityTask>{
 
     private String name;
     private Priority priority;
+    private Runnable task;
+    private static Logger log = Logger.getLogger(PriorityTask.class.getName());
 
-    public PriorityTask(String name, Priority priority) {
+
+    public PriorityTask(String name, Priority priority, Runnable task) {
         this.name = name;
         this.priority = priority;
+        this.task = task;
     }
 
     public Priority getPriority() {
@@ -22,10 +29,9 @@ public class PriorityTask implements Runnable, Comparable<PriorityTask>{
     @Override
     public void run() {
         try {
-            System.out.println(this.name + " is running");
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+            task.run();
+        } catch (Exception e) {
+            log.severe("Task run failed" + e.toString());
         }
     }
 

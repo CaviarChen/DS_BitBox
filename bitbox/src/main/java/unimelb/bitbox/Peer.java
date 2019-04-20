@@ -1,6 +1,9 @@
 package unimelb.bitbox;
 
 import unimelb.bitbox.util.Configuration;
+import unimelb.bitbox.util.ThreadPool.Priority;
+import unimelb.bitbox.util.ThreadPool.PriorityTask;
+import unimelb.bitbox.util.ThreadPool.PriorityThreadPool;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
@@ -17,12 +20,9 @@ public class Peer {
 
 
         /* How to add a task to thread pool
-        PriorityThreadPool.getInstance().submitTask(new PriorityTask("Task Name", Priority.NORMAL){
-            @Override
-            public void run() {
-                System.out.println("My Customiszed function");
-            }
-        });
+        PriorityThreadPool.getInstance().submitTask(new PriorityTask("Task Name", Priority.NORMAL, () -> {
+            // custom runnable here
+        }));
         */
 
         int port = Integer.parseInt(Configuration.getConfigurationValue("port"));
