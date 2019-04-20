@@ -15,9 +15,18 @@ public class Peer {
                 "[%1$tc] %2$s %4$s: %5$s%n");
         log.info("BitBox Peer starting...");
 
+
+        /* How to add a task to thread pool
+        PriorityThreadPool.getInstance().submitTask(new PriorityTask("Task Name", Priority.NORMAL){
+            @Override
+            public void run() {
+                System.out.println("My Customiszed function");
+            }
+        });
+        */
+
         int port = Integer.parseInt(Configuration.getConfigurationValue("port"));
         incomingConnectionManager = new IncomingConnectionHelper(port);
-
 
     }
 }
