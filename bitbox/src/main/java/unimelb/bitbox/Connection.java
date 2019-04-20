@@ -6,6 +6,8 @@ import java.io.*;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 
+// TODO: make necessary methods thread-safe
+
 public class Connection {
 
     public final ConnectionType type;
@@ -14,7 +16,9 @@ public class Connection {
     private BufferedReader bufferedReader;
     private BufferedWriter bufferedWriter;
 
-    private boolean initialized;
+    private Thread thread;
+
+    private boolean active;
     private HostPort hostPort;
 
     public Connection(ConnectionType type, Socket socket) throws IOException {
@@ -22,7 +26,7 @@ public class Connection {
         this.socket = socket;
         bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         bufferedWriter =  new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8));
-        initialized = false;
+        active = false;
         hostPort = null;
     }
 
@@ -48,13 +52,40 @@ public class Connection {
     }
 
     public void close() {
-        // TODO: implement
+        socket.close();
+        bufferedWriter = null;
+        bufferedReader = null;
+
+        if (active) {
+            active = false;
+            thread.interrupt();
+            // unregister from ConnectionManager
+            ConnectionManager.getInstance().removeConnection(this);
+        }
     }
 
-    public void init(HostPort hostPort) {
-        if (!initialized) {
+    // active connection will create its own thread for waiting for request
+    // non-blocking method might be better here
+    public void active(HostPort hostPort) {
+        if (!active) {
+            active = true;
             this.hostPort = hostPort;
-            initialized = true;
+            thread = new Thread(this::work);
+            thread.start();
+        }
+    }
+
+    private void work() {
+        try {
+            while (!thread.isInterrupted()) {
+                String msg = this.waitForOneRequest();
+
+                // TODO: handle request
+
+            }
+        } catch (Exception e) {
+            // TODO: log
+            this.close();
         }
     }
 
@@ -62,8 +93,8 @@ public class Connection {
         return hostPort;
     }
 
-    public boolean isInitialized() {
-        return initialized;
+    public boolean isActive() {
+        return active;
     }
 
     public enum ConnectionType {

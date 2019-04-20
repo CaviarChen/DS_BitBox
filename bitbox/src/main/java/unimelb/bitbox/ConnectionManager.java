@@ -38,13 +38,22 @@ public class ConnectionManager {
         }
 
         connectionMap.put(hostPort, conn);
-        conn.init(hostPort);
+        conn.active(hostPort);
 
         if (isIncoming) {
             incomingConnCounter += 1;
         }
 
         return 0;
+    }
+
+    public boolean removeConnection(Connection conn) {
+        HostPort hostPort = conn.getHostPort();
+        boolean res = connectionMap.remove(hostPort, conn);
+        if (res && conn.type == Connection.ConnectionType.INCOMING) {
+            incomingConnCounter -= 1;
+        }
+        return res;
     }
 
 
