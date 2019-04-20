@@ -5,10 +5,12 @@ import unimelb.bitbox.util.HostPort;
 import java.io.*;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.util.logging.Logger;
 
 // TODO: make necessary methods thread-safe
 
 public class Connection {
+    private static Logger log = Logger.getLogger(Connection.class.getName());
 
     public final ConnectionType type;
 
@@ -52,7 +54,12 @@ public class Connection {
     }
 
     public void close() {
-        socket.close();
+        try {
+            socket.close();
+        } catch (IOException e) {
+            log.severe(e.toString());
+        }
+
         bufferedWriter = null;
         bufferedReader = null;
 
