@@ -34,8 +34,8 @@ public class IncomingConnectionHelper {
             Connection conn = new Connection(Connection.ConnectionType.INCOMING, clientSocket);
 
             // TODO: put this in thread pool
+            // current design: use thread pool for handshake process, then create its own thread if success
             handleHandshake(conn);
-
         }
 
         log.info("Stop listening to incoming connection");
@@ -56,9 +56,7 @@ public class IncomingConnectionHelper {
             // already exists
         } else {
             // ok
-
         }
-
     }
 
 }
