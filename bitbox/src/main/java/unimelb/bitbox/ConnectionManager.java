@@ -56,5 +56,8 @@ public class ConnectionManager {
         return res;
     }
 
+    public boolean checkExist(HostPort hostPort) {
+        return connectionMap.containsKey(hostPort);
+    }
 
 }

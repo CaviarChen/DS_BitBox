@@ -4,17 +4,27 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
+import java.util.Comparator;
 import java.util.PriorityQueue;
 import java.util.Properties;
 import java.util.logging.Logger;
+
+import static java.lang.Thread.sleep;
 
 public class OutgoingConnectionHelper {
 
     private static Logger log = Logger.getLogger(OutgoingConnectionHelper.class.getName());
 
-    private PriorityQueue<PeerInfo> queue = new PriorityQueue<>();
+    private PriorityQueue<PeerInfo> queue;
 
-    public OutgoingConnectionHelper() { }
+    public OutgoingConnectionHelper() {
+        queue = new PriorityQueue<>(new Comparator<PeerInfo>() {
+            @Override
+            public int compare(PeerInfo o1, PeerInfo o2) {
+                return Long.compare(o1.getTime(), o2.getTime());
+            }
+        });
+    }
 
     public void execute() throws Exception {
 
@@ -23,7 +33,12 @@ public class OutgoingConnectionHelper {
 
         while (true) {
 
-            if (queue.peek() != null) {
+            // empty priority queue
+            if (queue.peek() == null) {
+                return;
+            }
+
+            if (queue.peek().getTime() <= System.currentTimeMillis()) {
                 PeerInfo peer = queue.poll();
 
                 Socket clientSocket = new Socket(peer.getHost(), peer.getPort());
@@ -32,8 +47,11 @@ public class OutgoingConnectionHelper {
                 log.info(String.format("Start connecting to port: %d", peer.getPort()));
 
                 requestHandshake(conn);
-            }
 
+            } else {
+                // sleep 60 seconds
+                sleep(60000);
+            }
         }
     }
 
