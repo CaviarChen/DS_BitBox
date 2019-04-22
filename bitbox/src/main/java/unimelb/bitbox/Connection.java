@@ -42,7 +42,7 @@ public class Connection {
         }
     }
 
-    public void sendResponse(String msg) {
+    public void send(String msg) {
         // TODO: lock
         try {
             bufferedWriter.write(msg);
