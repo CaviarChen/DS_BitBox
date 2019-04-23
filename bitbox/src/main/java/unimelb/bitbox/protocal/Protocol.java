@@ -3,27 +3,47 @@ package unimelb.bitbox.protocal;
 import unimelb.bitbox.util.Document;
 import unimelb.bitbox.util.HostPort;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 
 import static unimelb.bitbox.protocal.Constants.*;
 
 public abstract class Protocol implements IProtocol {
 
+    // get all public ProtocolField properties of current instance
+    private ArrayList<ProtocolField> getAllProtocolFields() {
+        ArrayList<ProtocolField> protocolFields = new ArrayList<>();
+
+        Field[] fields = this.getClass().getDeclaredFields();
+        for (Field field: fields) {
+            try {
+                Object obj = field.get(this);
+                if (obj instanceof ProtocolField) {
+                    protocolFields.add((ProtocolField) obj);
+                }
+            } catch (Exception ignored) {
+            }
+        }
+        return protocolFields;
+    }
+
     @Override
     public void unmarshalFromJson(Document doc) {
-        // use reflection to fill ProtocolField
+        for (ProtocolField protocolField: getAllProtocolFields()) {
+            protocolField.unmarshalFromJson(doc);
+        }
     }
 
     @Override
     public void marshalToJson(Document doc) {
-        // use reflection to fill ProtocolField
+        for (ProtocolField protocolField: getAllProtocolFields()) {
+            protocolField.marshalToJson(doc);
+        }
     }
 
 
     public static class InvalidProtocol extends Protocol {
         public String msg; //message
-
-        public InvalidProtocol() {}
 
         @Override
         public void unmarshalFromJson(Document doc) {
@@ -43,8 +63,6 @@ public abstract class Protocol implements IProtocol {
     public static class ConnectionRefused extends Protocol {
         public String msg;                // message
         public ArrayList<HostPort> peers = new ArrayList<>(); // list of peers
-
-        public ConnectionRefused() {}
 
         @Override
         public void unmarshalFromJson(Document doc) {
@@ -72,8 +90,6 @@ public abstract class Protocol implements IProtocol {
     public static class HandshakeRequest extends Protocol {
         public HostPort peer;
 
-        public HandshakeRequest() {}
-
         @Override
         public void unmarshalFromJson(Document doc) {
             super.unmarshalFromJson(doc);
@@ -89,6 +105,14 @@ public abstract class Protocol implements IProtocol {
     }
 
     public static class HandshakeResponse extends HandshakeRequest {
-        public HandshakeResponse() {}
+    }
+
+    public static class FileCreateRequest extends Protocol{
+        public ProtocolField.FileDes fileDes = new ProtocolField.FileDes();
+    }
+
+    public static class FileCreateResponse extends Protocol{
+        public ProtocolField.FileDes fileDes = new ProtocolField.FileDes();
+        public ProtocolField.Response response = new ProtocolField.Response();
     }
 }

@@ -1,6 +1,9 @@
 package unimelb.bitbox.protocal;
 
 import unimelb.bitbox.util.Document;
+
+import javax.print.Doc;
+
 import static unimelb.bitbox.protocal.Constants.*;
 
 /**
@@ -50,6 +53,12 @@ public class ProtocolFactory {
             // TODO: log
             return null;
         }
+    }
+
+    public static String marshalProtocol(Protocol protocol) {
+        Document doc = new Document();
+        protocol.marshalToJson(doc);
+        return doc.toJson();
     }
 
 

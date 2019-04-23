@@ -17,8 +17,32 @@ public class ProtocolFactoryDemo {
 
         Protocol protocol = ProtocolFactory.parseProtocol(test1);
 
-        System.out.println(protocol.getClass().getName());
+        // assume we expect HandshakeResponse
+        if (ProtocolType.typeOfProtocol(protocol) == ProtocolType.HANDSHAKE_RESPONSE) {
+            Protocol.HandshakeResponse response = (Protocol.HandshakeResponse) protocol;
+            System.out.println(response.peer.host);
 
+        } else {
+            // null or wrong protocol
+        }
+
+        // switch
+        ProtocolType protocolType = ProtocolType.typeOfProtocol(protocol);
+        if (protocolType != null) {
+            switch (protocolType) {
+                case HANDSHAKE_RESPONSE:
+                    break;
+                case INVALID_PROTOCOL:
+                    break;
+                // ......
+            }
+        }
+
+        System.out.println("--------");
+
+        test1 = "{\"command\": \"FILE_CREATE_RESPONSE\",\"fileDescriptor\": {\"md5\": \"074195d72c47315efae797b69393e5e5\",\"lastModified\": 1553417607000,\"fileSize\": 45787},\"pathName\": \"test.jpg\",\"message\": \"file loader ready\",\"status\": true}";
+        protocol = ProtocolFactory.parseProtocol(test1);
+        System.out.println(ProtocolFactory.marshalProtocol(protocol));
 
 
 //        String test2 = "{\n" +
