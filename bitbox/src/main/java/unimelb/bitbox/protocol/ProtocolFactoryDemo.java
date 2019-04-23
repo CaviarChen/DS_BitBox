@@ -1,8 +1,4 @@
-package unimelb.bitbox.protocal;
-
-import unimelb.bitbox.util.Document;
-
-import static unimelb.bitbox.protocal.Constants.*;
+package unimelb.bitbox.protocol;
 
 public class ProtocolFactoryDemo {
     public static void main(String[] args) {

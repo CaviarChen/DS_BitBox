@@ -1,4 +1,4 @@
-package unimelb.bitbox.protocal;
+package unimelb.bitbox.protocol;
 
 import unimelb.bitbox.util.Document;
 

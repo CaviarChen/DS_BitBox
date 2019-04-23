@@ -1,4 +1,4 @@
-package unimelb.bitbox.protocal;
+package unimelb.bitbox.protocol;
 
 public enum ProtocolType{
     INVALID_PROTOCOL("INVALID_PROTOCOL", Protocol.InvalidProtocol.class),

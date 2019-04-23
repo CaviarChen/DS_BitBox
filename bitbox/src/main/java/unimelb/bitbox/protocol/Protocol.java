@@ -1,4 +1,4 @@
-package unimelb.bitbox.protocal;
+package unimelb.bitbox.protocol;
 
 import unimelb.bitbox.util.Document;
 import unimelb.bitbox.util.HostPort;
@@ -6,7 +6,7 @@ import unimelb.bitbox.util.HostPort;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 
-import static unimelb.bitbox.protocal.Constants.*;
+import static unimelb.bitbox.protocol.Constants.*;
 
 public abstract class Protocol implements IProtocol {
 

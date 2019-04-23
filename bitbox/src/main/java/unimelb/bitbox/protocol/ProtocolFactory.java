@@ -1,10 +1,8 @@
-package unimelb.bitbox.protocal;
+package unimelb.bitbox.protocol;
 
 import unimelb.bitbox.util.Document;
 
-import javax.print.Doc;
-
-import static unimelb.bitbox.protocal.Constants.*;
+import static unimelb.bitbox.protocol.Constants.*;
 
 /**
  *   // How to use factory json to objects

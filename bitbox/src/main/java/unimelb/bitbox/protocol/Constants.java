@@ -1,4 +1,4 @@
-package unimelb.bitbox.protocal;
+package unimelb.bitbox.protocol;
 
 class Constants {
 
