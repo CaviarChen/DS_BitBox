@@ -88,7 +88,7 @@ public abstract class Protocol implements IProtocol {
 
 
     public static class HandshakeRequest extends Protocol {
-        public HostPort peer;
+        public HostPort peer = new HostPort();
 
         @Override
         public void unmarshalFromJson(Document doc) {

@@ -14,12 +14,9 @@ public class PriorityThreadPool {
     private static int queueSize;
     private static long keepAliveTime;
 
-    private static PriorityThreadPool instance;
+    private static PriorityThreadPool instance = new PriorityThreadPool();;
 
     public static PriorityThreadPool getInstance() {
-        if (instance == null) {
-            instance = new PriorityThreadPool();
-        }
         return instance;
     }
 
@@ -41,6 +38,8 @@ public class PriorityThreadPool {
     }
 
     public void submitTask(PriorityTask priorityTask) {
-        pool.execute(priorityTask);
+        synchronized (this) {
+            pool.execute(priorityTask);
+        }
     }
 }

@@ -26,38 +26,43 @@ public class ConnectionManager {
     // TODO: maybe change to exception
     // 0: ok, -1: exceed connection limit, -2: connection already exists
     public int addConnection(Connection conn, HostPort hostPort) {
-        boolean isIncoming = conn.type == Connection.ConnectionType.INCOMING;
-        if (isIncoming) {
-            if (incomingConnCounter >= MAX_INCOMING_CONNECTIONS) {
-                return -1;
+        synchronized (this) {
+            boolean isIncoming = conn.type == Connection.ConnectionType.INCOMING;
+            if (isIncoming) {
+                if (incomingConnCounter >= MAX_INCOMING_CONNECTIONS) {
+                    return -1;
+                }
             }
+
+            if (connectionMap.containsKey(hostPort)) {
+                return -2;
+            }
+
+            connectionMap.put(hostPort, conn);
+
+            if (isIncoming) {
+                incomingConnCounter += 1;
+            }
+
+            return 0;
         }
-
-        if (connectionMap.containsKey(hostPort)) {
-            return -2;
-        }
-
-        connectionMap.put(hostPort, conn);
-        conn.active(hostPort);
-
-        if (isIncoming) {
-            incomingConnCounter += 1;
-        }
-
-        return 0;
     }
 
     public boolean removeConnection(Connection conn) {
-        HostPort hostPort = conn.getHostPort();
-        boolean res = connectionMap.remove(hostPort, conn);
-        if (res && conn.type == Connection.ConnectionType.INCOMING) {
-            incomingConnCounter -= 1;
+        synchronized (this) {
+            HostPort hostPort = conn.getHostPort();
+            boolean res = connectionMap.remove(hostPort, conn);
+            if (res && conn.type == Connection.ConnectionType.INCOMING) {
+                incomingConnCounter -= 1;
+            }
+            return res;
         }
-        return res;
     }
 
     public boolean checkExist(HostPort hostPort) {
-        return connectionMap.containsKey(hostPort);
+        synchronized (this) {
+            return connectionMap.containsKey(hostPort);
+        }
     }
 
 }
