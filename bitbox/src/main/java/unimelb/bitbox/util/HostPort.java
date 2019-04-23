@@ -12,6 +12,8 @@ public class HostPort {
     public String host;
     public int port;
 
+    public HostPort() {}
+
     public HostPort(String host, int port) {
         this.host = host;
         this.port = port;

@@ -26,7 +26,8 @@ public class Peer {
         */
 
         int port = Integer.parseInt(Configuration.getConfigurationValue("port"));
-        incomingConnectionManager = new IncomingConnectionHelper(port);
+        String advertisedName = Configuration.getConfigurationValue("advertisedName");
+        incomingConnectionManager = new IncomingConnectionHelper(advertisedName, port);
 
     }
 }

@@ -57,6 +57,7 @@ public class ProtocolFactory {
 
     public static String marshalProtocol(Protocol protocol) {
         Document doc = new Document();
+        doc.append(CMD, ProtocolType.typeOfProtocol(protocol).getKey());
         protocol.marshalToJson(doc);
         return doc.toJson();
     }

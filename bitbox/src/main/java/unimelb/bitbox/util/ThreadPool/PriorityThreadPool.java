@@ -38,7 +38,8 @@ public class PriorityThreadPool {
     }
 
     public void submitTask(PriorityTask priorityTask) {
-        // TODO: add lock
-        pool.execute(priorityTask);
+        synchronized (this) {
+            pool.execute(priorityTask);
+        }
     }
 }
