@@ -5,8 +5,11 @@ import unimelb.bitbox.util.HostPort;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.stream.Stream;
 
 import static unimelb.bitbox.protocol.Constants.*;
+
 
 public abstract class Protocol implements IProtocol {
 
@@ -14,7 +17,10 @@ public abstract class Protocol implements IProtocol {
     private ArrayList<ProtocolField> getAllProtocolFields() {
         ArrayList<ProtocolField> protocolFields = new ArrayList<>();
 
-        Field[] fields = this.getClass().getDeclaredFields();
+        Field[] child_fields = this.getClass().getDeclaredFields(); //这个没有拿到parent 的field
+        Field[] parent_fields = this.getClass().getSuperclass().getDeclaredFields();
+        Field[] fields = Stream.concat(Arrays.stream(child_fields), Arrays.stream(parent_fields))
+                .toArray(Field[]::new);
         for (Field field: fields) {
             try {
                 Object obj = field.get(this);
@@ -115,4 +121,43 @@ public abstract class Protocol implements IProtocol {
         public ProtocolField.FileDes fileDes = new ProtocolField.FileDes();
         public ProtocolField.Response response = new ProtocolField.Response();
     }
+
+    public static class FileDeleteRequest extends FileCreateRequest {
+    }
+
+    public static class FileDeleteResponse extends FileCreateResponse{
+    }
+
+    public static class FileModifyRequest extends FileCreateRequest {
+    }
+
+    public static class FileModifyResponse extends FileCreateResponse{
+    }
+
+    public static class FileBytesRequest extends Protocol{
+        public ProtocolField.FilePosition filePos = new ProtocolField.FilePosition();
+        public ProtocolField.FileDes fileDes = new ProtocolField.FileDes();
+    }
+
+    public static class FileBytesResponse extends Protocol{
+        public ProtocolField.FileDes fileDes = new ProtocolField.FileDes();
+        public ProtocolField.FileContent fileContent = new ProtocolField.FileContent();
+        public ProtocolField.Response response = new ProtocolField.Response();
+    }
+
+    public static class DirectoryCreateRequest extends Protocol {
+        public ProtocolField.Path dirPath = new ProtocolField.Path();
+    }
+
+    public static class DirectoryCreateResponse extends Protocol {
+        public ProtocolField.Path dirPath = new ProtocolField.Path();
+        public ProtocolField.Response response = new ProtocolField.Response();
+    }
+
+    public static class DirectoryDeleteRequest extends DirectoryCreateRequest {
+    }
+
+    public static class DirectoryDeleteResponse extends DirectoryCreateResponse{
+    }
+
 }
