@@ -12,8 +12,9 @@ import java.util.logging.Logger;
 public class Peer {
     private static Logger log = Logger.getLogger(Peer.class.getName());
     private static IncomingConnectionHelper incomingConnectionManager;
+    private static OutgoingConnectionHelper outgoingConnectionHelper;
 
-    public static void main(String[] args) throws IOException, NumberFormatException, NoSuchAlgorithmException {
+    public static void main(String[] args) throws Exception {
         System.setProperty("java.util.logging.SimpleFormatter.format",
                 "[%1$tc] %2$s %4$s: %5$s%n");
         log.info("BitBox Peer starting...");
@@ -28,6 +29,7 @@ public class Peer {
         int port = Integer.parseInt(Configuration.getConfigurationValue("port"));
         String advertisedName = Configuration.getConfigurationValue("advertisedName");
         incomingConnectionManager = new IncomingConnectionHelper(advertisedName, port);
-
+        outgoingConnectionHelper = new OutgoingConnectionHelper(advertisedName, port);
+        outgoingConnectionHelper.execute();
     }
 }
