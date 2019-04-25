@@ -8,7 +8,7 @@ public abstract class ProtocolField implements IProtocol{
 //  subclass  ------------------------------------
 
     public static class Path extends ProtocolField {
-        String path;         // pathName
+        public String path;         // pathName
 
         @Override
         public void unmarshalFromJson(Document doc) {
@@ -23,9 +23,9 @@ public abstract class ProtocolField implements IProtocol{
 
 
     public static class FileDes extends Path{
-        String md5;
-        long lastModified;
-        long fileSize;
+        public String md5;
+        public long lastModified;
+        public long fileSize;
 
         @Override
         public void unmarshalFromJson(Document doc) {
@@ -49,8 +49,8 @@ public abstract class ProtocolField implements IProtocol{
     }
 
     public static class Response extends ProtocolField{
-        String msg;         // message
-        Boolean status;      // status
+        public String msg;         // message
+        public Boolean status;      // status
 
         @Override
         public void unmarshalFromJson(Document doc) {
@@ -66,8 +66,8 @@ public abstract class ProtocolField implements IProtocol{
     }
 
     public static class FilePosition extends ProtocolField{
-        long pos;         // position
-        long len;         // length
+        public long pos;         // position
+        public long len;         // length
 
         @Override
         public void unmarshalFromJson(Document doc) {
@@ -83,7 +83,7 @@ public abstract class ProtocolField implements IProtocol{
     }
 
     public static class FileContent extends FilePosition{
-        String content;      // content
+        public String content;      // content
 
         @Override
         public void unmarshalFromJson(Document doc) {
