@@ -48,6 +48,15 @@ public class ConnectionManager {
         }
     }
 
+    public void broadcastMsg(String msg) {
+        // TODO: better locking
+        synchronized (this) {
+            for (Connection conn: connectionMap.values()) {
+                conn.send(msg);
+            }
+        }
+    }
+
     public boolean removeConnection(Connection conn) {
         synchronized (this) {
             HostPort hostPort = conn.getHostPort();
