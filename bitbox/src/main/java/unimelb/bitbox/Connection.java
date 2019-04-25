@@ -1,6 +1,9 @@
 package unimelb.bitbox;
 
 import unimelb.bitbox.util.HostPort;
+import unimelb.bitbox.util.ThreadPool.Priority;
+import unimelb.bitbox.util.ThreadPool.PriorityTask;
+import unimelb.bitbox.util.ThreadPool.PriorityThreadPool;
 
 import java.io.*;
 import java.net.Socket;
@@ -14,9 +17,9 @@ public class Connection {
 
     public final ConnectionType type;
 
-    private Socket socket;
-    private BufferedReader bufferedReader;
-    private BufferedWriter bufferedWriter;
+    private final Socket socket;
+    private final BufferedReader bufferedReader;
+    private final BufferedWriter bufferedWriter;
 
     private Thread thread;
 
@@ -32,7 +35,7 @@ public class Connection {
         hostPort = null;
     }
 
-    public String waitForOneRequest() {
+    public String waitForOneMessage() {
         try {
             return bufferedReader.readLine();
         } catch (IOException e) {
@@ -43,13 +46,14 @@ public class Connection {
     }
 
     public void send(String msg) {
-        // TODO: lock
-        try {
-            bufferedWriter.write(msg);
-            bufferedWriter.flush();
-        } catch (IOException e) {
-            // log
-            close();
+        synchronized (bufferedWriter) {
+            try {
+                bufferedWriter.write(msg);
+                bufferedWriter.flush();
+            } catch (IOException e) {
+                // log
+                close();
+            }
         }
     }
 
@@ -59,9 +63,6 @@ public class Connection {
         } catch (IOException e) {
             log.severe(e.toString());
         }
-
-        bufferedWriter = null;
-        bufferedReader = null;
 
         if (active) {
             active = false;
@@ -85,10 +86,13 @@ public class Connection {
     private void work() {
         try {
             while (!thread.isInterrupted()) {
-                String msg = this.waitForOneRequest();
+                String msg = this.waitForOneMessage();
 
-                // TODO: handle request
-
+                PriorityThreadPool.getInstance().submitTask(new PriorityTask(
+                        "Connection: MessageHandler",
+                        Priority.NORMAL,
+                        () -> MessageHandler.handleMessage(msg, this)
+                ));
             }
         } catch (Exception e) {
             // TODO: log

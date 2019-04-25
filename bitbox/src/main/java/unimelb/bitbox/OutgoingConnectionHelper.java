@@ -72,7 +72,7 @@ public class OutgoingConnectionHelper {
     private void requestHandshake(Connection conn) {
         conn.send(handshakeRequestJson);
 
-        String json = conn.waitForOneRequest();
+        String json = conn.waitForOneMessage();
         Protocol protocol = ProtocolFactory.parseProtocol(json);
 
         if (protocol == null) {
