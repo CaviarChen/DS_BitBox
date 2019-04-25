@@ -59,7 +59,7 @@ public class IncomingConnectionHelper {
 
     private void handleHandshake(Connection conn) {
         // TODO: timeout
-        String json = conn.waitForOneRequest();
+        String json = conn.waitForOneMessage();
         Protocol protocol = ProtocolFactory.parseProtocol(json);
 
         if (ProtocolType.typeOfProtocol(protocol) == ProtocolType.HANDSHAKE_REQUEST) {

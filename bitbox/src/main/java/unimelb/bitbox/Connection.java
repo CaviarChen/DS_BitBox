@@ -1,6 +1,9 @@
 package unimelb.bitbox;
 
 import unimelb.bitbox.util.HostPort;
+import unimelb.bitbox.util.ThreadPool.Priority;
+import unimelb.bitbox.util.ThreadPool.PriorityTask;
+import unimelb.bitbox.util.ThreadPool.PriorityThreadPool;
 
 import java.io.*;
 import java.net.Socket;
@@ -32,7 +35,7 @@ public class Connection {
         hostPort = null;
     }
 
-    public String waitForOneRequest() {
+    public String waitForOneMessage() {
         try {
             return bufferedReader.readLine();
         } catch (IOException e) {
@@ -61,9 +64,6 @@ public class Connection {
             log.severe(e.toString());
         }
 
-        bufferedWriter = null;
-        bufferedReader = null;
-
         if (active) {
             active = false;
             thread.interrupt();
@@ -86,10 +86,13 @@ public class Connection {
     private void work() {
         try {
             while (!thread.isInterrupted()) {
-                String msg = this.waitForOneRequest();
+                String msg = this.waitForOneMessage();
 
-                // TODO: handle request
-
+                PriorityThreadPool.getInstance().submitTask(new PriorityTask(
+                        "Connection: MessageHandler",
+                        Priority.NORMAL,
+                        () -> MessageHandler.handleMessage(msg, this)
+                ));
             }
         } catch (Exception e) {
             // TODO: log
