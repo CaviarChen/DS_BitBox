@@ -14,9 +14,9 @@ public class Connection {
 
     public final ConnectionType type;
 
-    private Socket socket;
-    private BufferedReader bufferedReader;
-    private BufferedWriter bufferedWriter;
+    private final Socket socket;
+    private final BufferedReader bufferedReader;
+    private final BufferedWriter bufferedWriter;
 
     private Thread thread;
 
@@ -43,13 +43,14 @@ public class Connection {
     }
 
     public void send(String msg) {
-        // TODO: lock
-        try {
-            bufferedWriter.write(msg);
-            bufferedWriter.flush();
-        } catch (IOException e) {
-            // log
-            close();
+        synchronized (bufferedWriter) {
+            try {
+                bufferedWriter.write(msg);
+                bufferedWriter.flush();
+            } catch (IOException e) {
+                // log
+                close();
+            }
         }
     }
 
