@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.stream.Stream;
 
-import static unimelb.bitbox.protocol.Constants.*;
+import static unimelb.bitbox.Constants.*;
 
 
 public abstract class Protocol implements IProtocol {
@@ -54,13 +54,13 @@ public abstract class Protocol implements IProtocol {
         @Override
         public void unmarshalFromJson(Document doc) {
             super.unmarshalFromJson(doc);
-            this.msg = doc.getString(MSG);
+            this.msg = doc.getString(PROTOCOL_FIELD_MSG);
         }
 
         @Override
         public void marshalToJson(Document doc) {
             super.marshalToJson(doc);
-            doc.append(MSG, msg);
+            doc.append(PROTOCOL_FIELD_MSG, msg);
         }
 
     }
@@ -73,10 +73,10 @@ public abstract class Protocol implements IProtocol {
         @Override
         public void unmarshalFromJson(Document doc) {
             super.unmarshalFromJson(doc);
-            for (Document subdoc: (ArrayList<Document>) doc.get(PEER)) {
+            for (Document subdoc: (ArrayList<Document>) doc.get(PROTOCOL_FIELD_PEER)) {
                 peers.add(new HostPort(subdoc));
             }
-            this.msg = doc.getString(MSG);
+            this.msg = doc.getString(PROTOCOL_FIELD_MSG);
         }
 
         @Override
@@ -87,8 +87,8 @@ public abstract class Protocol implements IProtocol {
             for(HostPort hostPort: peers) {
                 peerDocs.add(hostPort.toDoc());
             }
-            doc.append(PEER, peerDocs);
-            doc.append(MSG, msg);
+            doc.append(PROTOCOL_FIELD_PEER, peerDocs);
+            doc.append(PROTOCOL_FIELD_MSG, msg);
         }
     }
 
@@ -100,13 +100,13 @@ public abstract class Protocol implements IProtocol {
         public void unmarshalFromJson(Document doc) {
             super.unmarshalFromJson(doc);
 
-            this.peer = new HostPort((Document) doc.get(HOST_PORT));
+            this.peer = new HostPort((Document) doc.get(PROTOCOL_FIELD_HOST_PORT));
         }
 
         @Override
         public void marshalToJson(Document doc) {
             super.marshalToJson(doc);
-            doc.append(HOST_PORT, this.peer.toDoc());
+            doc.append(PROTOCOL_FIELD_HOST_PORT, this.peer.toDoc());
         }
     }
 

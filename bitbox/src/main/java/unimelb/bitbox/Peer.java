@@ -26,8 +26,8 @@ public class Peer {
         }));
         */
 
-        int port = Integer.parseInt(Configuration.getConfigurationValue("port"));
-        String advertisedName = Configuration.getConfigurationValue("advertisedName");
+        int port = Integer.parseInt(Configuration.getConfigurationValue(Constants.CONFIG_FIELD_PORT));
+        String advertisedName = Configuration.getConfigurationValue(Constants.CONFIG_FIEDL_AD_NAME);
         incomingConnectionManager = new IncomingConnectionHelper(advertisedName, port);
         outgoingConnectionHelper = new OutgoingConnectionHelper(advertisedName, port);
         outgoingConnectionHelper.execute();

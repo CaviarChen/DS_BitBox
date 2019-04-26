@@ -1,7 +1,7 @@
 package unimelb.bitbox.protocol;
 
 import unimelb.bitbox.util.Document;
-import static unimelb.bitbox.protocol.Constants.*;
+import static unimelb.bitbox.Constants.*;
 
 public abstract class ProtocolField implements IProtocol{
 
@@ -12,12 +12,12 @@ public abstract class ProtocolField implements IProtocol{
 
         @Override
         public void unmarshalFromJson(Document doc) {
-            this.path = doc.getString(PATH_NAME);
+            this.path = doc.getString(PROTOCOL_FIELD_PATH_NAME);
         }
 
         @Override
         public void marshalToJson(Document doc) {
-            doc.append(PATH_NAME, this.path);
+            doc.append(PROTOCOL_FIELD_PATH_NAME, this.path);
         }
     }
 
@@ -30,21 +30,21 @@ public abstract class ProtocolField implements IProtocol{
         @Override
         public void unmarshalFromJson(Document doc) {
             super.unmarshalFromJson(doc);
-            Document subDoc = (Document) doc.get(FILE_DES);
-            this.md5 = subDoc.getString(MD5);
-            this.lastModified = subDoc.getLong(LAST_MODIFIED);
-            this.fileSize = subDoc.getLong(FILE_SIZE);
-            this.path = doc.getString(PATH_NAME);
+            Document subDoc = (Document) doc.get(PROTOCOL_FIELD_FILE_DES);
+            this.md5 = subDoc.getString(PROTOCOL_FIELD_MD5);
+            this.lastModified = subDoc.getLong(PROTOCOL_FIELD_LAST_MODIFIED);
+            this.fileSize = subDoc.getLong(PROTOCOL_FIELD_FILE_SIZE);
+            this.path = doc.getString(PROTOCOL_FIELD_PATH_NAME);
         }
 
         @Override
         public void marshalToJson(Document doc) {
             super.marshalToJson(doc);
             Document subDoc = new Document();
-            subDoc.append(MD5, this.md5);
-            subDoc.append(LAST_MODIFIED, this.lastModified);
-            subDoc.append(FILE_SIZE, this.fileSize);
-            doc.append(FILE_DES, subDoc);
+            subDoc.append(PROTOCOL_FIELD_MD5, this.md5);
+            subDoc.append(PROTOCOL_FIELD_LAST_MODIFIED, this.lastModified);
+            subDoc.append(PROTOCOL_FIELD_FILE_SIZE, this.fileSize);
+            doc.append(PROTOCOL_FIELD_FILE_DES, subDoc);
         }
     }
 
@@ -54,14 +54,14 @@ public abstract class ProtocolField implements IProtocol{
 
         @Override
         public void unmarshalFromJson(Document doc) {
-            this.msg = doc.getString(MSG);
-            this.status = doc.getBoolean(STATUS);
+            this.msg = doc.getString(PROTOCOL_FIELD_MSG);
+            this.status = doc.getBoolean(PROTOCOL_FIELD_STATUS);
         }
 
         @Override
         public void marshalToJson(Document doc) {
-            doc.append(MSG, this.msg);
-            doc.append(STATUS, this.status);
+            doc.append(PROTOCOL_FIELD_MSG, this.msg);
+            doc.append(PROTOCOL_FIELD_STATUS, this.status);
         }
     }
 
@@ -71,14 +71,14 @@ public abstract class ProtocolField implements IProtocol{
 
         @Override
         public void unmarshalFromJson(Document doc) {
-            this.pos = doc.getLong(POSITION);
-            this.len = doc.getLong(LEN);
+            this.pos = doc.getLong(PROTOCOL_FIELD_POSITION);
+            this.len = doc.getLong(PROTOCOL_FIELD_LENGTH);
         }
 
         @Override
         public void marshalToJson(Document doc) {
-            doc.append(POSITION, this.pos);
-            doc.append(LEN, this.len);
+            doc.append(PROTOCOL_FIELD_POSITION, this.pos);
+            doc.append(PROTOCOL_FIELD_LENGTH, this.len);
         }
     }
 
@@ -88,13 +88,13 @@ public abstract class ProtocolField implements IProtocol{
         @Override
         public void unmarshalFromJson(Document doc) {
             super.unmarshalFromJson(doc);
-            this.content = doc.getString(CONTENT);
+            this.content = doc.getString(PROTOCOL_FIELD_CONTENT);
         }
 
         @Override
         public void marshalToJson(Document doc) {
             super.marshalToJson(doc);
-            doc.append(CONTENT, this.content);
+            doc.append(PROTOCOL_FIELD_CONTENT, this.content);
         }
     }
 

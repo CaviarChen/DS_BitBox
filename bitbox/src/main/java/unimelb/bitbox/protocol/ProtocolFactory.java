@@ -2,13 +2,13 @@ package unimelb.bitbox.protocol;
 
 import unimelb.bitbox.util.Document;
 
-import static unimelb.bitbox.protocol.Constants.*;
+import static unimelb.bitbox.Constants.*;
 
 /**
  *   // How to use factory json to objects
  *
  *   Document doc = Document.parse(json);     // json string you want to parse
- *   String command = doc.getString(CMD);
+ *   String command = doc.getString(PROTOCOL_FIELD_CMD);
  *   ProtocolFactory.InvalidProtocol p1;
  *   ProtocolFactory factory = new ProtocolFactory();
  *   if(command.equals(INVALID_PROTOCOL)){
@@ -39,7 +39,7 @@ public class ProtocolFactory {
     public static Protocol parseProtocol(String json){
         try {
             Document doc = Document.parse(json);
-            String command = doc.getString(CMD);
+            String command = doc.getString(PROTOCOL_FIELD_CMD);
 
             ProtocolType protocolType = ProtocolType.typeOfCommand(command);
             Protocol protocol =  (Protocol) protocolType.getValue().newInstance();
@@ -55,7 +55,7 @@ public class ProtocolFactory {
 
     public static String marshalProtocol(Protocol protocol) {
         Document doc = new Document();
-        doc.append(CMD, ProtocolType.typeOfProtocol(protocol).getKey());
+        doc.append(PROTOCOL_FIELD_CMD, ProtocolType.typeOfProtocol(protocol).getKey());
         protocol.marshalToJson(doc);
         return doc.toJson();
     }

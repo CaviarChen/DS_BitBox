@@ -35,10 +35,10 @@ public class OutgoingConnectionHelper {
             }
         });
 
-        String[] peers = Configuration.getConfigurationValue("peers").split(",");
+        String[] peers = Configuration.getConfigurationValue(Constants.CONFIG_FIELD_PEERS).split(Constants.CONFIG_PEERS_SEPARATOR);
 
         for (String peer : peers) {
-            String[] data = peer.split(":");
+            String[] data = peer.split(Constants.CONFIG_HOSTNAME_PORT_SEPARATOR);
             queue.add(new PeerInfo(data[0], Integer.parseInt(data[1])));
         }
     }
