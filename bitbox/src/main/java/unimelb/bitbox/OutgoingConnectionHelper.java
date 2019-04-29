@@ -75,7 +75,7 @@ public class OutgoingConnectionHelper {
     private void requestHandshake(Connection conn) {
         conn.send(handshakeRequestJson);
 
-        String json = null;
+        String json;
         try {
             json = conn.waitForOneMessage(HANDSHAKE_TIMEOUT);
         } catch (SocketTimeoutException e) {
@@ -100,13 +100,10 @@ public class OutgoingConnectionHelper {
                 if (res == 0) {
                     conn.active(hostPort);
                     return;
-                } else if (res == -2) {
+                } else {
                     // already exists
-                    Protocol.InvalidProtocol invalidProtocol = new Protocol.InvalidProtocol();
-                    invalidProtocol.msg = "HostPort is already existed";
-                    conn.send(ProtocolFactory.marshalProtocol(invalidProtocol));
+                    conn.abortWithInvalidProtocol("HostPort is already existed");
                 }
-                conn.close();
                 break;
             case CONNECTION_REFUSED:
                 Protocol.ConnectionRefused connectionRefused = (Protocol.ConnectionRefused) protocol;
@@ -122,6 +119,33 @@ public class OutgoingConnectionHelper {
                 break;
             default:
                 conn.abortWithInvalidProtocol("Unexpected protocol: " + protocol.getClass().getName());
+        }
+    }
+
+    private class PeerInfo {
+
+        private int port;
+        private long time;
+        private String host;
+
+        PeerInfo(String host, int port) {
+            this.host = host;
+            this.port = port;
+            this.time = System.currentTimeMillis();
+        }
+
+        int getPort() {
+            return port;
+        }
+
+        long getTime() { return time; }
+
+        void setTime(long time) {
+            this.time = time;
+        }
+
+        String getHost() {
+            return host;
         }
     }
 }
