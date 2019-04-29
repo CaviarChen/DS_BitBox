@@ -79,7 +79,7 @@ public class MessageHandler {
         } else {
             try{
                 response.response.status = fileSystemManager.createFileLoader(fd.path,fd.md5,fd.fileSize,fd.lastModified);
-                response.response.msg = response.response.status ? "Directory created" : "unknown error";
+                response.response.msg = response.response.status ? "File created" : "unknown error";
             }catch (Exception e){
                 response.response.status = false;
                 response.response.msg = "Failed to create file Error:"+e.getMessage();
