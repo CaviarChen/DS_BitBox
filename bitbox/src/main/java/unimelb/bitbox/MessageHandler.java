@@ -69,7 +69,24 @@ public class MessageHandler {
     }
 
     private static void handleSpecificProtocol(Protocol.FileCreateRequest fileCreateRequest, Connection conn) {
+        Protocol.FileCreateResponse response = new Protocol.FileCreateResponse();
+        response.fileDes = fileCreateRequest.fileDes;
 
+        ProtocolField.FileDes fd = fileCreateRequest.fileDes;
+        if (fileSystemManager.fileNameExists(fd.path)) {
+            response.response.status = false;
+            response.response.msg = "File already exists";
+        } else {
+            try{
+                response.response.status = fileSystemManager.createFileLoader(fd.path,fd.md5,fd.fileSize,fd.lastModified);
+                response.response.msg = response.response.status ? "Directory created" : "unknown error";
+            }catch (Exception e){
+                response.response.status = false;
+                response.response.msg = "Failed to create file Error:"+e.getMessage();
+            }
+        }
+
+        conn.send(ProtocolFactory.marshalProtocol(response));
     }
 
     private static void handleSpecificProtocol(Protocol.FileDeleteRequest fileDeleteRequest, Connection conn) {
