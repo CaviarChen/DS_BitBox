@@ -7,6 +7,7 @@ import unimelb.bitbox.util.FileSystemManager;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
 import java.util.logging.Logger;
 
 
@@ -162,7 +163,7 @@ public class MessageHandler {
 
         if (byteBuffer != null) {
             // send the bytes successfully
-            response.fileContent.content = byteBuffer.toString();
+            response.fileContent.content = Base64.getEncoder().encodeToString(byteBuffer.array());
             response.response.status = true;
             response.response.msg = "successful read";
             conn.send(ProtocolFactory.marshalProtocol(response));
@@ -187,7 +188,7 @@ public class MessageHandler {
             // write to file
             ProtocolField.FileContent fc = fileBytesResponse.fileContent;
             ByteBuffer byteBuffer = ByteBuffer.allocate((int)fc.len);
-            byteBuffer.put(fc.content.getBytes());
+            byteBuffer.put(Base64.getDecoder().decode(fc.content));
 
             try {
                 fileSystemManager.writeFile(filePath, byteBuffer, fc.pos);
