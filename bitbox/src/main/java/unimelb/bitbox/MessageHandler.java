@@ -2,10 +2,20 @@ package unimelb.bitbox;
 
 
 import unimelb.bitbox.protocol.*;
-import unimelb.bitbox.protocol.ProtocolType.*;
+import unimelb.bitbox.util.FileSystemManager;
 
 
 public class MessageHandler {
+
+    private static FileSystemManager fileSystemManager = null;
+
+
+    // TODO: may need refator
+    // not thread-safe, set this at the initialization stage
+    public static void setFileSystemManager(FileSystemManager fsm) {
+        fileSystemManager = fsm;
+    }
+
     public static void handleMessage(String message, Connection conn) {
 
         Protocol protocol = ProtocolFactory.parseProtocol(message);
@@ -80,6 +90,19 @@ public class MessageHandler {
 
     private static void handleSpecificProtocol(Protocol.DirectoryCreateRequest directoryCreateRequest, Connection conn) {
 
+        Protocol.DirectoryCreateResponse response = new Protocol.DirectoryCreateResponse();
+        response.dirPath = directoryCreateRequest.dirPath;
+
+        String path = directoryCreateRequest.dirPath.path;
+        if (fileSystemManager.dirNameExists(path)) {
+            response.response.status = false;
+            response.response.msg = "Directory already exists";
+        } else {
+            response.response.status = fileSystemManager.makeDirectory(path);
+            response.response.msg = response.response.status ? "Directory created" : "unknown error";
+        }
+
+        conn.send(ProtocolFactory.marshalProtocol(response));
     }
 
     private static void handleSpecificProtocol(Protocol.DirectoryDeleteRequest directoryDeleteRequest, Connection conn) {

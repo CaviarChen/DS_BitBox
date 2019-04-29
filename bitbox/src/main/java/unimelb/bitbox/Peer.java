@@ -1,6 +1,7 @@
 package unimelb.bitbox;
 
 import unimelb.bitbox.util.Configuration;
+import unimelb.bitbox.util.FileSystemManager;
 import unimelb.bitbox.util.ThreadPool.Priority;
 import unimelb.bitbox.util.ThreadPool.PriorityTask;
 import unimelb.bitbox.util.ThreadPool.PriorityThreadPool;
@@ -25,6 +26,10 @@ public class Peer {
             // custom runnable here
         }));
         */
+
+        FileSystemManager fileSystemManager = new FileSystemManager();
+
+        MessageHandler.setFileSystemManager(fileSystemManager);
 
         int port = Integer.parseInt(Configuration.getConfigurationValue(Constants.CONFIG_FIELD_PORT));
         String advertisedName = Configuration.getConfigurationValue(Constants.CONFIG_FIEDL_AD_NAME);
