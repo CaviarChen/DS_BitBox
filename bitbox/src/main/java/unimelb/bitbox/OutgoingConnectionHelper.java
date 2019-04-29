@@ -46,7 +46,7 @@ public class OutgoingConnectionHelper {
     public void execute(){
 
         // if queue is not empty
-        while (queue.peek() == null) {
+        while (queue.peek() != null) {
 
             if (queue.peek().getTime() <= System.currentTimeMillis()) {
                 PeerInfo peer = queue.poll();
@@ -61,7 +61,6 @@ public class OutgoingConnectionHelper {
                     log.warning(e.toString());
                     peer.setTime(System.currentTimeMillis() + PENALTY_TIME);
                     queue.add(peer);
-                } finally {
                 }
             } else {
                 // sleep 60 seconds
