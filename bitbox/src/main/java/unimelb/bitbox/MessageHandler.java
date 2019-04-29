@@ -4,10 +4,16 @@ package unimelb.bitbox;
 import unimelb.bitbox.protocol.*;
 import unimelb.bitbox.util.FileSystemManager;
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.security.NoSuchAlgorithmException;
+import java.util.logging.Logger;
+
 
 public class MessageHandler {
 
     private static FileSystemManager fileSystemManager = null;
+    private static Logger log = Logger.getLogger(MessageHandler.class.getName());
 
 
     // TODO: may need refator
@@ -99,10 +105,75 @@ public class MessageHandler {
 
     private static void handleSpecificProtocol(Protocol.FileBytesRequest fileBytesRequest, Connection conn) {
 
+        // discard the message if the path not safe;
+        if (!fileSystemManager.isSafePathName(fileBytesRequest.fileDes.path)) {
+            return ;
+        }
+
+        Protocol.FileBytesResponse response = new Protocol.FileBytesResponse();
+        ProtocolField.FileDes fd = fileBytesRequest.fileDes;
+        ProtocolField.FilePosition fp = fileBytesRequest.filePos;
+        ByteBuffer byteBuffer = null;
+
+        try {
+            byteBuffer = fileSystemManager.readFile(fd.md5, fp.pos, fp.len);
+        } catch (NoSuchAlgorithmException e) {
+            log.severe(e.toString());
+        } catch (IOException e) {
+            log.warning(e.toString());
+        }
+
+        if (byteBuffer != null) {
+            // send the bytes successfully
+            response.fileContent.content = byteBuffer.toString();
+            response.response.status = true;
+            response.response.msg = "successful read";
+            conn.send(ProtocolFactory.marshalProtocol(response));
+            return ;
+        }
+
+        response.response.status = false;
+        response.response.msg = "unsuccessful read";
+        conn.send(ProtocolFactory.marshalProtocol(response));
     }
 
     private static void handleSpecificProtocol(Protocol.FileBytesResponse fileBytesResponse, Connection conn) {
 
+        String filePath = fileBytesResponse.fileDes.path;
+
+        // discard the message if the path not safe
+        if (!fileSystemManager.isSafePathName(filePath)) {
+            return ;
+        }
+
+        if (fileBytesResponse.response.status) {
+            // write to file
+            ProtocolField.FileContent fc = fileBytesResponse.fileContent;
+            ByteBuffer byteBuffer = ByteBuffer.allocate((int)fc.len);
+            byteBuffer.put(fc.content.getBytes());
+
+            try {
+                fileSystemManager.writeFile(filePath, byteBuffer, fc.pos);
+            } catch (IOException e) {
+                log.warning(e.toString());
+            }
+
+            // check complete
+            boolean isComplete = false;
+            try {
+                isComplete = fileSystemManager.checkWriteComplete(filePath);
+            } catch (NoSuchAlgorithmException e) {
+                log.severe(e.toString());
+            } catch (IOException e) {
+                log.warning(e.toString());
+            }
+
+            if (!isComplete) {
+                //TODO: monitor missing part of the file after long time, retry?
+            }
+        } else {
+            //TODO: retry after a few seconds
+        }
     }
 
     private static void handleSpecificProtocol(Protocol.DirectoryCreateRequest directoryCreateRequest, Connection conn) {
