@@ -1,5 +1,7 @@
 package unimelb.bitbox;
 
+import unimelb.bitbox.protocol.Protocol;
+import unimelb.bitbox.protocol.ProtocolFactory;
 import unimelb.bitbox.util.HostPort;
 import unimelb.bitbox.util.ThreadPool.Priority;
 import unimelb.bitbox.util.ThreadPool.PriorityTask;
@@ -7,6 +9,7 @@ import unimelb.bitbox.util.ThreadPool.PriorityThreadPool;
 
 import java.io.*;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.nio.charset.StandardCharsets;
 import java.util.logging.Logger;
 
@@ -35,14 +38,33 @@ public class Connection {
         hostPort = null;
     }
 
+    // not thread-safe
     public String waitForOneMessage() {
+        String msg = "";
         try {
-            return bufferedReader.readLine();
+            // infinite waiting time
+            msg = this.waitForOneMessage(0);
+        } catch (SocketTimeoutException e) {
+            // no gonna happen
+        }
+        return msg;
+    }
+
+    // not thread-safe
+    public String waitForOneMessage(int timeout) throws SocketTimeoutException {
+        String msg;
+        try {
+            this.socket.setSoTimeout(timeout);
+             msg = bufferedReader.readLine();
         } catch (IOException e) {
+            if (e instanceof SocketTimeoutException) {
+                throw (SocketTimeoutException) e;
+            }
             // log
             close();
             return null;
         }
+        return msg;
     }
 
     public void send(String msg) {
@@ -55,6 +77,13 @@ public class Connection {
                 close();
             }
         }
+    }
+
+    public void abortWithInvalidProtocol(String additionalMsg) {
+        Protocol.InvalidProtocol invalidProtocol = new Protocol.InvalidProtocol();
+        invalidProtocol.msg = additionalMsg;
+        send(ProtocolFactory.marshalProtocol(invalidProtocol));
+        close();
     }
 
     public void close() {

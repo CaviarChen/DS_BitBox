@@ -10,9 +10,11 @@ import unimelb.bitbox.util.ThreadPool.PriorityThreadPool;
 
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.util.logging.Logger;
 
 public class IncomingConnectionHelper {
+    private static final int HANDSHAKE_TIMEOUT = 10000;
     private static Logger log = Logger.getLogger(IncomingConnectionHelper.class.getName());
 
     private Thread thread;
@@ -58,8 +60,15 @@ public class IncomingConnectionHelper {
     }
 
     private void handleHandshake(Connection conn) {
-        // TODO: timeout
-        String json = conn.waitForOneMessage();
+
+        String json;
+        try {
+            json = conn.waitForOneMessage(HANDSHAKE_TIMEOUT);
+        } catch (SocketTimeoutException e) {
+            conn.abortWithInvalidProtocol("No handshake until timeout");
+            return;
+        }
+
         Protocol protocol = ProtocolFactory.parseProtocol(json);
 
         if (ProtocolType.typeOfProtocol(protocol) == ProtocolType.HANDSHAKE_REQUEST) {
@@ -72,7 +81,6 @@ public class IncomingConnectionHelper {
                 return;
             }
 
-
             if (res == -1) {
                 // exceed limit
             } else if (res == -2) {
@@ -82,10 +90,8 @@ public class IncomingConnectionHelper {
             return;
         }
 
-        Protocol.InvalidProtocol invalidProtocol = new Protocol.InvalidProtocol();
-        invalidProtocol.msg = "unknown";
-        conn.send(ProtocolFactory.marshalProtocol(invalidProtocol));
-        conn.close();
+        conn.abortWithInvalidProtocol("Expected HandashakeRequest but got: " +
+                ((protocol == null) ? "null" : protocol.getClass().getName()));
     }
 
 }
