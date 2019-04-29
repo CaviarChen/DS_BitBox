@@ -18,8 +18,8 @@ public class PeerInfo {
 
     public long getTime() { return time; }
 
-    public void setTime() {
-        this.time = System.currentTimeMillis();
+    public void setTime(long time) {
+        this.time = time;
     }
 
     public String getHost() {

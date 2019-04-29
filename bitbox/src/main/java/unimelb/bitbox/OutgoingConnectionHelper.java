@@ -6,9 +6,13 @@ import unimelb.bitbox.protocol.ProtocolType;
 import unimelb.bitbox.util.Configuration;
 import unimelb.bitbox.util.HostPort;
 
+import java.io.IOException;
 import java.net.Socket;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.PriorityQueue;
 import java.util.logging.Logger;
 
@@ -16,6 +20,8 @@ import static java.lang.Thread.sleep;
 
 public class OutgoingConnectionHelper {
 
+    private static final int CHECK_INTERVAL = 10000;
+    private static final int PENALTY_TIME = 5000;
     private static Logger log = Logger.getLogger(OutgoingConnectionHelper.class.getName());
 
     private String handshakeRequestJson;
@@ -55,16 +61,27 @@ public class OutgoingConnectionHelper {
             if (queue.peek().getTime() <= System.currentTimeMillis()) {
                 PeerInfo peer = queue.poll();
 
-                Socket clientSocket = new Socket(peer.getHost(), peer.getPort());
-                Connection conn = new Connection(Connection.ConnectionType.OUTGOING, clientSocket);
-
-                log.info(String.format("Start connecting to port: %d", peer.getPort()));
-
-                requestHandshake(conn);
-
+                Socket clientSocket = null;
+                try {
+                    clientSocket = new Socket(peer.getHost(), peer.getPort());
+                } catch (IOException e) {
+                    System.out.print("host port is not listened");
+                    DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+                    Date date = new Date();
+                    System.out.println(dateFormat.format(date));
+                } finally {
+                    if (clientSocket != null) {
+                        Connection conn = new Connection(Connection.ConnectionType.OUTGOING, clientSocket);
+                        log.info(String.format("Start connecting to port: %d", peer.getPort()));
+                        requestHandshake(conn);
+                    } else {
+                        queue.add(peer);
+                        peer.setTime(System.currentTimeMillis() + PENALTY_TIME);
+                    }
+                }
             } else {
                 // sleep 60 seconds
-                sleep(60000);
+                sleep(CHECK_INTERVAL);
             }
         }
     }
