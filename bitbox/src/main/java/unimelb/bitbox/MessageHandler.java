@@ -75,6 +75,7 @@ public class MessageHandler {
     }
 
     private static void handleSpecificProtocol(Protocol.FileCreateRequest fileCreateRequest, Connection conn) {
+
         Protocol.FileCreateResponse response = new Protocol.FileCreateResponse();
         response.fileDes = fileCreateRequest.fileDes;
 
@@ -97,10 +98,46 @@ public class MessageHandler {
 
     private static void handleSpecificProtocol(Protocol.FileDeleteRequest fileDeleteRequest, Connection conn) {
 
+        Protocol.FileDeleteResponse response = new Protocol.FileDeleteResponse();
+        response.fileDes = fileDeleteRequest.fileDes;
+
+        ProtocolField.FileDes fd = fileDeleteRequest.fileDes;
+        if (!fileSystemManager.fileNameExists(fd.path)) {
+            response.response.status = false;
+            response.response.msg = "Can't find the specified file";
+        } else {
+            try{
+                response.response.status = fileSystemManager.deleteFile(fd.path,fd.lastModified,fd.md5);
+                response.response.msg = response.response.status ? "File Deleted" : "unknown error";
+            }catch (Exception e){
+                response.response.status = false;
+                response.response.msg = "Failed to delete file Error:"+e.getMessage();
+            }
+        }
+
+        conn.send(ProtocolFactory.marshalProtocol(response));
     }
 
     private static void handleSpecificProtocol(Protocol.FileModifyRequest fileModifyRequest, Connection conn) {
 
+        Protocol.FileModifyResponse response = new Protocol.FileModifyResponse();
+        response.fileDes = fileModifyRequest.fileDes;
+
+        ProtocolField.FileDes fd = fileModifyRequest.fileDes;
+        if (!fileSystemManager.fileNameExists(fd.path)) {
+            response.response.status = false;
+            response.response.msg = "Can't find the specified file";
+        } else {
+            try{
+                response.response.status = fileSystemManager.modifyFileLoader(fd.path,fd.md5,fd.lastModified);
+                response.response.msg = response.response.status ? "File modified" : "unknown error";
+            }catch (Exception e){
+                response.response.status = false;
+                response.response.msg = "Failed to modify file Error:"+e.getMessage();
+            }
+        }
+
+        conn.send(ProtocolFactory.marshalProtocol(response));
     }
 
     private static void handleSpecificProtocol(Protocol.FileBytesRequest fileBytesRequest, Connection conn) {
@@ -194,7 +231,19 @@ public class MessageHandler {
     }
 
     private static void handleSpecificProtocol(Protocol.DirectoryDeleteRequest directoryDeleteRequest, Connection conn) {
-//        Protocol.DirectoryDeleteRequest response = new Protocol.DirectoryCreateResponse();
 
+        Protocol.DirectoryDeleteResponse response = new Protocol.DirectoryDeleteResponse();
+        response.dirPath = directoryDeleteRequest.dirPath;
+
+        String path = directoryDeleteRequest.dirPath.path;
+        if (!fileSystemManager.dirNameExists(path)) {
+            response.response.status = false;
+            response.response.msg = "Can't find specified directory";
+        } else {
+            response.response.status = fileSystemManager.deleteDirectory(path);
+            response.response.msg = response.response.status ? "Directory deleted" : "Unknown error";
+        }
+
+        conn.send(ProtocolFactory.marshalProtocol(response));
     }
 }
