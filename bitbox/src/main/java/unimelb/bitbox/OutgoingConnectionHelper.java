@@ -8,11 +8,9 @@ import unimelb.bitbox.util.HostPort;
 
 import java.io.IOException;
 import java.net.Socket;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.PriorityQueue;
 import java.util.logging.Logger;
 
@@ -22,6 +20,7 @@ public class OutgoingConnectionHelper {
 
     private static final int CHECK_INTERVAL = 10000;
     private static final int PENALTY_TIME = 5000;
+    private static final int HANDSHAKE_TIMEOUT = 20000;
     private static Logger log = Logger.getLogger(OutgoingConnectionHelper.class.getName());
 
     private String handshakeRequestJson;
@@ -34,12 +33,7 @@ public class OutgoingConnectionHelper {
         handshakeRequest.peer.port = port;
         handshakeRequestJson = ProtocolFactory.marshalProtocol(handshakeRequest);
 
-        queue = new PriorityQueue<>(new Comparator<PeerInfo>() {
-            @Override
-            public int compare(PeerInfo o1, PeerInfo o2) {
-                return Long.compare(o1.getTime(), o2.getTime());
-            }
-        });
+        queue = new PriorityQueue<>(Comparator.comparingLong(PeerInfo::getTime));
 
         String[] peers = Configuration.getConfigurationValue(Constants.CONFIG_FIELD_PEERS).split(Constants.CONFIG_PEERS_SEPARATOR);
 
@@ -49,39 +43,31 @@ public class OutgoingConnectionHelper {
         }
     }
 
-    public void execute() throws Exception {
+    public void execute(){
 
-        while (true) {
-
-            // empty priority queue
-            if (queue.peek() == null) {
-                return;
-            }
+        // if queue is not empty
+        while (queue.peek() != null) {
 
             if (queue.peek().getTime() <= System.currentTimeMillis()) {
                 PeerInfo peer = queue.poll();
 
-                Socket clientSocket = null;
                 try {
-                    clientSocket = new Socket(peer.getHost(), peer.getPort());
+                    Socket clientSocket = new Socket(peer.getHost(), peer.getPort());
+                    Connection conn = new Connection(Connection.ConnectionType.OUTGOING, clientSocket);
+                    log.info(String.format("Start connecting to port: %d", peer.getPort()));
+                    requestHandshake(conn);
+
                 } catch (IOException e) {
-                    System.out.print("host port is not listened");
-                    DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-                    Date date = new Date();
-                    System.out.println(dateFormat.format(date));
-                } finally {
-                    if (clientSocket != null) {
-                        Connection conn = new Connection(Connection.ConnectionType.OUTGOING, clientSocket);
-                        log.info(String.format("Start connecting to port: %d", peer.getPort()));
-                        requestHandshake(conn);
-                    } else {
-                        queue.add(peer);
-                        peer.setTime(System.currentTimeMillis() + PENALTY_TIME);
-                    }
+                    log.warning(e.toString());
+                    peer.setTime(System.currentTimeMillis() + PENALTY_TIME);
+                    queue.add(peer);
                 }
             } else {
                 // sleep 60 seconds
-                sleep(CHECK_INTERVAL);
+                try {
+                    sleep(CHECK_INTERVAL);
+                } catch (InterruptedException e) {
+                }
             }
         }
     }
@@ -89,15 +75,23 @@ public class OutgoingConnectionHelper {
     private void requestHandshake(Connection conn) {
         conn.send(handshakeRequestJson);
 
-        String json = conn.waitForOneMessage();
-        Protocol protocol = ProtocolFactory.parseProtocol(json);
-
-        if (protocol == null) {
-            // TODO
+        String json;
+        try {
+            json = conn.waitForOneMessage(HANDSHAKE_TIMEOUT);
+        } catch (SocketTimeoutException e) {
+            conn.abortWithInvalidProtocol("Handshake response timeout");
             return;
         }
 
-        switch (ProtocolType.typeOfProtocol(protocol)) {
+        Protocol protocol = ProtocolFactory.parseProtocol(json);
+        ProtocolType protocolType = ProtocolType.typeOfProtocol(protocol);
+
+        // TODO: waiting for InvalidProtocolException to be completed
+        if (protocolType == null) {
+            return;
+        }
+
+        switch (protocolType) {
             case HANDSHAKE_RESPONSE:
                 Protocol.HandshakeResponse handshakeResponse = (Protocol.HandshakeResponse) protocol;
                 HostPort hostPort = handshakeResponse.peer;
@@ -106,13 +100,10 @@ public class OutgoingConnectionHelper {
                 if (res == 0) {
                     conn.active(hostPort);
                     return;
-                } else if (res == -2) {
+                } else {
                     // already exists
-                    Protocol.InvalidProtocol invalidProtocol = new Protocol.InvalidProtocol();
-                    invalidProtocol.msg = "HostPort is already existed";
-                    conn.send(ProtocolFactory.marshalProtocol(invalidProtocol));
+                    conn.abortWithInvalidProtocol("HostPort is already existed");
                 }
-                conn.close();
                 break;
             case CONNECTION_REFUSED:
                 Protocol.ConnectionRefused connectionRefused = (Protocol.ConnectionRefused) protocol;
@@ -126,6 +117,35 @@ public class OutgoingConnectionHelper {
                 // TODO add into log
                 conn.close();
                 break;
+            default:
+                conn.abortWithInvalidProtocol("Unexpected protocol: " + protocol.getClass().getName());
+        }
+    }
+
+    private class PeerInfo {
+
+        private int port;
+        private long time;
+        private String host;
+
+        PeerInfo(String host, int port) {
+            this.host = host;
+            this.port = port;
+            this.time = System.currentTimeMillis();
+        }
+
+        int getPort() {
+            return port;
+        }
+
+        long getTime() { return time; }
+
+        void setTime(long time) {
+            this.time = time;
+        }
+
+        String getHost() {
+            return host;
         }
     }
 }
