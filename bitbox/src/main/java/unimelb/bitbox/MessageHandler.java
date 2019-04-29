@@ -99,13 +99,14 @@ public class MessageHandler {
             response.response.msg = "Directory already exists";
         } else {
             response.response.status = fileSystemManager.makeDirectory(path);
-            response.response.msg = response.response.status ? "Directory created" : "unknown error";
+            response.response.msg = response.response.status ? "Directory created" : "Unknown error";
         }
 
         conn.send(ProtocolFactory.marshalProtocol(response));
     }
 
     private static void handleSpecificProtocol(Protocol.DirectoryDeleteRequest directoryDeleteRequest, Connection conn) {
+//        Protocol.DirectoryDeleteRequest response = new Protocol.DirectoryCreateResponse();
 
     }
 }
