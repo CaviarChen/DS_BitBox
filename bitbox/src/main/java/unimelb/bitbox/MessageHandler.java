@@ -223,14 +223,34 @@ public class MessageHandler {
             ByteBuffer byteBuffer = ByteBuffer.allocate((int)fc.len);
             byteBuffer.put(Base64.getDecoder().decode(fc.content));
             try {
-                fileSystemManager.writeFile(filePath, byteBuffer, fc.pos);
-                conn.GetFileByteMonitor().MarkByteWrote(filePath, fc.pos);
+                if (conn.GetFileByteMonitor().MarkByteWrote(filePath, fc.pos, fc.len)) {
+                    fileSystemManager.writeFile(filePath, byteBuffer, fc.pos);
+                } else {
+                    // Something went wrong. pos in request not equal to the one in the response
+                    // e.g. someone tried to modify the response,
+                    fileSystemManager.cancelFileLoader(filePath);
+                }
             } catch (IOException e) {
                 log.warning(e.toString());
             }
 
         } else {
-            //TODO: retry after a few seconds
+            // request the bytes again after some time
+            // eventually if it exceeds the time limit for the batch, it will not stop sending requests.
+            try {
+                Thread.sleep(conn.GetFileByteMonitor().RETRY_SEND_REQUEST_INTERVAL);
+            } catch (InterruptedException e) {
+            }
+
+            if (conn.GetFileByteMonitor().isFileLoading(filePath)) {
+                Protocol.FileBytesRequest request = new Protocol.FileBytesRequest();
+
+                request.fileDes = fileBytesResponse.fileDes;
+                request.filePos.pos = fileBytesResponse.fileContent.pos;
+                request.filePos.len = fileBytesResponse.fileContent.len;
+
+                conn.send(ProtocolFactory.marshalProtocol(request));
+            }
         }
     }
 
