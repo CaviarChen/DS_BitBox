@@ -52,7 +52,7 @@ public class ConnectionManager {
         // TODO: better locking
         synchronized (this) {
             for (Connection conn: connectionMap.values()) {
-                conn.send(msg);
+                conn.sendAsync(msg);
             }
         }
     }

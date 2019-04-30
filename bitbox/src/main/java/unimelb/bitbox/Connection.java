@@ -11,9 +11,9 @@ import java.io.*;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.nio.charset.StandardCharsets;
+import java.util.LinkedList;
 import java.util.logging.Logger;
 
-// TODO: make necessary methods thread-safe
 
 public class Connection {
     private static Logger log = Logger.getLogger(Connection.class.getName());
@@ -23,6 +23,7 @@ public class Connection {
     private final Socket socket;
     private final BufferedReader bufferedReader;
     private final BufferedWriter bufferedWriter;
+    private final LinkedList<String> sendingQueue = new LinkedList<>();
 
     private Thread thread;
 
@@ -79,6 +80,42 @@ public class Connection {
         }
     }
 
+    public void sendAsync(String msg) {
+        boolean isEmpty;
+        synchronized (sendingQueue) {
+            isEmpty = sendingQueue.isEmpty();
+            sendingQueue.addLast(msg);
+        }
+
+        if (isEmpty) {
+            // first in a while, need to start sending thread
+            PriorityThreadPool.getInstance().submitTask(new PriorityTask(
+                    "Connection: SendingQueue",
+                    Priority.NORMAL,
+                    this::asyncSendingThread
+            ));
+        }
+    }
+
+
+    private void asyncSendingThread() {
+        boolean isLastOne = false;
+        while (!isLastOne) {
+            String msg;
+            synchronized (sendingQueue) {
+                if (sendingQueue.isEmpty()) {
+                    return;
+                }
+                msg = sendingQueue.removeFirst();
+                isLastOne = sendingQueue.isEmpty();
+            }
+
+            send(msg);
+        }
+    }
+
+
+
     public void abortWithInvalidProtocol(String additionalMsg) {
         Protocol.InvalidProtocol invalidProtocol = new Protocol.InvalidProtocol();
         invalidProtocol.msg = additionalMsg;
@@ -91,6 +128,11 @@ public class Connection {
             socket.close();
         } catch (IOException e) {
             log.severe(e.toString());
+        }
+
+        // Reentrant
+        synchronized (sendingQueue) {
+            sendingQueue.clear();
         }
 
         if (active) {
