@@ -7,7 +7,7 @@ public class Constants {
     public static final String CONFIG_PEERS_SEPARATOR=",";
     public static final String CONFIG_FIELD_PEERS ="peers";
     public static final String CONFIG_FIELD_PORT="port";
-    public static final String CONFIG_FIEDL_AD_NAME= "advertisedName";
+    public static final String CONFIG_FIELD_AD_NAME = "advertisedName";
 
     // Protocol fields
     public static final String PROTOCOL_FIELD_CMD = "command";

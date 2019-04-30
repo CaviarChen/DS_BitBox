@@ -20,7 +20,7 @@ public class Peer {
         MessageHandler.setFileSystemManager(fileSystemManager);
 
         int port = Integer.parseInt(Configuration.getConfigurationValue(Constants.CONFIG_FIELD_PORT));
-        String advertisedName = Configuration.getConfigurationValue(Constants.CONFIG_FIEDL_AD_NAME);
+        String advertisedName = Configuration.getConfigurationValue(Constants.CONFIG_FIELD_AD_NAME);
         incomingConnectionManager = new IncomingConnectionHelper(advertisedName, port);
         outgoingConnectionHelper = new OutgoingConnectionHelper(advertisedName, port);
         outgoingConnectionHelper.execute();
