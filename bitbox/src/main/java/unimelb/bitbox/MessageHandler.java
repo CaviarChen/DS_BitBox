@@ -154,6 +154,10 @@ public class MessageHandler {
         }
 
         Protocol.FileBytesResponse response = new Protocol.FileBytesResponse();
+        response.fileDes = fileBytesRequest.fileDes;
+        response.fileContent.len = fileBytesRequest.filePos.len;
+        response.fileContent.pos = fileBytesRequest.filePos.pos;
+
         ProtocolField.FileDes fd = fileBytesRequest.fileDes;
         ProtocolField.FilePosition fp = fileBytesRequest.filePos;
         ByteBuffer byteBuffer = null;
