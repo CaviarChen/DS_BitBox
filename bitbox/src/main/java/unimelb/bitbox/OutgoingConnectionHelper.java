@@ -1,5 +1,6 @@
 package unimelb.bitbox;
 
+import unimelb.bitbox.protocol.InvalidProtocolException;
 import unimelb.bitbox.protocol.Protocol;
 import unimelb.bitbox.protocol.ProtocolFactory;
 import unimelb.bitbox.protocol.ProtocolType;
@@ -83,11 +84,13 @@ public class OutgoingConnectionHelper {
             return;
         }
 
-        Protocol protocol = ProtocolFactory.parseProtocol(json);
-        ProtocolType protocolType = ProtocolType.typeOfProtocol(protocol);
-
-        // TODO: waiting for InvalidProtocolException to be completed
-        if (protocolType == null) {
+        Protocol protocol;
+        ProtocolType protocolType;
+        try {
+            protocol = ProtocolFactory.parseProtocol(json);
+            protocolType = ProtocolType.typeOfProtocol(protocol);
+        } catch (InvalidProtocolException e) {
+            conn.abortWithInvalidProtocol(e.getMessage());
             return;
         }
 

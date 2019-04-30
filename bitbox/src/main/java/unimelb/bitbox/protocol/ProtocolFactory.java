@@ -48,7 +48,8 @@ public class ProtocolFactory {
 
             return protocol;
         } catch (Exception e) {
-            throw new InvalidProtocolException("parse error",e);
+            throw (e instanceof InvalidProtocolException) ? (InvalidProtocolException) e :
+                    new InvalidProtocolException("Parse error", e);
         }
 
     }

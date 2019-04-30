@@ -74,8 +74,8 @@ public class MessageHandler {
                         break;
                 }
             }
-        }catch (InvalidProtocolException e){
-            //Todo:send invalid protocol
+        } catch (InvalidProtocolException e){
+            conn.abortWithInvalidProtocol(e.getMessage());
         }
 
     }

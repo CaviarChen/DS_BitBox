@@ -39,13 +39,13 @@ public enum ProtocolType{
         return value;
     }
 
-    public static ProtocolType typeOfCommand(String command) {
+    public static ProtocolType typeOfCommand(String command) throws InvalidProtocolException {
         for (ProtocolType e : values()) {
             if (e.key.equals(command)) {
                 return e;
             }
         }
-        return null;
+        throw new InvalidProtocolException("Unknown command: " + command, null);
     }
 
     public static ProtocolType typeOfProtocol(Protocol protocol) {
@@ -54,6 +54,7 @@ public enum ProtocolType{
                 return e;
             }
         }
-        return null;
+        // shouldn't happen
+        throw new RuntimeException("Unknown protocol class");
     }
 }
