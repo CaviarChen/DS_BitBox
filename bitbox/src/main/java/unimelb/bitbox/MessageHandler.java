@@ -85,17 +85,23 @@ public class MessageHandler {
         Protocol.FileCreateResponse response = new Protocol.FileCreateResponse();
         response.fileDes = fileCreateRequest.fileDes;
 
+        boolean isShortcutUsed = false;
+
         ProtocolField.FileDes fd = fileCreateRequest.fileDes;
         if (fileSystemManager.fileNameExists(fd.path)) {
             response.response.status = false;
             response.response.msg = "File already exists";
         } else {
-            // check shortcut
 
             try{
                 response.response.status = fileSystemManager.createFileLoader(fd.path,fd.md5,fd.fileSize,fd.lastModified);
+
+                if (fileSystemManager.checkShortcut(fd.path)) {
+                    isShortcutUsed = true;
+                }
+
                 response.response.msg = response.response.status ? "File created" : "unknown error";
-            }catch (Exception e){
+            }catch (IOException | NoSuchAlgorithmException e){
                 response.response.status = false;
                 response.response.msg = "Failed to create file Error:"+e.getMessage();
             }
@@ -104,7 +110,9 @@ public class MessageHandler {
         conn.send(ProtocolFactory.marshalProtocol(response));
 
         // ask for bytes
-        conn.GetFileByteMonitor().batchSendAndWait(fd, fileSystemManager, conn);
+        if (!isShortcutUsed) {
+            conn.GetFileByteMonitor().batchSendAndWait(fd, fileSystemManager, conn);
+        }
     }
 
     private static void handleSpecificProtocol(Protocol.FileDeleteRequest fileDeleteRequest, Connection conn) {
@@ -134,6 +142,8 @@ public class MessageHandler {
         Protocol.FileModifyResponse response = new Protocol.FileModifyResponse();
         response.fileDes = fileModifyRequest.fileDes;
 
+        boolean isShortcutUsed = false;
+
         ProtocolField.FileDes fd = fileModifyRequest.fileDes;
         if (!fileSystemManager.fileNameExists(fd.path)) {
             response.response.status = false;
@@ -141,6 +151,11 @@ public class MessageHandler {
         } else {
             try{
                 response.response.status = fileSystemManager.modifyFileLoader(fd.path,fd.md5,fd.lastModified);
+
+                if (fileSystemManager.checkShortcut(fd.path)) {
+                    isShortcutUsed = true;
+                }
+
                 response.response.msg = response.response.status ? "File modified" : "unknown error";
             }catch (Exception e){
                 response.response.status = false;
@@ -149,6 +164,10 @@ public class MessageHandler {
         }
 
         conn.send(ProtocolFactory.marshalProtocol(response));
+
+        if (!isShortcutUsed) {
+            conn.GetFileByteMonitor().batchSendAndWait(fd, fileSystemManager, conn);
+        }
     }
 
     private static void handleSpecificProtocol(Protocol.FileBytesRequest fileBytesRequest, Connection conn) {
