@@ -36,7 +36,7 @@ public class ProtocolFactory {
      *  connection related json to each protocol method
      *  */
 
-    public static Protocol parseProtocol(String json){
+    public static Protocol parseProtocol(String json) throws InvalidProtocolException {
         try {
             Document doc = Document.parse(json);
             String command = doc.getString(PROTOCOL_FIELD_CMD);
@@ -48,9 +48,9 @@ public class ProtocolFactory {
 
             return protocol;
         } catch (Exception e) {
-            // TODO: log
-            return null;
+            throw new InvalidProtocolException("parse error",e);
         }
+
     }
 
     public static String marshalProtocol(Protocol protocol) {

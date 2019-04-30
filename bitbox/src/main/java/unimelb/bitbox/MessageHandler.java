@@ -25,54 +25,59 @@ public class MessageHandler {
 
     public static void handleMessage(String message, Connection conn) {
 
-        Protocol protocol = ProtocolFactory.parseProtocol(message);
+        try{
+            Protocol protocol = ProtocolFactory.parseProtocol(message);
 
-        ProtocolType protocolType = ProtocolType.typeOfProtocol(protocol);
-        if (protocolType != null) {
-            switch (protocolType) {
-                case INVALID_PROTOCOL:
-                    // log then disconnect (?)
-                    break;
+            ProtocolType protocolType = ProtocolType.typeOfProtocol(protocol);
+            if (protocolType != null) {
+                switch (protocolType) {
+                    case INVALID_PROTOCOL:
+                        // log then disconnect (?)
+                        break;
 
-                case FILE_CREATE_REQUEST:
-                    handleSpecificProtocol((Protocol.FileCreateRequest) protocol, conn);
-                    break;
-                case FILE_DELETE_REQUEST:
-                    handleSpecificProtocol((Protocol.FileDeleteRequest) protocol, conn);
-                    break;
-                case FILE_MODIFY_REQUEST:
-                    handleSpecificProtocol((Protocol.FileModifyRequest) protocol, conn);
-                    break;
-                case FILE_BYTES_REQUEST:
-                    handleSpecificProtocol((Protocol.FileBytesRequest) protocol, conn);
-                    break;
-                case FILE_BYTES_RESPONSE:
-                    handleSpecificProtocol((Protocol.FileBytesResponse) protocol, conn);
-                    break;
-                case DIRECTORY_CREATE_REQUEST:
-                    handleSpecificProtocol((Protocol.DirectoryCreateRequest) protocol, conn);
-                    break;
-                case DIRECTORY_DELETE_REQUEST:
-                    handleSpecificProtocol((Protocol.DirectoryDeleteRequest) protocol, conn);
-                    break;
+                    case FILE_CREATE_REQUEST:
+                        handleSpecificProtocol((Protocol.FileCreateRequest) protocol, conn);
+                        break;
+                    case FILE_DELETE_REQUEST:
+                        handleSpecificProtocol((Protocol.FileDeleteRequest) protocol, conn);
+                        break;
+                    case FILE_MODIFY_REQUEST:
+                        handleSpecificProtocol((Protocol.FileModifyRequest) protocol, conn);
+                        break;
+                    case FILE_BYTES_REQUEST:
+                        handleSpecificProtocol((Protocol.FileBytesRequest) protocol, conn);
+                        break;
+                    case FILE_BYTES_RESPONSE:
+                        handleSpecificProtocol((Protocol.FileBytesResponse) protocol, conn);
+                        break;
+                    case DIRECTORY_CREATE_REQUEST:
+                        handleSpecificProtocol((Protocol.DirectoryCreateRequest) protocol, conn);
+                        break;
+                    case DIRECTORY_DELETE_REQUEST:
+                        handleSpecificProtocol((Protocol.DirectoryDeleteRequest) protocol, conn);
+                        break;
 
 
-                // log then ignored
-                case DIRECTORY_DELETE_RESPONSE:
-                case DIRECTORY_CREATE_RESPONSE:
-                case FILE_CREATE_RESPONSE:
-                case FILE_DELETE_RESPONSE:
-                case FILE_MODIFY_RESPONSE:
-                    break;
+                    // log then ignored
+                    case DIRECTORY_DELETE_RESPONSE:
+                    case DIRECTORY_CREATE_RESPONSE:
+                    case FILE_CREATE_RESPONSE:
+                    case FILE_DELETE_RESPONSE:
+                    case FILE_MODIFY_RESPONSE:
+                        break;
 
-                // invalid
-                case CONNECTION_REFUSED:
-                case HANDSHAKE_REQUEST:
-                case HANDSHAKE_RESPONSE:
-                default:
-                    break;
+                    // invalid
+                    case CONNECTION_REFUSED:
+                    case HANDSHAKE_REQUEST:
+                    case HANDSHAKE_RESPONSE:
+                    default:
+                        break;
+                }
             }
+        }catch (InvalidProtocolException e){
+            //Todo:send invalid protocol
         }
+
     }
 
     private static void handleSpecificProtocol(Protocol.FileCreateRequest fileCreateRequest, Connection conn) {
