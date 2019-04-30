@@ -2,6 +2,7 @@ package unimelb.bitbox;
 
 import unimelb.bitbox.protocol.Protocol;
 import unimelb.bitbox.protocol.ProtocolFactory;
+import unimelb.bitbox.util.FileByteMonitor;
 import unimelb.bitbox.util.HostPort;
 import unimelb.bitbox.util.ThreadPool.Priority;
 import unimelb.bitbox.util.ThreadPool.PriorityTask;
@@ -27,6 +28,8 @@ public class Connection {
 
     private Thread thread;
 
+    private FileByteMonitor fileByteMonitor;
+
     private boolean active;
     private HostPort hostPort;
 
@@ -37,6 +40,12 @@ public class Connection {
         bufferedWriter =  new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8));
         active = false;
         hostPort = null;
+
+        fileByteMonitor = new FileByteMonitor();
+    }
+
+    public FileByteMonitor GetFileByteMonitor() {
+        return fileByteMonitor;
     }
 
     // not thread-safe

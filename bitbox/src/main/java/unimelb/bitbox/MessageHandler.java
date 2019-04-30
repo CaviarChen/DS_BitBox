@@ -90,6 +90,8 @@ public class MessageHandler {
             response.response.status = false;
             response.response.msg = "File already exists";
         } else {
+            // check shortcut
+
             try{
                 response.response.status = fileSystemManager.createFileLoader(fd.path,fd.md5,fd.fileSize,fd.lastModified);
                 response.response.msg = response.response.status ? "File created" : "unknown error";
@@ -100,6 +102,9 @@ public class MessageHandler {
         }
 
         conn.send(ProtocolFactory.marshalProtocol(response));
+
+        // ask for bytes
+        conn.GetFileByteMonitor().batchSendAndWait(fd, fileSystemManager, conn);
     }
 
     private static void handleSpecificProtocol(Protocol.FileDeleteRequest fileDeleteRequest, Connection conn) {
@@ -198,26 +203,13 @@ public class MessageHandler {
             ProtocolField.FileContent fc = fileBytesResponse.fileContent;
             ByteBuffer byteBuffer = ByteBuffer.allocate((int)fc.len);
             byteBuffer.put(Base64.getDecoder().decode(fc.content));
-
             try {
                 fileSystemManager.writeFile(filePath, byteBuffer, fc.pos);
+                conn.GetFileByteMonitor().MarkByteWrote(filePath, fc.pos);
             } catch (IOException e) {
                 log.warning(e.toString());
             }
 
-            // check complete
-            boolean isComplete = false;
-            try {
-                isComplete = fileSystemManager.checkWriteComplete(filePath);
-            } catch (NoSuchAlgorithmException e) {
-                log.severe(e.toString());
-            } catch (IOException e) {
-                log.warning(e.toString());
-            }
-
-            if (!isComplete) {
-                //TODO: monitor missing part of the file after long time, retry?
-            }
         } else {
             //TODO: retry after a few seconds
         }
