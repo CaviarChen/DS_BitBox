@@ -39,8 +39,9 @@ public class OutgoingConnectionHelper {
         String[] peers = Configuration.getConfigurationValue(Constants.CONFIG_FIELD_PEERS).split(Constants.CONFIG_PEERS_SEPARATOR);
 
         for (String peer : peers) {
-            String[] data = peer.split(Constants.CONFIG_HOSTNAME_PORT_SEPARATOR);
-            queue.add(new PeerInfo(data[0], Integer.parseInt(data[1])));
+            if (peer != null) {
+                queue.add(new PeerInfo(peer));
+            }
         }
     }
 
@@ -112,7 +113,7 @@ public class OutgoingConnectionHelper {
                 Protocol.ConnectionRefused connectionRefused = (Protocol.ConnectionRefused) protocol;
                 ArrayList<HostPort> hostPorts = connectionRefused.peers;
                 for (HostPort hp : hostPorts) {
-                    queue.add(new PeerInfo(hp.host, hp.port));
+                    queue.add(new PeerInfo(hp));
                 }
                 conn.close();
                 break;
@@ -127,18 +128,21 @@ public class OutgoingConnectionHelper {
 
     private class PeerInfo {
 
-        private int port;
+        private HostPort hostPort;
         private long time;
-        private String host;
 
-        PeerInfo(String host, int port) {
-            this.host = host;
-            this.port = port;
+        PeerInfo(HostPort hostPort) {
+            this.hostPort = hostPort;
+            this.time = System.currentTimeMillis();
+        }
+
+        PeerInfo(String hostPort) {
+            this.hostPort = new HostPort(hostPort);
             this.time = System.currentTimeMillis();
         }
 
         int getPort() {
-            return port;
+            return hostPort.port;
         }
 
         long getTime() { return time; }
@@ -148,7 +152,7 @@ public class OutgoingConnectionHelper {
         }
 
         String getHost() {
-            return host;
+            return hostPort.host;
         }
     }
 }
