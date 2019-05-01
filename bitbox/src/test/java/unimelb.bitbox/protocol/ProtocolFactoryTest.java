@@ -17,10 +17,8 @@ import static org.junit.Assert.assertEquals;
 @PrepareForTest(ProtocolFactory.class)
 public class ProtocolFactoryTest {
 
-    ProtocolFactory protocolFactory = new ProtocolFactory();
     String expected;
     Protocol.HandshakeResponse handshakeResponse;
-
 
     @Before
     public void initialize() {
@@ -37,8 +35,8 @@ public class ProtocolFactoryTest {
 
     @Test
     public void testMarshalProtocol() {
-        
-        String actual = ProtocolFactory.marshalProtocol(handshakeResponse);
+
+        String actual = ProtocolFactory.marshalProtocol(this.handshakeResponse);
 
         try {
             JSONAssert.assertEquals(this.expected, actual, false);
@@ -46,6 +44,7 @@ public class ProtocolFactoryTest {
             Assert.fail("Failed to parse JSON");
         }
     }
+
 
     @Test
     public void testParseProtocol() throws InvalidProtocolException {
