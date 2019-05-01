@@ -31,7 +31,9 @@ public class Connection {
     private FileByteMonitor fileByteMonitor;
 
     private boolean active;
+    private boolean isClosed = false;
     private HostPort hostPort;
+
 
     public Connection(ConnectionType type, Socket socket) throws IOException {
         this.type = type;
@@ -65,8 +67,9 @@ public class Connection {
         String msg;
         try {
             this.socket.setSoTimeout(timeout);
-             msg = bufferedReader.readLine();
-            log.info(currentHostPort() + " Message Received: " + msg);
+            msg = bufferedReader.readLine();
+            if (msg != null)
+                log.info(currentHostPort() + " Message Received: " + msg);
         } catch (IOException e) {
             if (e instanceof SocketTimeoutException) {
                 throw (SocketTimeoutException) e;
@@ -139,6 +142,13 @@ public class Connection {
 
     public void close() {
 
+        synchronized (socket) {
+            if (isClosed) {
+                return;
+            }
+            isClosed = true;
+        }
+
         log.info(currentHostPort() + " Connection Closed");
 
         try {
@@ -146,6 +156,7 @@ public class Connection {
         } catch (IOException e) {
             log.severe(e.toString());
         }
+
 
         // Reentrant
         synchronized (sendingQueue) {
@@ -175,6 +186,7 @@ public class Connection {
         try {
             while (!thread.isInterrupted()) {
                 String msg = this.waitForOneMessage();
+                if (msg == null) break;
 
                 PriorityThreadPool.getInstance().submitTask(new PriorityTask(
                         "Connection: MessageHandler",
@@ -182,6 +194,9 @@ public class Connection {
                         () -> MessageHandler.handleMessage(msg, this)
                 ));
             }
+
+            this.close();
+
         } catch (Exception e) {
             // TODO: log
             this.close();
