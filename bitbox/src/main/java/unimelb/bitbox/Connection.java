@@ -66,7 +66,7 @@ public class Connection {
         try {
             this.socket.setSoTimeout(timeout);
              msg = bufferedReader.readLine();
-            log.info("Message Received: " + msg);
+            log.info(currentHostPort() + " Message Received: " + msg);
         } catch (IOException e) {
             if (e instanceof SocketTimeoutException) {
                 throw (SocketTimeoutException) e;
@@ -81,9 +81,9 @@ public class Connection {
     public void send(String msg) {
         synchronized (bufferedWriter) {
             try {
-                bufferedWriter.write(msg);
+                bufferedWriter.write(msg + '\n');
                 bufferedWriter.flush();
-                log.info("Message Sent: " + msg);
+                log.info( currentHostPort() + " Message Sent: " + msg);
             } catch (IOException e) {
                 // log
                 close();
@@ -108,6 +108,9 @@ public class Connection {
         }
     }
 
+    private String currentHostPort() {
+        return (hostPort == null) ? "[Unknown]" : "[" + hostPort.toString() + "]";
+    }
 
     private void asyncSendingThread() {
         boolean isLastOne = false;
@@ -135,6 +138,9 @@ public class Connection {
     }
 
     public void close() {
+
+        log.info(currentHostPort() + " Connection Closed");
+
         try {
             socket.close();
         } catch (IOException e) {
