@@ -36,12 +36,12 @@ public class FileSystemEventMonitor implements FileSystemObserver {
                 break;
             case DIRECTORY_CREATE:
                 Protocol.DirectoryCreateRequest directoryCreateRequest = new Protocol.DirectoryCreateRequest();
-                directoryCreateRequest.dirPath.path = fileSystemEvent.path;
+                directoryCreateRequest.dirPath.path = fileSystemEvent.pathName;
                 protocol = directoryCreateRequest;
                 break;
             case DIRECTORY_DELETE:
                 Protocol.DirectoryDeleteRequest directoryDeleteRequest = new Protocol.DirectoryDeleteRequest();
-                directoryDeleteRequest.dirPath.path = fileSystemEvent.path;
+                directoryDeleteRequest.dirPath.path = fileSystemEvent.pathName;
                 protocol = directoryDeleteRequest;
                 break;
         }
