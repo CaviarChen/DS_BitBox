@@ -39,7 +39,7 @@ public class OutgoingConnectionHelper {
         String[] peers = Configuration.getConfigurationValue(Constants.CONFIG_FIELD_PEERS).split(Constants.CONFIG_PEERS_SEPARATOR);
 
         for (String peer : peers) {
-            if (peer != null) {
+            if (!peer.isEmpty()) {
                 queue.add(new PeerInfo(peer));
             }
         }
