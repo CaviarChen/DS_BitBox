@@ -8,10 +8,7 @@ import java.nio.channels.FileLock;
 import java.nio.file.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 import java.util.logging.Logger;
 
 /**
@@ -615,12 +612,9 @@ public class FileSystemManager extends Thread {
                 File file = new File(pathname);
                 pathevents.add(new FileSystemEvent(file.getParent(), file.getName(), EVENT.DIRECTORY_CREATE));
             }
-            Collections.sort(pathevents, (arg0, arg1) ->
-                    {
-                        return arg0.path.length() - arg1.path.length();
-                    }
+            Collections.sort(pathevents, Comparator.comparingInt(arg0 -> arg0.path.length())
             );
-            keys = new ArrayList<String>(watchedFiles.keySet());
+            keys = new ArrayList<>(watchedFiles.keySet());
             for (String pathname : keys) {
                 File file = new File(pathname);
                 pathevents.add(new FileSystemEvent(file.getParent(), file.getName(), EVENT.FILE_CREATE, watchedFiles.get(pathname)));

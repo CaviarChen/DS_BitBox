@@ -184,6 +184,10 @@ public class Connection {
 
     private void work() {
         try {
+
+            // first sync
+            SyncManager.getInstance().syncWithOneAsync(this);
+
             while (!thread.isInterrupted()) {
                 String msg = this.waitForOneMessage();
                 if (msg == null) break;

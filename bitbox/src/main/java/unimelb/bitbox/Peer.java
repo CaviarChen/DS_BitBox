@@ -15,7 +15,9 @@ public class Peer {
         log.info("BitBox Peer starting...");
 
         FileSystemManager fileSystemManager =
-                new FileSystemManager(Configuration.getConfigurationValue("path"), new FileSystemEventMonitor());
+                new FileSystemManager(Configuration.getConfigurationValue("path"), (SyncManager.getInstance()::sendEventToAllAsync));
+
+        SyncManager.getInstance().start(fileSystemManager);
 
         MessageHandler.setFileSystemManager(fileSystemManager);
 

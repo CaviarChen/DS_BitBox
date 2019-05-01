@@ -48,7 +48,7 @@ public class ConnectionManager {
         }
     }
 
-    public void broadcastMsg(String msg) {
+    public void broadcastMsgAsync(String msg) {
         // TODO: better locking
         synchronized (this) {
             for (Connection conn: connectionMap.values()) {
