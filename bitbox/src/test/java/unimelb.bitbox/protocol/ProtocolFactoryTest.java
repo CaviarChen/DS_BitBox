@@ -1,15 +1,16 @@
 package unimelb.bitbox.protocol;
 
 import org.json.JSONException;
-import org.json.JSONObject;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
-import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.skyscreamer.jsonassert.JSONAssert;
+import unimelb.bitbox.util.Document;
+
+import static org.junit.Assert.assertEquals;
 
 
 @RunWith(PowerMockRunner.class)
@@ -17,26 +18,30 @@ import org.skyscreamer.jsonassert.JSONAssert;
 public class ProtocolFactoryTest {
 
     ProtocolFactory protocolFactory = new ProtocolFactory();
+    String expected;
+    Protocol.HandshakeResponse handshakeResponse;
 
+
+    @Before
+    public void initialize() {
+        this.expected = "{" +
+                "\"command\":\"HANDSHAKE_RESPONSE\"," +
+                "\"hostPort\":{" +
+                "\"host\":\"bigdata.cis.unimelb.edu.au\"," +
+                "\"port\":8500" +
+                "}" +
+                "}";
+        this.handshakeResponse = new Protocol.HandshakeResponse();
+        this.handshakeResponse.unmarshalFromJson(Document.parse(this.expected));
+    }
 
     @Test
     public void testMarshalProtocol() {
-        String expected = "{" +
-                "command:\"HANDSHAKE_RESPONSE\"," +
-                "hostPort:{" +
-                "host:\"bigdata.cis.unimelb.edu.au\"," +
-                "port:8500" +
-                "}" +
-                "}";
-
-        Protocol.HandshakeResponse handshakeResponse = new Protocol.HandshakeResponse();
-        handshakeResponse.peer.host = "bigdata.cis.unimelb.edu.au";
-        handshakeResponse.peer.port = 8500;
-
+        
         String actual = ProtocolFactory.marshalProtocol(handshakeResponse);
 
         try {
-            JSONAssert.assertEquals(expected, actual, false);
+            JSONAssert.assertEquals(this.expected, actual, false);
         } catch (JSONException e) {
             Assert.fail("Failed to parse JSON");
         }
@@ -45,13 +50,14 @@ public class ProtocolFactoryTest {
     @Test
     public void testParseProtocol() throws InvalidProtocolException {
 
-//        // mock all the static methods in a class
-//        PowerMockito.mockStatic(ProtocolFactory.class);
-//
-//        // use Mockito to set up your expectation
-//        Mockito.when(ProtocolFactory.parseProtocol(json)).thenReturn(protocol);
-//
-//        Assert.assertEquals(ProtocolFactory.parseProtocol(json),protocol);
+        Protocol actual = ProtocolFactory.parseProtocol(this.expected);
+        Protocol.HandshakeResponse actualProtocol = (Protocol.HandshakeResponse)actual;
+
+        try {
+            assertEquals(this.handshakeResponse.peer, actualProtocol.peer);
+        } catch (Exception e) {
+            Assert.fail("Failed to parse Protocol");
+        }
     }
 
 }

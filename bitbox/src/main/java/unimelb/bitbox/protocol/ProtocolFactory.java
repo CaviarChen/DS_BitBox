@@ -12,8 +12,10 @@ public class ProtocolFactory {
 
     public static Protocol parseProtocol(String json) throws InvalidProtocolException {
         try {
+
             Document doc = Document.parse(json);
             String command = doc.getString(PROTOCOL_FIELD_CMD);
+
 
             ProtocolType protocolType = ProtocolType.typeOfCommand(command);
             Protocol protocol =  (Protocol) protocolType.getValue().newInstance();

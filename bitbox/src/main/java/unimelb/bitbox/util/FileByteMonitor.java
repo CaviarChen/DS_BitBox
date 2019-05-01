@@ -1,7 +1,7 @@
 package unimelb.bitbox.util;
 
 
-import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
+//import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
 import unimelb.bitbox.Connection;
 import unimelb.bitbox.Constants;
 import unimelb.bitbox.protocol.Protocol;
