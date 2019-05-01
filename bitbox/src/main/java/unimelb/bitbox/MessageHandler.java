@@ -220,11 +220,11 @@ public class MessageHandler {
         if (fileBytesResponse.response.status) {
             // write to file
             ProtocolField.FileContent fc = fileBytesResponse.fileContent;
-            ByteBuffer byteBuffer = ByteBuffer.allocate((int)fc.len);
-            byteBuffer.put(Base64.getDecoder().decode(fc.content));
+            ByteBuffer src = ByteBuffer.wrap(Base64.getDecoder().decode(fc.content));
             try {
-                if (conn.GetFileByteMonitor().MarkByteWrote(filePath, fc.pos, fc.len)) {
-                    fileSystemManager.writeFile(filePath, byteBuffer, fc.pos);
+                if (fileSystemManager.writeFile(filePath, src , fc.pos) &&
+                        conn.GetFileByteMonitor().MarkByteWrote(filePath, fc.pos, fc.len)) {
+                    // successfully
                 } else {
                     // Something went wrong. pos in request not equal to the one in the response
                     // e.g. someone tried to modify the response,

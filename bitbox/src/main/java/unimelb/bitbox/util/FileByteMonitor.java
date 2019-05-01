@@ -151,7 +151,7 @@ public class FileByteMonitor {
 
     private Boolean checkIfCompleteLoadingFile(String path, FileSystemManager fileSystemManager) {
         try {
-            fileSystemManager.checkWriteComplete(path);
+            return fileSystemManager.checkWriteComplete(path);
         } catch (NoSuchAlgorithmException e) {
             log.severe(e.toString());
             return false;
@@ -159,8 +159,6 @@ public class FileByteMonitor {
             log.warning(e.toString());
             return false;
         }
-
-        return true;
     }
 
 
