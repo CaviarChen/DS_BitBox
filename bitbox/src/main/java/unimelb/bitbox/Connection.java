@@ -66,6 +66,7 @@ public class Connection {
         try {
             this.socket.setSoTimeout(timeout);
              msg = bufferedReader.readLine();
+            log.info("Message Received: " + msg);
         } catch (IOException e) {
             if (e instanceof SocketTimeoutException) {
                 throw (SocketTimeoutException) e;
@@ -82,6 +83,7 @@ public class Connection {
             try {
                 bufferedWriter.write(msg);
                 bufferedWriter.flush();
+                log.info("Message Sent: " + msg);
             } catch (IOException e) {
                 // log
                 close();
