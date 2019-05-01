@@ -39,8 +39,9 @@ public class OutgoingConnectionHelper {
         String[] peers = Configuration.getConfigurationValue(Constants.CONFIG_FIELD_PEERS).split(Constants.CONFIG_PEERS_SEPARATOR);
 
         for (String peer : peers) {
-            String[] data = peer.split(Constants.CONFIG_HOSTNAME_PORT_SEPARATOR);
-            queue.add(new PeerInfo(data[0], Integer.parseInt(data[1])));
+            if (peer != null) {
+                queue.add(new PeerInfo(peer));
+            }
         }
     }
 
@@ -135,8 +136,8 @@ public class OutgoingConnectionHelper {
             this.time = System.currentTimeMillis();
         }
 
-        PeerInfo(String host, int port) {
-            this.hostPort = new HostPort(host, port);
+        PeerInfo(String hostPort) {
+            this.hostPort = new HostPort(hostPort);
             this.time = System.currentTimeMillis();
         }
 
