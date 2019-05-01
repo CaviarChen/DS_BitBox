@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 
@@ -15,6 +16,7 @@ public class MessageHandler {
 
     private static FileSystemManager fileSystemManager = null;
     private static Logger log = Logger.getLogger(MessageHandler.class.getName());
+    private static ConcurrentHashMap<String, FileLoaderWrapper> fileLoaderWrapperMap = new ConcurrentHashMap<>();
 
 
     // TODO: may need refator
@@ -82,36 +84,36 @@ public class MessageHandler {
 
     private static void handleSpecificProtocol(Protocol.FileCreateRequest fileCreateRequest, Connection conn) {
 
+        if (!fileSystemManager.isSafePathName(fileCreateRequest.fileDes.path)) {
+            // TODO: response
+            return ;
+        }
+
         Protocol.FileCreateResponse response = new Protocol.FileCreateResponse();
         response.fileDes = fileCreateRequest.fileDes;
 
         boolean isShortcutUsed = false;
 
         ProtocolField.FileDes fd = fileCreateRequest.fileDes;
-        if (fileSystemManager.fileNameExists(fd.path)) {
-            response.response.status = false;
-            response.response.msg = "File already exists";
-        } else {
+        try{
+            response.response.status = fileSystemManager.createFileLoader(fd.path,fd.md5,fd.fileSize,fd.lastModified);
 
-            try{
-                response.response.status = fileSystemManager.createFileLoader(fd.path,fd.md5,fd.fileSize,fd.lastModified);
-
-                if (fileSystemManager.checkShortcut(fd.path)) {
-                    isShortcutUsed = true;
-                }
-
-                response.response.msg = response.response.status ? "File created" : "unknown error";
-            }catch (IOException | NoSuchAlgorithmException e){
-                response.response.status = false;
-                response.response.msg = "Failed to create file Error:"+e.getMessage();
+            if (fileSystemManager.checkShortcut(fd.path)) {
+                isShortcutUsed = true;
             }
+
+            response.response.msg = response.response.status ? "File created" : "unknown error";
+        }catch (IOException | NoSuchAlgorithmException e){
+            response.response.status = false;
+            response.response.msg = "Failed to create file Error:"+e.getMessage();
         }
 
         conn.send(ProtocolFactory.marshalProtocol(response));
 
         // ask for bytes
         if (!isShortcutUsed) {
-            conn.GetFileByteMonitor().batchSendAndWait(fd, fileSystemManager, conn);
+            FileLoaderWrapper fileLoaderWrapper = new FileLoaderWrapper(fileCreateRequest, fileSystemManager, conn);
+            fileLoaderWrapperMap.put(fd.path, fileLoaderWrapper);
         }
     }
 
@@ -138,36 +140,36 @@ public class MessageHandler {
     }
 
     private static void handleSpecificProtocol(Protocol.FileModifyRequest fileModifyRequest, Connection conn) {
-
-        Protocol.FileModifyResponse response = new Protocol.FileModifyResponse();
-        response.fileDes = fileModifyRequest.fileDes;
-
-        boolean isShortcutUsed = false;
-
-        ProtocolField.FileDes fd = fileModifyRequest.fileDes;
-        if (!fileSystemManager.fileNameExists(fd.path)) {
-            response.response.status = false;
-            response.response.msg = "Can't find the specified file";
-        } else {
-            try{
-                response.response.status = fileSystemManager.modifyFileLoader(fd.path,fd.md5,fd.lastModified);
-
-                if (fileSystemManager.checkShortcut(fd.path)) {
-                    isShortcutUsed = true;
-                }
-
-                response.response.msg = response.response.status ? "File modified" : "unknown error";
-            }catch (Exception e){
-                response.response.status = false;
-                response.response.msg = "Failed to modify file Error:"+e.getMessage();
-            }
-        }
-
-        conn.send(ProtocolFactory.marshalProtocol(response));
-
-        if (!isShortcutUsed) {
-            conn.GetFileByteMonitor().batchSendAndWait(fd, fileSystemManager, conn);
-        }
+//
+//        Protocol.FileModifyResponse response = new Protocol.FileModifyResponse();
+//        response.fileDes = fileModifyRequest.fileDes;
+//
+//        boolean isShortcutUsed = false;
+//
+//        ProtocolField.FileDes fd = fileModifyRequest.fileDes;
+//        if (!fileSystemManager.fileNameExists(fd.path)) {
+//            response.response.status = false;
+//            response.response.msg = "Can't find the specified file";
+//        } else {
+//            try{
+//                response.response.status = fileSystemManager.modifyFileLoader(fd.path,fd.md5,fd.lastModified);
+//
+//                if (fileSystemManager.checkShortcut(fd.path)) {
+//                    isShortcutUsed = true;
+//                }
+//
+//                response.response.msg = response.response.status ? "File modified" : "unknown error";
+//            }catch (Exception e){
+//                response.response.status = false;
+//                response.response.msg = "Failed to modify file Error:"+e.getMessage();
+//            }
+//        }
+//
+//        conn.send(ProtocolFactory.marshalProtocol(response));
+//
+//        if (!isShortcutUsed) {
+//            conn.GetFileByteMonitor().batchSendAndWait(fd, fileSystemManager, conn);
+//        }
     }
 
     private static void handleSpecificProtocol(Protocol.FileBytesRequest fileBytesRequest, Connection conn) {
@@ -212,44 +214,11 @@ public class MessageHandler {
 
         String filePath = fileBytesResponse.fileDes.path;
 
-        // discard the message if the path not safe
-        if (!fileSystemManager.isSafePathName(filePath)) {
-            return ;
-        }
-
         if (fileBytesResponse.response.status) {
-            // write to file
-            ProtocolField.FileContent fc = fileBytesResponse.fileContent;
-            ByteBuffer src = ByteBuffer.wrap(Base64.getDecoder().decode(fc.content));
-            try {
-                if (fileSystemManager.writeFile(filePath, src , fc.pos) &&
-                        conn.GetFileByteMonitor().MarkByteWrote(filePath, fc.pos, fc.len)) {
-                    // successfully
-                } else {
-                    // Something went wrong. pos in request not equal to the one in the response
-                    // e.g. someone tried to modify the response,
-                    fileSystemManager.cancelFileLoader(filePath);
-                }
-            } catch (IOException e) {
-                log.warning(e.toString());
-            }
+            FileLoaderWrapper fileLoaderWrapper = fileLoaderWrapperMap.get(filePath);
 
-        } else {
-            // request the bytes again after some time
-            // eventually if it exceeds the time limit for the batch, it will not stop sending requests.
-            try {
-                Thread.sleep(conn.GetFileByteMonitor().RETRY_SEND_REQUEST_INTERVAL);
-            } catch (InterruptedException e) {
-            }
-
-            if (conn.GetFileByteMonitor().isFileLoading(filePath)) {
-                Protocol.FileBytesRequest request = new Protocol.FileBytesRequest();
-
-                request.fileDes = fileBytesResponse.fileDes;
-                request.filePos.pos = fileBytesResponse.fileContent.pos;
-                request.filePos.len = fileBytesResponse.fileContent.len;
-
-                conn.send(ProtocolFactory.marshalProtocol(request));
+            if (fileLoaderWrapper != null) {
+                fileLoaderWrapper.received(fileBytesResponse);
             }
         }
     }
@@ -286,5 +255,9 @@ public class MessageHandler {
         }
 
         conn.send(ProtocolFactory.marshalProtocol(response));
+    }
+
+    public static void removeFileLoaderWrapper(FileLoaderWrapper fileLoaderWrapper, String filePath) {
+        fileLoaderWrapperMap.remove(filePath, fileLoaderWrapper);
     }
 }
