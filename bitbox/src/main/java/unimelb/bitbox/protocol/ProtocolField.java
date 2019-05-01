@@ -1,6 +1,10 @@
 package unimelb.bitbox.protocol;
 
 import unimelb.bitbox.util.Document;
+import unimelb.bitbox.util.HostPort;
+
+import java.util.Objects;
+
 import static unimelb.bitbox.Constants.*;
 
 public abstract class ProtocolField implements IProtocol{
@@ -79,6 +83,24 @@ public abstract class ProtocolField implements IProtocol{
         public void marshalToJson(Document doc) {
             doc.append(PROTOCOL_FIELD_POSITION, this.pos);
             doc.append(PROTOCOL_FIELD_LENGTH, this.len);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == this) {
+                return true;
+            }
+            if (!(o instanceof FilePosition)) {
+                return false;
+            }
+            FilePosition p = (FilePosition) o;
+            return p.pos == pos && p.len == len;
+        }
+
+        // for hashmap
+        @Override
+        public int hashCode() {
+            return Objects.hash(pos, len);
         }
     }
 
