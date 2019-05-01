@@ -112,7 +112,7 @@ public class OutgoingConnectionHelper {
                 Protocol.ConnectionRefused connectionRefused = (Protocol.ConnectionRefused) protocol;
                 ArrayList<HostPort> hostPorts = connectionRefused.peers;
                 for (HostPort hp : hostPorts) {
-                    queue.add(new PeerInfo(hp.host, hp.port));
+                    queue.add(new PeerInfo(hp));
                 }
                 conn.close();
                 break;
@@ -127,18 +127,21 @@ public class OutgoingConnectionHelper {
 
     private class PeerInfo {
 
-        private int port;
+        private HostPort hostPort;
         private long time;
-        private String host;
+
+        PeerInfo(HostPort hostPort) {
+            this.hostPort = hostPort;
+            this.time = System.currentTimeMillis();
+        }
 
         PeerInfo(String host, int port) {
-            this.host = host;
-            this.port = port;
+            this.hostPort = new HostPort(host, port);
             this.time = System.currentTimeMillis();
         }
 
         int getPort() {
-            return port;
+            return hostPort.port;
         }
 
         long getTime() { return time; }
@@ -148,7 +151,7 @@ public class OutgoingConnectionHelper {
         }
 
         String getHost() {
-            return host;
+            return hostPort.host;
         }
     }
 }
