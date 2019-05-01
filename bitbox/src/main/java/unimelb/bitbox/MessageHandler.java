@@ -100,9 +100,12 @@ public class MessageHandler {
 
             if (fileSystemManager.checkShortcut(fd.path)) {
                 isShortcutUsed = true;
+                response.response.status = true;
+                response.response.msg = "File created (shortcut)";
+            } else {
+                response.response.msg = response.response.status ? "File created" : "File already exists";
             }
 
-            response.response.msg = response.response.status ? "File created" : "unknown error";
         }catch (IOException | NoSuchAlgorithmException e){
             response.response.status = false;
             response.response.msg = "Failed to create file Error:"+e.getMessage();
@@ -111,7 +114,7 @@ public class MessageHandler {
         conn.send(ProtocolFactory.marshalProtocol(response));
 
         // ask for bytes
-        if (!isShortcutUsed) {
+        if (!isShortcutUsed && response.response.status) {
             FileLoaderWrapper fileLoaderWrapper = new FileLoaderWrapper(fileCreateRequest, fileSystemManager, conn);
             fileLoaderWrapperMap.put(fd.path, fileLoaderWrapper);
         }
