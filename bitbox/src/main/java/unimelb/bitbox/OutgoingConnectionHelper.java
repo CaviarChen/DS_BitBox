@@ -19,8 +19,8 @@ import static java.lang.Thread.sleep;
 
 public class OutgoingConnectionHelper {
 
+    private static final int PENALTY_TIME = 60000;
     private static final int CHECK_INTERVAL = 10000;
-    private static final int PENALTY_TIME = 5000;
     private static final int HANDSHAKE_TIMEOUT = 20000;
     private static Logger log = Logger.getLogger(OutgoingConnectionHelper.class.getName());
 
@@ -40,35 +40,39 @@ public class OutgoingConnectionHelper {
 
         for (String peer : peers) {
             if (!peer.isEmpty()) {
-                queue.add(new PeerInfo(peer));
+                addPeerInfo(new PeerInfo(peer));
             }
         }
     }
 
     public void execute(){
 
-        // if queue is not empty
-        while (queue.peek() != null) {
+        while (true) {
 
-            if (queue.peek().getTime() <= System.currentTimeMillis()) {
-                PeerInfo peer = queue.poll();
+            PeerInfo peer = null;
 
+            synchronized (queue) {
+                if (queue.peek() != null && queue.peek().getTime() <= System.currentTimeMillis()) {
+                    peer = queue.poll();
+                }
+            }
+
+            if (peer != null) {
                 try {
                     Socket clientSocket = new Socket(peer.getHost(), peer.getPort());
-                    Connection conn = new Connection(Connection.ConnectionType.OUTGOING, clientSocket);
+                    Connection conn = new Connection(clientSocket, this);
                     log.info(String.format("Start connecting to port: %d", peer.getPort()));
                     requestHandshake(conn);
-
                 } catch (IOException e) {
                     log.warning(e.toString());
-                    peer.setTime(System.currentTimeMillis() + PENALTY_TIME);
-                    queue.add(peer);
+                    peer.setPenaltyTime();
+                    addPeerInfo(peer);
                 }
             } else {
-                // sleep 60 seconds
+                // sleep 10 seconds
                 try {
                     sleep(CHECK_INTERVAL);
-                } catch (InterruptedException e) {
+                } catch (InterruptedException ignored) {
                 }
             }
         }
@@ -113,7 +117,7 @@ public class OutgoingConnectionHelper {
                 Protocol.ConnectionRefused connectionRefused = (Protocol.ConnectionRefused) protocol;
                 ArrayList<HostPort> hostPorts = connectionRefused.peers;
                 for (HostPort hp : hostPorts) {
-                    queue.add(new PeerInfo(hp));
+                    addPeerInfo(new PeerInfo(hp));
                 }
                 conn.close();
                 break;
@@ -126,19 +130,34 @@ public class OutgoingConnectionHelper {
         }
     }
 
+    public void addPeerInfo(HostPort hostPort) {
+        synchronized (queue) {
+            queue.add(new PeerInfo(hostPort));
+        }
+    }
+
+    public void addPeerInfo(PeerInfo peerInfo) {
+        synchronized (queue) {
+            queue.add(peerInfo);
+        }
+    }
+
     private class PeerInfo {
 
         private HostPort hostPort;
         private long time;
+        private int penaltyMin;
 
         PeerInfo(HostPort hostPort) {
             this.hostPort = hostPort;
             this.time = System.currentTimeMillis();
+            this.penaltyMin = 1;
         }
 
         PeerInfo(String hostPort) {
             this.hostPort = new HostPort(hostPort);
             this.time = System.currentTimeMillis();
+            this.penaltyMin = 1;
         }
 
         int getPort() {
@@ -149,6 +168,14 @@ public class OutgoingConnectionHelper {
 
         void setTime(long time) {
             this.time = time;
+        }
+
+        void setPenaltyTime() {
+            this.penaltyMin *= 2;
+            if (penaltyMin > 60) {
+                penaltyMin = 60;
+            }
+            setTime(System.currentTimeMillis() + penaltyMin * PENALTY_TIME);
         }
 
         String getHost() {

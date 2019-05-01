@@ -33,9 +33,9 @@ public class Connection {
     private boolean active;
     private boolean isClosed = false;
     private HostPort hostPort;
+    private OutgoingConnectionHelper outgoingConnectionHelper = null;
 
-
-    public Connection(ConnectionType type, Socket socket) throws IOException {
+    private Connection(ConnectionType type, Socket socket) throws IOException {
         this.type = type;
         this.socket = socket;
         bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -45,6 +45,16 @@ public class Connection {
 
         fileByteMonitor = new FileByteMonitor();
     }
+
+    public Connection(Socket socket) throws IOException {
+        this(ConnectionType.INCOMING, socket);
+    }
+
+    public Connection(Socket socket, OutgoingConnectionHelper outgoingConnectionHelper) throws IOException {
+        this(ConnectionType.OUTGOING, socket);
+        this.outgoingConnectionHelper = outgoingConnectionHelper;
+    }
+
 
     public FileByteMonitor GetFileByteMonitor() {
         return fileByteMonitor;
@@ -157,7 +167,6 @@ public class Connection {
             log.severe(e.toString());
         }
 
-
         // Reentrant
         synchronized (sendingQueue) {
             sendingQueue.clear();
@@ -168,6 +177,11 @@ public class Connection {
             thread.interrupt();
             // unregister from ConnectionManager
             ConnectionManager.getInstance().removeConnection(this);
+
+            // re-add hostPort if outgoing connection
+            if (type == ConnectionType.OUTGOING) {
+                outgoingConnectionHelper.addPeerInfo(hostPort);
+            }
         }
     }
 
