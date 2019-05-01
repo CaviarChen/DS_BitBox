@@ -13,6 +13,8 @@ import java.util.*;
 import java.util.logging.Logger;
 
 
+// TODO: multiple connection
+// TODO: Clean up wrapper
 public class FileLoaderWrapper {
     private static Logger log = Logger.getLogger(Connection.class.getName());
 

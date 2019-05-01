@@ -69,7 +69,7 @@ public class Connection {
             this.socket.setSoTimeout(timeout);
             msg = bufferedReader.readLine();
             if (msg != null)
-                log.info(currentHostPort() + " Message Received: " + msg);
+                log.info(currentHostPort() + " Message Received: " + msg.substring(0, Math.min(100, msg.length())));
         } catch (IOException e) {
             if (e instanceof SocketTimeoutException) {
                 throw (SocketTimeoutException) e;
@@ -86,7 +86,7 @@ public class Connection {
             try {
                 bufferedWriter.write(msg + '\n');
                 bufferedWriter.flush();
-                log.info( currentHostPort() + " Message Sent: " + msg);
+                log.info( currentHostPort() + " Message Sent: " + msg.substring(0, Math.min(100, msg.length())));
             } catch (IOException e) {
                 // log
                 close();
