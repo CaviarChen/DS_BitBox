@@ -258,7 +258,7 @@ public class MessageHandler {
             FileLoaderWrapper fileLoaderWrapper = fileLoaderWrapperMap.get(filePath);
 
             if (fileLoaderWrapper != null) {
-                fileLoaderWrapper.received(fileBytesResponse);
+                fileLoaderWrapper.received(fileBytesResponse, conn);
             }
         }
     }

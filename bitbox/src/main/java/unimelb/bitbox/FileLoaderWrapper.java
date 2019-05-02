@@ -5,6 +5,7 @@ import unimelb.bitbox.protocol.ProtocolFactory;
 import unimelb.bitbox.protocol.ProtocolField;
 import unimelb.bitbox.util.Configuration;
 import unimelb.bitbox.util.FileSystemManager;
+import unimelb.bitbox.util.HostPort;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -13,33 +14,30 @@ import java.util.*;
 import java.util.logging.Logger;
 
 
-// TODO: retrieve file from multiple connection
 public class FileLoaderWrapper {
     private static Logger log = Logger.getLogger(Connection.class.getName());
 
     private static final long BLOCK_SIZE = Long.parseLong(Configuration.getConfigurationValue("blockSize"));
     private static final int REQUEST_LIMIT = 10;
-    private static final long TIMEOUT_IN_MILLIS = 30000;
+    private static final long TIMEOUT_IN_MILLIS = 20000;
 
     private final LinkedList<ProtocolField.FilePosition> pending = new LinkedList<>();
-    private final HashSet<ProtocolField.FilePosition> waiting = new HashSet<>();
+    private final HashMap<Connection, ConnectionInfo> connectionInfoMap = new HashMap<>();
 
-    private Connection conn;
     private ProtocolField.FileDes fileDes;
     private FileSystemManager fileSystemManager;
-    private long lastActiveTime;
 
     public FileLoaderWrapper(ProtocolField.FileDes fileDes, FileSystemManager fileSystemManager, Connection conn) {
 
         this.fileDes = fileDes;
-        this.conn = conn;
         this.fileSystemManager = fileSystemManager;
 
         long base = 0, remaining = fileDes.fileSize;
 
-        this.lastActiveTime = System.currentTimeMillis();
-
         synchronized (this) {
+
+            connectionInfoMap.put(conn, new ConnectionInfo());
+
             while (remaining > 0) {
                 ProtocolField.FilePosition pos = new ProtocolField.FilePosition();
                 pos.pos = base;
@@ -50,10 +48,24 @@ public class FileLoaderWrapper {
             }
         }
 
-        send(REQUEST_LIMIT);
+        send(REQUEST_LIMIT, conn);
     }
 
-    public void received(Protocol.FileBytesResponse fileBytesResponse) {
+    public boolean addNewConnection(ProtocolField.FileDes fileDes, Connection conn) {
+        if (!fileDes.md5.equals(this.fileDes.md5)) return false;
+
+        synchronized (this) {
+            if (connectionInfoMap.containsKey(conn)) return false;
+            ConnectionInfo connectionInfo = new ConnectionInfo();
+            connectionInfoMap.put(conn, connectionInfo);
+            send(REQUEST_LIMIT, conn);
+        }
+        return true;
+    }
+
+
+
+    public void received(Protocol.FileBytesResponse fileBytesResponse, Connection conn) {
         String filePath = fileBytesResponse.fileDes.path;
 
         if (!fileDes.md5.equals(fileBytesResponse.fileDes.md5)) {
@@ -64,11 +76,15 @@ public class FileLoaderWrapper {
         pos.len = fileBytesResponse.fileContent.len;
         pos.pos = fileBytesResponse.fileContent.pos;
 
+        ConnectionInfo connectionInfo;
+
         synchronized (this) {
-            if (!waiting.contains(pos)) {
+            connectionInfo = connectionInfoMap.get(conn);
+
+            if (connectionInfo == null || !connectionInfo.waiting.contains(pos)) {
                 return;
             }
-            this.lastActiveTime = System.currentTimeMillis();
+            connectionInfo.lastActiveTime = System.currentTimeMillis();
         }
 
         ProtocolField.FileContent fc = fileBytesResponse.fileContent;
@@ -84,13 +100,15 @@ public class FileLoaderWrapper {
         }
 
 
-        send(1);
+        send(1, conn);
 
         synchronized (this) {
-            waiting.remove(pos);
+            connectionInfo.waiting.remove(pos);
 
-            if (!waiting.isEmpty() && !pending.isEmpty()) {
-                return ;
+            // only check complete when there is nothing in the pending list or waiting sets
+            if (!pending.isEmpty()) return;
+            for (ConnectionInfo info : connectionInfoMap.values()) {
+                if (!info.waiting.isEmpty()) return;
             }
         }
 
@@ -101,15 +119,18 @@ public class FileLoaderWrapper {
         }
     }
 
-    private void send(int limit) {
+    private void send(int limit, Connection conn) {
         ArrayList<ProtocolField.FilePosition> posList = new ArrayList<>();
 
-        for (int i = 0; i < limit; i++) {
-            ProtocolField.FilePosition sendPos;
-            synchronized (this) {
+        synchronized (this) {
+            ConnectionInfo connectionInfo = connectionInfoMap.get(conn);
+            if (connectionInfo == null) return;
+
+            for (int i = 0; i < limit; i++) {
+                ProtocolField.FilePosition sendPos;
                 sendPos = pending.pollFirst();
                 if (sendPos != null) {
-                    waiting.add(sendPos);
+                    connectionInfo.waiting.add(sendPos);
                     posList.add(sendPos);
                 } else {
                     break;
@@ -118,11 +139,11 @@ public class FileLoaderWrapper {
         }
 
         for (ProtocolField.FilePosition pos : posList) {
-            SendFileByteRequest(pos);
+            SendFileByteRequest(pos, conn);
         }
     }
 
-    private void SendFileByteRequest(ProtocolField.FilePosition filePosition) {
+    private void SendFileByteRequest(ProtocolField.FilePosition filePosition, Connection conn) {
         Protocol.FileBytesRequest fileBytesRequest = new Protocol.FileBytesRequest();
 
         fileBytesRequest.fileDes = this.fileDes;
@@ -141,11 +162,34 @@ public class FileLoaderWrapper {
     }
 
     public void clean() {
+        // not accurate since this will be triggered roughly every syncInterval and with low priority
         synchronized (this) {
-            // not accurate since this will be triggered roughly every syncInterval and with low priority
-            if (System.currentTimeMillis() - lastActiveTime > TIMEOUT_IN_MILLIS) {
+
+            Iterator<Map.Entry<Connection, ConnectionInfo>> it = connectionInfoMap.entrySet().iterator();
+
+            while (it.hasNext()){
+                Map.Entry<Connection, ConnectionInfo> entry = it.next();
+                // time out, remove this connection and add everything back to pending list
+                if (System.currentTimeMillis() - entry.getValue().lastActiveTime > TIMEOUT_IN_MILLIS) {
+                    pending.addAll(entry.getValue().waiting);
+                    it.remove();
+                }
+            }
+
+            // no active connection, cancel
+            if (connectionInfoMap.isEmpty()) {
                 cancel();
             }
+        }
+    }
+
+    private static class ConnectionInfo {
+        HashSet<ProtocolField.FilePosition> waiting;
+        long lastActiveTime;
+
+        public ConnectionInfo() {
+            waiting = new HashSet<>();
+            lastActiveTime = System.currentTimeMillis();
         }
     }
 
