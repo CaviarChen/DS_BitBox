@@ -111,7 +111,7 @@ public class MessageHandler {
         conn.send(ProtocolFactory.marshalProtocol(response));
 
         // ask for bytes
-        if (!isShortcutUsed) {
+        if (!isShortcutUsed && response.response.status) {
             FileLoaderWrapper fileLoaderWrapper = new FileLoaderWrapper(fileCreateRequest, fileSystemManager, conn);
             fileLoaderWrapperMap.put(fd.path, fileLoaderWrapper);
         }
