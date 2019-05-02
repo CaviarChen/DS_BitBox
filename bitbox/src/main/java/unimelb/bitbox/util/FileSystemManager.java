@@ -552,14 +552,14 @@ public class FileSystemManager extends Thread {
      * @return True if the loader was successfully created.
      * @throws IOException If there were any errors accessing the file system.
      */
-    public boolean modifyFileLoader(String pathName, String md5, long lastModified) throws IOException {
+    public boolean modifyFileLoader(String pathName, String md5, long fileSize, long lastModified) throws IOException {
         pathName = separatorsToSystem(pathName);
         synchronized (this) {
             String fullPathName = root + FileSystems.getDefault().getSeparator() + pathName;
             if (loadingFiles.containsKey(fullPathName)) return false;
             if (watchedFiles.containsKey(fullPathName) && watchedFiles.get(fullPathName).lastModified <= lastModified) {
                 loadingFiles.put(fullPathName, new FileLoader(fullPathName, md5,
-                        watchedFiles.get(fullPathName).fileSize,
+                        fileSize,
                         lastModified));
             } else return false;
         }

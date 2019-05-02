@@ -95,31 +95,43 @@ public class MessageHandler {
         Protocol.FileCreateResponse response = new Protocol.FileCreateResponse();
         response.fileDes = fd;
 
-        boolean isShortcutUsed = false;
-
         try{
-            response.response.status = fileSystemManager.createFileLoader(fd.path,fd.md5,fd.fileSize,fd.lastModified);
+            FileLoaderWrapper fileLoaderWrapper = fileLoaderWrapperMap.get(fd.path);
 
-            if (fileSystemManager.checkShortcut(fd.path)) {
-                isShortcutUsed = true;
-                response.response.status = true;
-                response.response.msg = "File created (shortcut)";
+            if (fileLoaderWrapper == null) {
+                if (fileSystemManager.createFileLoader(fd.path, fd.md5, fd.fileSize, fd.lastModified)) {
+                    response.response.status = true;
+                    if (fileSystemManager.checkShortcut(fd.path)) {
+                        response.response.msg = "File created (shortcut)";
+                    } else {
+                        response.response.msg = "File create loader opened";
+                        conn.send(ProtocolFactory.marshalProtocol(response));
+                        fileLoaderWrapper = new FileLoaderWrapper(fd, fileSystemManager, conn);
+                        fileLoaderWrapperMap.put(fd.path, fileLoaderWrapper);
+                        return;
+                    }
+                } else {
+                    response.response.status = false;
+                    response.response.msg = "File already exists";
+                }
+
             } else {
-                response.response.msg = response.response.status ? "File create loader opened" : "File already exists";
+                if (fileLoaderWrapper.checkMd5(fd.md5)) {
+                    response.response.status = true;
+                    response.response.msg = "File create loader opened (share)";
+                    conn.send(ProtocolFactory.marshalProtocol(response));
+                    fileLoaderWrapper.addNewConnection(fd, conn);
+                    return;
+                } else {
+                    response.response.status = false;
+                    response.response.msg = "File conflict";
+                }
             }
-
         }catch (IOException | NoSuchAlgorithmException e){
             response.response.status = false;
             response.response.msg = "Failed to create file Error:"+e.getMessage();
         }
-
         conn.send(ProtocolFactory.marshalProtocol(response));
-
-        // ask for bytes
-        if (!isShortcutUsed && response.response.status) {
-            FileLoaderWrapper fileLoaderWrapper = new FileLoaderWrapper(fd, fileSystemManager, conn);
-            fileLoaderWrapperMap.put(fd.path, fileLoaderWrapper);
-        }
     }
 
     private static void handleSpecificProtocol(Protocol.FileDeleteRequest fileDeleteRequest, Connection conn) {
@@ -154,62 +166,44 @@ public class MessageHandler {
         Protocol.FileCreateResponse response = new Protocol.FileCreateResponse();
         response.fileDes = fd;
 
-        boolean isShortcutUsed = false;
-
         try{
-            // TODO: FILE SIZE
-            response.response.status = fileSystemManager.modifyFileLoader(fd.path,fd.md5,fd.lastModified);
+            FileLoaderWrapper fileLoaderWrapper = fileLoaderWrapperMap.get(fd.path);
 
-            if (fileSystemManager.checkShortcut(fd.path)) {
-                isShortcutUsed = true;
-                response.response.status = true;
-                response.response.msg = "File modified (shortcut)";
+            if (fileLoaderWrapper == null) {
+                // TODO: FILE SIZE
+                if (fileSystemManager.modifyFileLoader(fd.path, fd.md5, fd.fileSize, fd.lastModified)) {
+                    response.response.status = true;
+                    if (fileSystemManager.checkShortcut(fd.path)) {
+                        response.response.msg = "File modified (shortcut)";
+                    } else {
+                        response.response.msg = "File modified loader opened";
+                        conn.send(ProtocolFactory.marshalProtocol(response));
+                        fileLoaderWrapper = new FileLoaderWrapper(fd, fileSystemManager, conn);
+                        fileLoaderWrapperMap.put(fd.path, fileLoaderWrapper);
+                        return;
+                    }
+                } else {
+                    response.response.status = false;
+                    response.response.msg = "Don't have the original file";
+                }
+
             } else {
-                response.response.msg = response.response.status ? "File modified loader opened" : "Don't have the original file";
+                if (fileLoaderWrapper.checkMd5(fd.md5)) {
+                    response.response.status = true;
+                    response.response.msg = "File modified loader opened (share)";
+                    conn.send(ProtocolFactory.marshalProtocol(response));
+                    fileLoaderWrapper.addNewConnection(fd, conn);
+                    return;
+                } else {
+                    response.response.status = false;
+                    response.response.msg = "File conflict";
+                }
             }
-
         }catch (IOException | NoSuchAlgorithmException e){
             response.response.status = false;
-            response.response.msg = "Failed to modified file Error:"+e.getMessage();
+            response.response.msg = "Failed to create file Error:"+e.getMessage();
         }
-
         conn.send(ProtocolFactory.marshalProtocol(response));
-
-        // ask for bytes
-        if (!isShortcutUsed && response.response.status) {
-            FileLoaderWrapper fileLoaderWrapper = new FileLoaderWrapper(fd, fileSystemManager, conn);
-            fileLoaderWrapperMap.put(fd.path, fileLoaderWrapper);
-        }
-//
-//        Protocol.FileModifyResponse response = new Protocol.FileModifyResponse();
-//        response.fileDes = fileModifyRequest.fileDes;
-//
-//        boolean isShortcutUsed = false;
-//
-//        ProtocolField.FileDes fd = fileModifyRequest.fileDes;
-//        if (!fileSystemManager.fileNameExists(fd.path)) {
-//            response.response.status = false;
-//            response.response.msg = "Can't find the specified file";
-//        } else {
-//            try{
-//                response.response.status = fileSystemManager.modifyFileLoader(fd.path,fd.md5,fd.lastModified);
-//
-//                if (fileSystemManager.checkShortcut(fd.path)) {
-//                    isShortcutUsed = true;
-//                }
-//
-//                response.response.msg = response.response.status ? "File modified" : "unknown error";
-//            }catch (Exception e){
-//                response.response.status = false;
-//                response.response.msg = "Failed to modify file Error:"+e.getMessage();
-//            }
-//        }
-//
-//        conn.send(ProtocolFactory.marshalProtocol(response));
-//
-//        if (!isShortcutUsed) {
-//            conn.GetFileByteMonitor().batchSendAndWait(fd, fileSystemManager, conn);
-//        }
     }
 
     private static void handleSpecificProtocol(Protocol.FileBytesRequest fileBytesRequest, Connection conn) {

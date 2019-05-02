@@ -51,18 +51,20 @@ public class FileLoaderWrapper {
         send(REQUEST_LIMIT, conn);
     }
 
-    public boolean addNewConnection(ProtocolField.FileDes fileDes, Connection conn) {
-        if (!fileDes.md5.equals(this.fileDes.md5)) return false;
+    public boolean checkMd5(String md5){
+        return this.fileDes.md5.equals(md5);
+    }
+
+    public void addNewConnection(ProtocolField.FileDes fileDes, Connection conn) {
+        // need to check md5 before adding
 
         synchronized (this) {
-            if (connectionInfoMap.containsKey(conn)) return false;
+            if (connectionInfoMap.containsKey(conn)) return;
             ConnectionInfo connectionInfo = new ConnectionInfo();
             connectionInfoMap.put(conn, connectionInfo);
         }
 
         send(REQUEST_LIMIT, conn);
-
-        return true;
     }
 
 
