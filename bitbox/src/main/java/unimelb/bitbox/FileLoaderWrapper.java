@@ -58,8 +58,10 @@ public class FileLoaderWrapper {
             if (connectionInfoMap.containsKey(conn)) return false;
             ConnectionInfo connectionInfo = new ConnectionInfo();
             connectionInfoMap.put(conn, connectionInfo);
-            send(REQUEST_LIMIT, conn);
         }
+
+        send(REQUEST_LIMIT, conn);
+
         return true;
     }
 
