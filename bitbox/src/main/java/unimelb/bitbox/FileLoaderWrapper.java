@@ -28,9 +28,9 @@ public class FileLoaderWrapper {
     private ProtocolField.FileDes fileDes;
     private FileSystemManager fileSystemManager;
 
-    public FileLoaderWrapper(Protocol.FileCreateRequest fileCreateRequest, FileSystemManager fileSystemManager, Connection conn) {
+    public FileLoaderWrapper(ProtocolField.FileDes fileDes, FileSystemManager fileSystemManager, Connection conn) {
 
-        this.fileDes = fileCreateRequest.fileDes;
+        this.fileDes = fileDes;
         this.conn = conn;
         this.fileSystemManager = fileSystemManager;
 

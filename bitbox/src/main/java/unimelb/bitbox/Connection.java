@@ -16,6 +16,7 @@ import java.util.logging.Logger;
 
 
 public class Connection {
+    private static final int MAX_LOG_LEN = 250;
     private static Logger log = Logger.getLogger(Connection.class.getName());
 
     public final ConnectionType type;
@@ -69,7 +70,8 @@ public class Connection {
             this.socket.setSoTimeout(timeout);
             msg = bufferedReader.readLine();
             if (msg != null)
-                log.info(currentHostPort() + " Message Received: " + msg.substring(0, Math.min(100, msg.length())));
+                log.info(currentHostPort() + " Message Received: "
+                        + msg.substring(0, Math.min(MAX_LOG_LEN, msg.length())));
         } catch (IOException e) {
             if (e instanceof SocketTimeoutException) {
                 throw (SocketTimeoutException) e;
@@ -86,7 +88,8 @@ public class Connection {
             try {
                 bufferedWriter.write(msg + '\n');
                 bufferedWriter.flush();
-                log.info( currentHostPort() + " Message Sent: " + msg.substring(0, Math.min(100, msg.length())));
+                log.info( currentHostPort() + " Message Sent: "
+                        + msg.substring(0, Math.min(MAX_LOG_LEN, msg.length())));
             } catch (IOException e) {
                 // log
                 close();

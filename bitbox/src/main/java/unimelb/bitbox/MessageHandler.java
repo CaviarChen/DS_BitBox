@@ -84,17 +84,17 @@ public class MessageHandler {
 
     private static void handleSpecificProtocol(Protocol.FileCreateRequest fileCreateRequest, Connection conn) {
 
-        if (!fileSystemManager.isSafePathName(fileCreateRequest.fileDes.path)) {
+        ProtocolField.FileDes fd = fileCreateRequest.fileDes;
+        if (!fileSystemManager.isSafePathName(fd.path)) {
             // TODO: response
             return ;
         }
 
         Protocol.FileCreateResponse response = new Protocol.FileCreateResponse();
-        response.fileDes = fileCreateRequest.fileDes;
+        response.fileDes = fd;
 
         boolean isShortcutUsed = false;
 
-        ProtocolField.FileDes fd = fileCreateRequest.fileDes;
         try{
             response.response.status = fileSystemManager.createFileLoader(fd.path,fd.md5,fd.fileSize,fd.lastModified);
 
@@ -103,7 +103,7 @@ public class MessageHandler {
                 response.response.status = true;
                 response.response.msg = "File created (shortcut)";
             } else {
-                response.response.msg = response.response.status ? "File created" : "File already exists";
+                response.response.msg = response.response.status ? "File create loader opened" : "File already exists";
             }
 
         }catch (IOException | NoSuchAlgorithmException e){
@@ -115,7 +115,7 @@ public class MessageHandler {
 
         // ask for bytes
         if (!isShortcutUsed && response.response.status) {
-            FileLoaderWrapper fileLoaderWrapper = new FileLoaderWrapper(fileCreateRequest, fileSystemManager, conn);
+            FileLoaderWrapper fileLoaderWrapper = new FileLoaderWrapper(fd, fileSystemManager, conn);
             fileLoaderWrapperMap.put(fd.path, fileLoaderWrapper);
         }
     }
@@ -143,6 +143,41 @@ public class MessageHandler {
     }
 
     private static void handleSpecificProtocol(Protocol.FileModifyRequest fileModifyRequest, Connection conn) {
+        ProtocolField.FileDes fd = fileModifyRequest.fileDes;
+        if (!fileSystemManager.isSafePathName(fd.path)) {
+            // TODO: response
+            return ;
+        }
+
+        Protocol.FileCreateResponse response = new Protocol.FileCreateResponse();
+        response.fileDes = fd;
+
+        boolean isShortcutUsed = false;
+
+        try{
+            // TODO: FILE SIZE
+            response.response.status = fileSystemManager.modifyFileLoader(fd.path,fd.md5,fd.lastModified);
+
+            if (fileSystemManager.checkShortcut(fd.path)) {
+                isShortcutUsed = true;
+                response.response.status = true;
+                response.response.msg = "File modified (shortcut)";
+            } else {
+                response.response.msg = response.response.status ? "File modified loader opened" : "Don't have the original file";
+            }
+
+        }catch (IOException | NoSuchAlgorithmException e){
+            response.response.status = false;
+            response.response.msg = "Failed to modified file Error:"+e.getMessage();
+        }
+
+        conn.send(ProtocolFactory.marshalProtocol(response));
+
+        // ask for bytes
+        if (!isShortcutUsed && response.response.status) {
+            FileLoaderWrapper fileLoaderWrapper = new FileLoaderWrapper(fd, fileSystemManager, conn);
+            fileLoaderWrapperMap.put(fd.path, fileLoaderWrapper);
+        }
 //
 //        Protocol.FileModifyResponse response = new Protocol.FileModifyResponse();
 //        response.fileDes = fileModifyRequest.fileDes;
