@@ -13,13 +13,13 @@ import java.util.*;
 import java.util.logging.Logger;
 
 
-// TODO: multiple connection
-// TODO: Clean up wrapper
+// TODO: retrieve file from multiple connection
 public class FileLoaderWrapper {
     private static Logger log = Logger.getLogger(Connection.class.getName());
 
     private static final long BLOCK_SIZE = Long.parseLong(Configuration.getConfigurationValue("blockSize"));
     private static final int REQUEST_LIMIT = 10;
+    private static final long TIMEOUT_IN_MILLIS = 30000;
 
     private final LinkedList<ProtocolField.FilePosition> pending = new LinkedList<>();
     private final HashSet<ProtocolField.FilePosition> waiting = new HashSet<>();
@@ -28,6 +28,8 @@ public class FileLoaderWrapper {
     private ProtocolField.FileDes fileDes;
     private FileSystemManager fileSystemManager;
 
+    private long lastActiveTime;
+
     public FileLoaderWrapper(Protocol.FileCreateRequest fileCreateRequest, FileSystemManager fileSystemManager, Connection conn) {
 
         this.fileDes = fileCreateRequest.fileDes;
@@ -35,6 +37,8 @@ public class FileLoaderWrapper {
         this.fileSystemManager = fileSystemManager;
 
         long base = 0, remaining = fileDes.fileSize;
+
+        this.lastActiveTime = System.currentTimeMillis();
 
         synchronized (this) {
             while (remaining > 0) {
@@ -65,6 +69,7 @@ public class FileLoaderWrapper {
             if (!waiting.contains(pos)) {
                 return;
             }
+            this.lastActiveTime = System.currentTimeMillis();
         }
 
         ProtocolField.FileContent fc = fileBytesResponse.fileContent;
@@ -78,6 +83,7 @@ public class FileLoaderWrapper {
             log.warning(e.toString());
             return ;
         }
+
 
         send(1);
 
@@ -126,7 +132,6 @@ public class FileLoaderWrapper {
         conn.send(ProtocolFactory.marshalProtocol(fileBytesRequest));
     }
 
-
     private void cancel() {
         try {
             fileSystemManager.cancelFileLoader(this.fileDes.path);
@@ -135,18 +140,14 @@ public class FileLoaderWrapper {
 
         MessageHandler.removeFileLoaderWrapper(this, fileDes.path);
     }
-//
-//    private Connection getActiveConnection() {
-//
-//    }
-//
-//    public void addConnection() {
-//
-//    }
-//
-//    public void clean() {
-//
-//    }
 
+    public void clean() {
+        synchronized (this) {
+            // not accurate since this will be triggered roughly every syncInterval and with low priority
+            if (System.currentTimeMillis() - lastActiveTime > TIMEOUT_IN_MILLIS) {
+                cancel();
+            }
+        }
+    }
 
 }

@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
@@ -259,5 +261,12 @@ public class MessageHandler {
 
     public static void removeFileLoaderWrapper(FileLoaderWrapper fileLoaderWrapper, String filePath) {
         fileLoaderWrapperMap.remove(filePath, fileLoaderWrapper);
+    }
+
+    public static void cleanUpFileLoaderWrapper() {
+        // thread-safe, the iterator is a snapshot
+        for(Map.Entry<String, FileLoaderWrapper> entry : fileLoaderWrapperMap.entrySet()) {
+            entry.getValue().clean();
+        }
     }
 }

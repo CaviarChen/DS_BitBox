@@ -8,6 +8,7 @@ public class Peer {
     private static Logger log = Logger.getLogger(Peer.class.getName());
     private static IncomingConnectionHelper incomingConnectionManager;
     private static OutgoingConnectionHelper outgoingConnectionHelper;
+    private static Scheduler scheduler;
 
     public static void main(String[] args) throws Exception {
         System.setProperty("java.util.logging.SimpleFormatter.format",
@@ -17,9 +18,12 @@ public class Peer {
         FileSystemManager fileSystemManager =
                 new FileSystemManager(Configuration.getConfigurationValue("path"), (SyncManager.getInstance()::sendEventToAllAsync));
 
-        SyncManager.getInstance().start(fileSystemManager);
+        SyncManager.getInstance().init(fileSystemManager);
 
         MessageHandler.setFileSystemManager(fileSystemManager);
+
+        scheduler = new Scheduler();
+        scheduler.start();
 
         int port = Integer.parseInt(Configuration.getConfigurationValue(Constants.CONFIG_FIELD_PORT));
         String advertisedName = Configuration.getConfigurationValue(Constants.CONFIG_FIELD_AD_NAME);

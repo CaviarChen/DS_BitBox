@@ -14,7 +14,7 @@ public class PriorityThreadPool {
     private static int queueSize;
     private static long keepAliveTime;
 
-    private static PriorityThreadPool instance = new PriorityThreadPool();;
+    private static PriorityThreadPool instance = new PriorityThreadPool();
 
     public static PriorityThreadPool getInstance() {
         return instance;
