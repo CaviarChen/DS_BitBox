@@ -89,7 +89,7 @@ public class MessageHandler {
 
         if (!fileSystemManager.isSafePathName(fd.path)) {
             response.response.status = false;
-            response.response.msg = "Invalid path";
+            response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_INVALID_PATH;
             conn.send(ProtocolFactory.marshalProtocol(response));
         }
 
@@ -100,9 +100,9 @@ public class MessageHandler {
                 if (fileSystemManager.createFileLoader(fd.path, fd.md5, fd.fileSize, fd.lastModified)) {
                     response.response.status = true;
                     if (fileSystemManager.checkShortcut(fd.path)) {
-                        response.response.msg = "File created (shortcut)";
+                        response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_FILE_CREATE_SHORTCUT_USED;
                     } else {
-                        response.response.msg = "File create loader opened";
+                        response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_FILE_CREATE_LOADER_READY;
                         conn.send(ProtocolFactory.marshalProtocol(response));
                         fileLoaderWrapper = new FileLoaderWrapper(fd, fileSystemManager, conn);
                         fileLoaderWrapperMap.put(fd.path, fileLoaderWrapper);
@@ -110,24 +110,24 @@ public class MessageHandler {
                     }
                 } else {
                     response.response.status = false;
-                    response.response.msg = "File already exists";
+                    response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_FILE_ALREADY_EXISTS;
                 }
 
             } else {
                 if (fileLoaderWrapper.checkMd5(fd.md5)) {
                     response.response.status = true;
-                    response.response.msg = "File create loader opened (share)";
+                    response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_FILE_CREATE_LOADER_COLLABORATING;
                     conn.send(ProtocolFactory.marshalProtocol(response));
                     fileLoaderWrapper.addNewConnection(fd, conn);
                     return;
                 } else {
                     response.response.status = false;
-                    response.response.msg = "File conflict";
+                    response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_FILE_ANOTHER_IS_TRANSMITTING;
                 }
             }
         }catch (IOException | NoSuchAlgorithmException e){
             response.response.status = false;
-            response.response.msg = "Failed to create file Error:"+e.getMessage();
+            response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_FILE_CREATE_FAIL_PREFIX + e.getMessage();
         }
         conn.send(ProtocolFactory.marshalProtocol(response));
     }
@@ -141,19 +141,21 @@ public class MessageHandler {
         if (fileSystemManager.isSafePathName(fd.path)) {
             if (!fileSystemManager.fileNameExists(fd.path)) {
                 response.response.status = false;
-                response.response.msg = "Can't find the specified file";
+                response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_FILE_DOES_NOT_EXIST;
             } else {
                 try{
                     response.response.status = fileSystemManager.deleteFile(fd.path,fd.lastModified,fd.md5);
-                    response.response.msg = response.response.status ? "File Deleted" : "unknown error";
+                    response.response.msg = response.response.status ?
+                            Constants.PROTOCOL_RESPONSE_MESSAGE_FILE_DELETE_SUCCESS :
+                            Constants.PROTOCOL_RESPONSE_MESSAGE_FILE_DELETE_FAIL;
                 }catch (Exception e){
                     response.response.status = false;
-                    response.response.msg = "Failed to delete file Error:"+e.getMessage();
+                    response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_FILE_DELETE_FAIL_PREFIX + e.getMessage();
                 }
             }
         } else {
             response.response.status = false;
-            response.response.msg = "invalid path";
+            response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_INVALID_PATH;
         }
 
         conn.send(ProtocolFactory.marshalProtocol(response));
@@ -166,7 +168,7 @@ public class MessageHandler {
 
         if (!fileSystemManager.isSafePathName(fd.path)) {
             response.response.status = false;
-            response.response.msg = "Invalid path";
+            response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_INVALID_PATH;
             conn.send(ProtocolFactory.marshalProtocol(response));
             return;
         }
@@ -178,9 +180,9 @@ public class MessageHandler {
                 if (fileSystemManager.modifyFileLoader(fd.path, fd.md5, fd.fileSize, fd.lastModified)) {
                     response.response.status = true;
                     if (fileSystemManager.checkShortcut(fd.path)) {
-                        response.response.msg = "File modified (shortcut)";
+                        response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_FILE_MODIFY_SHORTCUT_USED;
                     } else {
-                        response.response.msg = "File modified loader opened";
+                        response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_FILE_MODIFY_LOADER_READY;
                         conn.send(ProtocolFactory.marshalProtocol(response));
                         fileLoaderWrapper = new FileLoaderWrapper(fd, fileSystemManager, conn);
                         fileLoaderWrapperMap.put(fd.path, fileLoaderWrapper);
@@ -188,24 +190,24 @@ public class MessageHandler {
                     }
                 } else {
                     response.response.status = false;
-                    response.response.msg = "Don't have the original file";
+                    response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_FILE_DOES_NOT_EXIST;
                 }
 
             } else {
                 if (fileLoaderWrapper.checkMd5(fd.md5)) {
                     response.response.status = true;
-                    response.response.msg = "File modified loader opened (share)";
+                    response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_FILE_MODIFY_LOADER_COLLABORATING;
                     conn.send(ProtocolFactory.marshalProtocol(response));
                     fileLoaderWrapper.addNewConnection(fd, conn);
                     return;
                 } else {
                     response.response.status = false;
-                    response.response.msg = "File conflict";
+                    response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_FILE_ANOTHER_IS_TRANSMITTING;
                 }
             }
         }catch (IOException | NoSuchAlgorithmException e){
             response.response.status = false;
-            response.response.msg = "Failed to create file Error: " + e.getMessage();
+            response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_FILE_DELETE_FAIL_PREFIX + e.getMessage();
         }
         conn.send(ProtocolFactory.marshalProtocol(response));
     }
@@ -219,7 +221,7 @@ public class MessageHandler {
         // discard the message if the path not safe;
         if (!fileSystemManager.isSafePathName(fileBytesRequest.fileDes.path)) {
             response.response.status = false;
-            response.response.msg = "Invalid path";
+            response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_INVALID_PATH;
             conn.send(ProtocolFactory.marshalProtocol(response));
             return;
         }
@@ -240,13 +242,13 @@ public class MessageHandler {
             // send the bytes successfully
             response.fileContent.content = Base64.getEncoder().encodeToString(byteBuffer.array());
             response.response.status = true;
-            response.response.msg = "successful read";
+            response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_FILE_READ_SUCCESS;
             conn.send(ProtocolFactory.marshalProtocol(response));
             return;
         }
 
         response.response.status = false;
-        response.response.msg = "unsuccessful read";
+        response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_FILE_READ_FAIL;
         conn.send(ProtocolFactory.marshalProtocol(response));
     }
 
@@ -273,14 +275,16 @@ public class MessageHandler {
         if (fileSystemManager.isSafePathName(path)) {
             if (fileSystemManager.dirNameExists(path)) {
                 response.response.status = false;
-                response.response.msg = "Directory already exists";
+                response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_DIR_ALREADY_EXISTS;
             } else {
                 response.response.status = fileSystemManager.makeDirectory(path);
-                response.response.msg = response.response.status ? "Directory created" : "Unknown error";
+                response.response.msg = response.response.status ?
+                        Constants.PROTOCOL_RESPONSE_MESSAGE_DIR_CREATED :
+                        Constants.PROTOCOL_RESPONSE_MESSAGE_DIR_CREATE_FAIL;
             }
         } else {
             response.response.status = false;
-            response.response.msg = "Invalid path";
+            response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_INVALID_PATH;
         }
 
         conn.send(ProtocolFactory.marshalProtocol(response));
@@ -296,14 +300,16 @@ public class MessageHandler {
         if (fileSystemManager.isSafePathName(path)) {
             if (!fileSystemManager.dirNameExists(path)) {
                 response.response.status = false;
-                response.response.msg = "Can't find specified directory";
+                response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_DIR_NOT_EXIST;
             } else {
                 response.response.status = fileSystemManager.deleteDirectory(path);
-                response.response.msg = response.response.status ? "Directory deleted" : "Unknown error";
+                response.response.msg = response.response.status ?
+                        Constants.PROTOCOL_RESPONSE_MESSAGE_DIR_DELETED :
+                        Constants.PROTOCOL_RESPONSE_MESSAGE_DIR_DELETE_FAIL;
             }
         } else {
             response.response.status = false;
-            response.response.msg = "Invalid path";
+            response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_INVALID_PATH;
         }
 
         conn.send(ProtocolFactory.marshalProtocol(response));

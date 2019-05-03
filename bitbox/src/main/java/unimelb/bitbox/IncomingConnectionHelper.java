@@ -101,9 +101,9 @@ public class IncomingConnectionHelper {
                 Protocol.ConnectionRefused connectionRefused = new Protocol.ConnectionRefused();
                 connectionRefused.peers = getCachedPeers();
                 if (res == -1) {
-                    connectionRefused.msg = "Incoming connection limit reached";
+                    connectionRefused.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_CONNECTION_REFUSED_LIMIT_REACHED;
                 } else if (res == -2) {
-                    connectionRefused.msg = "Connection with the same host&port already exists";
+                    connectionRefused.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_CONNECTION_REFUSED_ALREADY_EXIST;
                 }
                 conn.send(ProtocolFactory.marshalProtocol(connectionRefused));
                 conn.close();

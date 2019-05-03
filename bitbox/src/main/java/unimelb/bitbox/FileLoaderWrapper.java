@@ -5,7 +5,6 @@ import unimelb.bitbox.protocol.ProtocolFactory;
 import unimelb.bitbox.protocol.ProtocolField;
 import unimelb.bitbox.util.Configuration;
 import unimelb.bitbox.util.FileSystemManager;
-import unimelb.bitbox.util.HostPort;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -17,7 +16,8 @@ import java.util.logging.Logger;
 public class FileLoaderWrapper {
     private static Logger log = Logger.getLogger(Connection.class.getName());
 
-    private static final long BLOCK_SIZE = Long.parseLong(Configuration.getConfigurationValue("blockSize"));
+    private static final long BLOCK_SIZE =
+            Long.parseLong(Configuration.getConfigurationValue(Constants.CONFIG_FIELD_BLOCKSIZE));
     private static final int REQUEST_LIMIT = 10;
     private static final long TIMEOUT_IN_MILLIS = 20000;
 
