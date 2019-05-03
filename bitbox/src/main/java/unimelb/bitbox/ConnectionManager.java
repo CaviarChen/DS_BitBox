@@ -54,9 +54,9 @@ public class ConnectionManager {
         }
     }
 
-    public int getIncomingConnCounter() {
+    public boolean isIncommingConnectionFull() {
         synchronized (this) {
-            return incomingConnCounter;
+            return incomingConnCounter >= MAX_INCOMING_CONNECTIONS;
         }
     }
 

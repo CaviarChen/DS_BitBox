@@ -49,10 +49,15 @@ public class IncomingConnectionHelper {
             try {
                 Connection conn = new Connection(clientSocket);
 
+                // if the incoming connection limit is exceed (roughly), then lower the priority
+                // since the connection needs to be rejected eventually
+                Priority priority = (ConnectionManager.getInstance().isIncommingConnectionFull())
+                        ? Priority.LOW : Priority.NORMAL;
+
                 // current design: use thread pool for handshake process, then create its own thread if success
                 PriorityThreadPool.getInstance().submitTask(new PriorityTask(
                         "Incoming connection: handshake",
-                        Priority.NORMAL,
+                        priority,
                         () -> handleHandshake(conn)
                 ));
             } catch (Exception e) {

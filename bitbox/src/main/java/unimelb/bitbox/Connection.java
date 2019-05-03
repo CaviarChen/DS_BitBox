@@ -108,7 +108,7 @@ public class Connection {
             // first in a while, need to start sending thread
             PriorityThreadPool.getInstance().submitTask(new PriorityTask(
                     "Connection: SendingQueue",
-                    Priority.NORMAL,
+                    Priority.HIGH,
                     this::asyncSendingThread
             ));
         }

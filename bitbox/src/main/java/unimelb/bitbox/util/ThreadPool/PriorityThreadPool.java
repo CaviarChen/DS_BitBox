@@ -21,7 +21,7 @@ public class PriorityThreadPool {
     }
 
     private PriorityThreadPool() {
-        corePoolSize = Runtime.getRuntime().availableProcessors()+1;
+        corePoolSize = Runtime.getRuntime().availableProcessors() + 1;
         maximumPoolSize = 5000;
         queueSize = 5000;
         keepAliveTime = 2000L;
