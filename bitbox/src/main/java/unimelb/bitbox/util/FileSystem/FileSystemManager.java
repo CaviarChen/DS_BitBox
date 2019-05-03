@@ -26,11 +26,11 @@ import java.util.logging.Logger;
  * The file system manager also provides an API
  * for safely making modifications to the files and directories in the share directory:
  * <li>{@link #cancelFileLoader(String)}</li>
- * <li>{@link #createFileLoader(String, String)}</li>
+ * <li>{@link #createFileLoader(String, String, long, long)}</li>
  * <li>{@link #checkShortcut(String)}</li>
  * <li>{@link #checkWriteComplete(String)}</li>
  * <li>{@link #deleteDirectory(String)}</li>
- * <li>{@link #deleteFile(String, long)}</li>
+ * <li>{@link #deleteFile(String, long, String)}</li>
  * <li>{@link #dirNameExists(String)}</li>
  * <li>{@link #fileNameExists(String)}</li>
  * <li>{@link #fileNameExists(String, String)}</li>
@@ -38,7 +38,7 @@ import java.util.logging.Logger;
  * <li>{@link #isSafePathName(String)}</li>
  * <li>{@link #readFile(String, long, long)}</li>
  * <li>{@link #makeDirectory(String)}</li>
- * <li>{@link #modifyFileLoader(String, String, long)}</li>
+ * <li>{@link #modifyFileLoader(String, String, long, long)}</li>
  * <li>{@link #writeFile(String, ByteBuffer, long)}</li>
  *
  * @author Aaron Harwood
@@ -206,7 +206,7 @@ public class FileSystemManager extends Thread {
 
 
         /**
-         * Provide the {@link #Document} for this object.
+         * Provide the {@link unimelb.bitbox.util.Document} for this object.
          */
         public Document toDoc() {
             Document doc = new Document();
@@ -406,7 +406,7 @@ public class FileSystemManager extends Thread {
 
     /**
      * Create a file loader for given file name. The file name must not
-     * already exist, otherwise use {@link #modifyFileLoader(String, String, long)}.
+     * already exist, otherwise use {@link #modifyFileLoader(String, String, long, long)}.
      * The file loader maintains a place holder file with prefix {@link #loadingSuffix}
      * on its filename, called a <i>loader file</i>. Such files never generate file system events. The file loader
      * can be subsequently accessed via the given name using {@link #writeFile(String, ByteBuffer, long)},
@@ -575,7 +575,7 @@ public class FileSystemManager extends Thread {
     /**
      * Called to create a file loader in the case when a file name already exists. The existing
      * file must have a last modified timestamp that is less than or equal to the supplied one. See
-     * {@link #createFileLoader(String, String)} for more details about the file loader.
+     * {@link #createFileLoader(String, String, long, long)} for more details about the file loader.
      *
      * @param pathName     The name of the file to modify.
      * @param md5          The MD5 hash of the content that the loaded file <i>must</i> have in order
