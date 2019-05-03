@@ -20,6 +20,14 @@ import java.util.logging.Logger;
 import static java.lang.Thread.sleep;
 
 
+/**
+ *
+ *
+ * @author Wenqing Xue (813044)
+ * @author Weizhi Xu (752454)
+ * @author Zijie Shen (741404)
+ * @author Zijun Chen (813190)
+ */
 public class OutgoingConnectionHelper {
 
     private static final int PENALTY_TIME = 60000;

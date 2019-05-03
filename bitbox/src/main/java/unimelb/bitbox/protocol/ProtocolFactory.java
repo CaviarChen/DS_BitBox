@@ -6,6 +6,14 @@ import unimelb.bitbox.util.Document;
 import static unimelb.bitbox.Constants.PROTOCOL_FIELD_CMD;
 
 
+/**
+ *
+ *
+ * @author Wenqing Xue (813044)
+ * @author Weizhi Xu (752454)
+ * @author Zijie Shen (741404)
+ * @author Zijun Chen (813190)
+ */
 public class ProtocolFactory {
 
     /**

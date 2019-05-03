@@ -8,6 +8,14 @@ import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
 
+/**
+ *
+ *
+ * @author Wenqing Xue (813044)
+ * @author Weizhi Xu (752454)
+ * @author Zijie Shen (741404)
+ * @author Zijun Chen (813190)
+ */
 public class ConnectionManager {
     private static ConnectionManager instance = new ConnectionManager();
 

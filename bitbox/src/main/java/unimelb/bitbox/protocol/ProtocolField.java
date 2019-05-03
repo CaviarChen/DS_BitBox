@@ -8,6 +8,14 @@ import java.util.Objects;
 import static unimelb.bitbox.Constants.*;
 
 
+/**
+ *
+ *
+ * @author Wenqing Xue (813044)
+ * @author Weizhi Xu (752454)
+ * @author Zijie Shen (741404)
+ * @author Zijun Chen (813190)
+ */
 public abstract class ProtocolField implements IProtocol {
 
 //  subclass  ------------------------------------
