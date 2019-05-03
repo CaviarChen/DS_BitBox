@@ -5,6 +5,7 @@ import java.util.logging.Logger;
 
 
 /**
+ * This is a wrapper for tasks({@link Runnable}) with priority.
  *
  * @author Wenqing Xue (813044)
  * @author Weizhi Xu (752454)
@@ -19,6 +20,13 @@ public class PriorityTask implements Runnable, Comparable<PriorityTask> {
     private static Logger log = Logger.getLogger(PriorityTask.class.getName());
 
 
+    /**
+     * Constructor for a task with priority
+     *
+     * @param name The name of the task
+     * @param priority The priority of the task
+     * @param task The actual task need to run
+     */
     public PriorityTask(String name, Priority priority, Runnable task) {
         this.name = name;
         this.priority = priority;
@@ -26,11 +34,19 @@ public class PriorityTask implements Runnable, Comparable<PriorityTask> {
     }
 
 
+    /**
+     * Get the priority of the task
+     * @return the priority of the task
+     */
     public Priority getPriority() {
         return this.priority;
     }
 
 
+    /**
+     * Set the priority of the task
+     * @param priority the priority of the task wanted to be set
+     */
     public void setPriority(Priority priority) {
         this.priority = priority;
     }
@@ -48,6 +64,8 @@ public class PriorityTask implements Runnable, Comparable<PriorityTask> {
 
     @Override
     public int compareTo(PriorityTask o) {
+        // use the Enum Priority's default value to compare
+        // the one listed first has the highest priority
         return this.priority.compareTo(o.priority);
     }
 }
