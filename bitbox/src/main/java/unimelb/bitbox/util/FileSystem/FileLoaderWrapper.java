@@ -69,8 +69,11 @@ public class FileLoaderWrapper {
     }
 
 
-    public void addNewConnection(ProtocolField.FileDes fileDes, Connection conn) {
-        // need to check md5 before adding
+    /**
+     * Add a new connection to transmitting the same file
+     * @param conn the connection wants to transmit the file
+     */
+    public void addNewConnection(Connection conn) {
 
         synchronized (this) {
             if (connectionInfoMap.containsKey(conn)) return;

@@ -130,7 +130,7 @@ public class MessageHandler {
                     response.response.status = true;
                     response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_FILE_CREATE_LOADER_COLLABORATING;
                     conn.send(ProtocolFactory.marshalProtocol(response));
-                    fileLoaderWrapper.addNewConnection(fd, conn);
+                    fileLoaderWrapper.addNewConnection(conn);
                     return;
                 } else {
                     response.response.status = false;
@@ -212,7 +212,7 @@ public class MessageHandler {
                     response.response.status = true;
                     response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_FILE_MODIFY_LOADER_COLLABORATING;
                     conn.send(ProtocolFactory.marshalProtocol(response));
-                    fileLoaderWrapper.addNewConnection(fd, conn);
+                    fileLoaderWrapper.addNewConnection(conn);
                     return;
                 } else {
                     response.response.status = false;
