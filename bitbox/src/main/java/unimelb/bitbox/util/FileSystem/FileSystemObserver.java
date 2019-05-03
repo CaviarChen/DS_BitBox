@@ -5,7 +5,7 @@ import unimelb.bitbox.util.FileSystem.FileSystemManager.FileSystemEvent;
 
 
 /**
- * 
+ * The observer for file system events
  *
  * @author Aaron Harwood
  *
