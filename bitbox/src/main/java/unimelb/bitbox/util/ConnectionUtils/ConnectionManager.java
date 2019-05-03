@@ -9,8 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 
 /**
- *
- *
+ * Connection Manager
  * @author Wenqing Xue (813044)
  * @author Weizhi Xu (752454)
  * @author Zijie Shen (741404)
@@ -37,7 +36,12 @@ public class ConnectionManager {
     }
 
 
-    // 0: ok, -1: exceed connection limit, -2: connection already exists
+    /**
+     * Add a new connection
+     * @param conn connection
+     * @param hostPort host&port of this connection
+     * @return  0: ok, -1: exceed connection limit, -2: connection already exists
+     */
     public int addConnection(Connection conn, HostPort hostPort) {
         synchronized (this) {
             boolean isIncoming = conn.type == Connection.ConnectionType.INCOMING;
@@ -61,7 +65,11 @@ public class ConnectionManager {
         }
     }
 
-
+    /**
+     * Boardcast message to all active connections
+     * Async method
+     * @param msg json message string
+     */
     public void broadcastMsgAsync(String msg) {
         // no need to lock
         for (Connection conn : connectionMap.values()) {
@@ -69,7 +77,9 @@ public class ConnectionManager {
         }
     }
 
-
+    /**
+     * @return true if incoming connection counter reaches the limit
+     */
     public boolean isIncommingConnectionFull() {
         synchronized (this) {
             return incomingConnCounter >= MAX_INCOMING_CONNECTIONS;
@@ -77,6 +87,11 @@ public class ConnectionManager {
     }
 
 
+    /**
+     * Remove a connection from the active list
+     * @param conn connection
+     * @return true if success
+     */
     public boolean removeConnection(Connection conn) {
         HostPort hostPort = conn.getHostPort();
         boolean res = connectionMap.remove(hostPort, conn);
@@ -88,19 +103,23 @@ public class ConnectionManager {
         return res;
     }
 
-
+    /**
+     * @param hostPort
+     * @return true if if we already connected with the given host&port
+     */
     public boolean checkExist(HostPort hostPort) {
         return connectionMap.containsKey(hostPort);
     }
 
-
+    /**
+     * @return a list of host&port that we connected with
+     */
     public ArrayList<HostPort> getConnectedPeers() {
         ArrayList<HostPort> hostPorts = new ArrayList<>();
         // no need to lock
         for (Connection conn : connectionMap.values()) {
             hostPorts.add(conn.getHostPort());
         }
-
         return hostPorts;
     }
 
