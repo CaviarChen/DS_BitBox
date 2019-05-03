@@ -21,7 +21,7 @@ import static java.lang.Thread.sleep;
 
 
 /**
- * Outgoing Connection Helper
+ * OutgoingConnectionHelper deal with all outgoing connections
  *
  * @author Wenqing Xue (813044)
  * @author Weizhi Xu (752454)

@@ -19,7 +19,7 @@ import java.util.logging.Logger;
 
 
 /**
- * Incoming Connection Helper
+ * IncomingConnectionHelper deals with all incoming connections
  *
  * @author Wenqing Xue (813044)
  * @author Weizhi Xu (752454)

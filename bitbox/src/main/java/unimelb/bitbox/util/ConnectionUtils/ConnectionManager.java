@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 
 /**
- * Connection Manager
+ * ConnectionManager manages all connections and contains helper functions for them
  * @author Wenqing Xue (813044)
  * @author Weizhi Xu (752454)
  * @author Zijie Shen (741404)

@@ -18,8 +18,8 @@ import java.util.LinkedList;
 import java.util.logging.Logger;
 
 
-/** Class for a specific connection with other peer
- *
+/**
+ * Class for a specific connection with other peer
  *
  * @author Wenqing Xue (813044)
  * @author Weizhi Xu (752454)
