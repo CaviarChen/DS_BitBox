@@ -7,5 +7,9 @@ jdk:
 git:
   depth: 1
 
+# Don't email me
+notifications:
+  email: false
+
 
 before_script: cd bitbox
