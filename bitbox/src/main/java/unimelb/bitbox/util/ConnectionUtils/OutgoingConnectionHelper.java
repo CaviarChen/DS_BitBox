@@ -21,7 +21,7 @@ import static java.lang.Thread.sleep;
 
 
 /**
- *
+ * Outgoing Connection Helper
  *
  * @author Wenqing Xue (813044)
  * @author Weizhi Xu (752454)
@@ -30,15 +30,21 @@ import static java.lang.Thread.sleep;
  */
 public class OutgoingConnectionHelper {
 
+    private static Logger log = Logger.getLogger(OutgoingConnectionHelper.class.getName());
+
     private static final int PENALTY_TIME = 60000;
     private static final int CHECK_INTERVAL = 10000;
     private static final int HANDSHAKE_TIMEOUT = 10000;
-    private static Logger log = Logger.getLogger(OutgoingConnectionHelper.class.getName());
 
     private String handshakeRequestJson;
     private final PriorityQueue<PeerInfo> queue;
 
 
+    /**
+     * Constructor
+     * @param advertisedName from config
+     * @param port from config
+     */
     public OutgoingConnectionHelper(String advertisedName, int port) {
 
         Protocol.HandshakeRequest handshakeRequest = new Protocol.HandshakeRequest();
@@ -50,6 +56,7 @@ public class OutgoingConnectionHelper {
 
         String[] peers = Configuration.getConfigurationValue(Constants.CONFIG_FIELD_PEERS).split(Constants.CONFIG_PEERS_SEPARATOR);
 
+        // add all init peers to the queue
         for (String peer : peers) {
             if (!peer.isEmpty()) {
                 addPeerInfo(new HostPort(peer));
@@ -58,6 +65,9 @@ public class OutgoingConnectionHelper {
     }
 
 
+    /**
+     * start working (blocking)
+     */
     public void execute() {
 
         while (true) {
@@ -71,6 +81,7 @@ public class OutgoingConnectionHelper {
             }
 
             if (peer != null) {
+                // try to connect to the peer
                 try {
                     Socket clientSocket = new Socket(peer.getHost(), peer.getPort());
                     Connection conn = new Connection(clientSocket, this);
@@ -82,7 +93,7 @@ public class OutgoingConnectionHelper {
                     addPeerInfo(peer);
                 }
             } else {
-                // sleep 10 seconds
+                // sleep 10 seconds if there is no job
                 try {
                     sleep(CHECK_INTERVAL);
                 } catch (InterruptedException ignored) {
@@ -91,7 +102,29 @@ public class OutgoingConnectionHelper {
         }
     }
 
+    /**
+     * add a host&port to the queue for connecting
+     * @param hostPort
+     */
+    public void addPeerInfo(HostPort hostPort) {
+        log.info("New target: " + hostPort.toString());
+        synchronized (queue) {
+            queue.add(new PeerInfo(hostPort));
+        }
+    }
 
+
+    /**
+     * add back a peerInfo to the queue for connecting
+     * @param peerInfo
+     */
+    public void addPeerInfo(PeerInfo peerInfo) {
+        synchronized (queue) {
+            queue.add(peerInfo);
+        }
+    }
+
+    // request handshake to the peer
     private void requestHandshake(Connection conn) {
         conn.send(handshakeRequestJson);
 
@@ -143,22 +176,9 @@ public class OutgoingConnectionHelper {
         }
     }
 
-
-    public void addPeerInfo(HostPort hostPort) {
-        log.info("New target: " + hostPort.toString());
-        synchronized (queue) {
-            queue.add(new PeerInfo(hostPort));
-        }
-    }
-
-
-    public void addPeerInfo(PeerInfo peerInfo) {
-        synchronized (queue) {
-            queue.add(peerInfo);
-        }
-    }
-
-
+    /**
+     * internal class for a peer that waiting to be connected and it's retry info
+     */
     private class PeerInfo {
 
         private HostPort hostPort;

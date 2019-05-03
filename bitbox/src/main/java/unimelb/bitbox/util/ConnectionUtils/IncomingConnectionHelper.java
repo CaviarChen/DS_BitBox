@@ -19,7 +19,7 @@ import java.util.logging.Logger;
 
 
 /**
- *
+ * Incoming Connection Helper
  *
  * @author Wenqing Xue (813044)
  * @author Weizhi Xu (752454)
@@ -27,23 +27,39 @@ import java.util.logging.Logger;
  * @author Zijun Chen (813190)
  */
 public class IncomingConnectionHelper {
-    private static final int HANDSHAKE_TIMEOUT = 10000;
-    private static final long PEERS_CACHE_TIMEOUT = 10000;
     private static Logger log = Logger.getLogger(IncomingConnectionHelper.class.getName());
 
-    private Thread thread;
+    private static final int HANDSHAKE_TIMEOUT = 10000;
+    private static final long PEERS_CACHE_TIMEOUT = 10000;
+
+    private Thread thread = null;
     private String handshakeResponseJson;
     private ArrayList<HostPort> connectedPeersCache;
     private long connectedPeersCacheTime = 0;
     private final Object connectedPeersCacheLock = new Object();
 
+    private int port;
 
+    /**
+     * Constructor
+     * @param advertisedName from config
+     * @param port listening port from config
+     */
     public IncomingConnectionHelper(String advertisedName, int port) {
 
         Protocol.HandshakeResponse handshakeResponse = new Protocol.HandshakeResponse();
         handshakeResponse.peer.host = advertisedName;
         handshakeResponse.peer.port = port;
         handshakeResponseJson = ProtocolFactory.marshalProtocol(handshakeResponse);
+
+        this.port = port;
+    }
+
+    /**
+     * start working thread
+     */
+    public void start() {
+        if (thread != null) throw new RuntimeException("Already started");
 
         thread = new Thread(() -> {
             try {
@@ -57,6 +73,7 @@ public class IncomingConnectionHelper {
     }
 
 
+    // main work thread
     private void execute(int port) throws Exception {
         ServerSocket serverSocket = new ServerSocket(port);
         log.info(String.format("Start listening to port: %d", port));
@@ -86,7 +103,7 @@ public class IncomingConnectionHelper {
         log.info("Stop listening to incoming connection");
     }
 
-
+    // handle the handshake process (run in thread pool)
     private void handleHandshake(Connection conn) {
 
         try {
@@ -106,6 +123,7 @@ public class IncomingConnectionHelper {
                 HostPort hostPort = handshakeRequest.peer;
                 int res = ConnectionManager.getInstance().addConnection(conn, hostPort);
                 if (res == 0) {
+                    // success
                     conn.send(handshakeResponseJson);
                     conn.active(hostPort);
                     return;
@@ -114,8 +132,10 @@ public class IncomingConnectionHelper {
                 Protocol.ConnectionRefused connectionRefused = new Protocol.ConnectionRefused();
                 connectionRefused.peers = getCachedPeers();
                 if (res == -1) {
+                    // over limit
                     connectionRefused.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_CONNECTION_REFUSED_LIMIT_REACHED;
                 } else if (res == -2) {
+                    // already connected
                     connectionRefused.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_CONNECTION_REFUSED_ALREADY_EXIST;
                 }
                 conn.send(ProtocolFactory.marshalProtocol(connectionRefused));
@@ -133,7 +153,7 @@ public class IncomingConnectionHelper {
 
     }
 
-
+    // get & cache the connected peer since we don't want refuse a connection be costly
     private ArrayList<HostPort> getCachedPeers() {
         synchronized (connectedPeersCacheLock) {
             if (System.currentTimeMillis() - connectedPeersCacheTime > PEERS_CACHE_TIMEOUT) {
