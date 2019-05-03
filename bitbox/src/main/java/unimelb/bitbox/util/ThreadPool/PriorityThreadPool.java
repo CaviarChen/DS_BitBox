@@ -19,10 +19,6 @@ public class PriorityThreadPool {
     private static Logger log = Logger.getLogger(PriorityThreadPool.class.getName());
 
     private static ThreadPoolExecutor pool;
-    private static int corePoolSize;
-    private static int maximumPoolSize;
-    private static int queueSize;
-    private static long keepAliveTime;
 
     private static PriorityThreadPool instance = new PriorityThreadPool();
 
@@ -33,17 +29,13 @@ public class PriorityThreadPool {
 
 
     private PriorityThreadPool() {
-        corePoolSize = Runtime.getRuntime().availableProcessors() + 1;
-        maximumPoolSize = 5000;
-        queueSize = 5000;
-        keepAliveTime = 2000L;
 
         pool = new ThreadPoolExecutor(
-                corePoolSize,
-                maximumPoolSize,
-                keepAliveTime,
+                Constants.THREAD_POOL_CORE_POOL_SIZE,
+                Constants.THREAD_POOL_MAX_POOL_SZIE,
+                Constants.THREAD_POOL_KEEP_ALIVE_TIME,
                 TimeUnit.MILLISECONDS,
-                new PriorityBlockingQueue<>(queueSize),
+                new PriorityBlockingQueue<>(Constants.THREAD_POOL_QUEUE_SIZE),
                 new ThreadPoolExecutor.AbortPolicy()
         );
         log.info("Thread pool is ready to go");
