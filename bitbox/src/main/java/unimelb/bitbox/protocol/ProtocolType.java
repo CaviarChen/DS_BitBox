@@ -4,6 +4,14 @@ package unimelb.bitbox.protocol;
 import unimelb.bitbox.Constants;
 
 
+/**
+ *
+ *
+ * @author Wenqing Xue (813044)
+ * @author Weizhi Xu (752454)
+ * @author Zijie Shen (741404)
+ * @author Zijun Chen (813190)
+ */
 public enum ProtocolType {
     INVALID_PROTOCOL(Constants.PROTOCOL_TYPE_INVALID_PROTOCOL, Protocol.InvalidProtocol.class),
     CONNECTION_REFUSED(Constants.PROTOCOL_TYPE_CONNECTION_REFUSED, Protocol.ConnectionRefused.class),

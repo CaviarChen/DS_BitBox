@@ -1,6 +1,14 @@
 package unimelb.bitbox.protocol;
 
 
+/**
+ *
+ *
+ * @author Wenqing Xue (813044)
+ * @author Weizhi Xu (752454)
+ * @author Zijie Shen (741404)
+ * @author Zijun Chen (813190)
+ */
 public class ProtocolFactoryDemo {
     public static void main(String[] args) {
 //        ProtocolFactory factory = new ProtocolFactory();

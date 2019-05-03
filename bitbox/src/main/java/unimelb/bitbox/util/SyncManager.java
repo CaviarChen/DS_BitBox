@@ -12,6 +12,14 @@ import unimelb.bitbox.util.FileSystem.FileSystemManager.FileSystemEvent;
 import java.util.logging.Logger;
 
 
+/**
+ *
+ *
+ * @author Wenqing Xue (813044)
+ * @author Weizhi Xu (752454)
+ * @author Zijie Shen (741404)
+ * @author Zijun Chen (813190)
+ */
 public class SyncManager {
     private static SyncManager instance = new SyncManager();
 
