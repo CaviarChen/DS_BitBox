@@ -1,4 +1,5 @@
-package unimelb.bitbox;
+package unimelb.bitbox.ConnectionPkg;
+
 
 import unimelb.bitbox.util.Configuration;
 import unimelb.bitbox.util.HostPort;
@@ -6,18 +7,22 @@ import unimelb.bitbox.util.HostPort;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
+
 public class ConnectionManager {
     private static ConnectionManager instance = new ConnectionManager();
 
     private static final int MAX_INCOMING_CONNECTIONS =
             Integer.parseInt(Configuration.getConfigurationValue("maximumIncommingConnections"));
 
+
     public static ConnectionManager getInstance() {
         return instance;
     }
 
+
     private int incomingConnCounter = 0;
     private ConcurrentHashMap<HostPort, Connection> connectionMap;
+
 
     private ConnectionManager() {
         connectionMap = new ConcurrentHashMap<>();
@@ -48,18 +53,21 @@ public class ConnectionManager {
         }
     }
 
+
     public void broadcastMsgAsync(String msg) {
         // no need to lock
-        for (Connection conn: connectionMap.values()) {
+        for (Connection conn : connectionMap.values()) {
             conn.sendAsync(msg);
         }
     }
+
 
     public boolean isIncommingConnectionFull() {
         synchronized (this) {
             return incomingConnCounter >= MAX_INCOMING_CONNECTIONS;
         }
     }
+
 
     public boolean removeConnection(Connection conn) {
         HostPort hostPort = conn.getHostPort();
@@ -72,14 +80,16 @@ public class ConnectionManager {
         return res;
     }
 
+
     public boolean checkExist(HostPort hostPort) {
         return connectionMap.containsKey(hostPort);
     }
 
+
     public ArrayList<HostPort> getConnectedPeers() {
         ArrayList<HostPort> hostPorts = new ArrayList<>();
         // no need to lock
-        for (Connection conn: connectionMap.values()) {
+        for (Connection conn : connectionMap.values()) {
             hostPorts.add(conn.getHostPort());
         }
 

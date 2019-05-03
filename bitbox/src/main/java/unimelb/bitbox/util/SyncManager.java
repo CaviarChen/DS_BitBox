@@ -1,25 +1,33 @@
-package unimelb.bitbox;
+package unimelb.bitbox.util;
 
+
+import unimelb.bitbox.ConnectionPkg.Connection;
+import unimelb.bitbox.ConnectionPkg.ConnectionManager;
 import unimelb.bitbox.protocol.Protocol;
 import unimelb.bitbox.protocol.ProtocolFactory;
 import unimelb.bitbox.protocol.ProtocolField;
-import unimelb.bitbox.util.FileSystemManager;
-import unimelb.bitbox.util.FileSystemManager.FileSystemEvent;
+import unimelb.bitbox.util.FileSystem.FileSystemManager;
+import unimelb.bitbox.util.FileSystem.FileSystemManager.FileSystemEvent;
 
 import java.util.logging.Logger;
 
+
 public class SyncManager {
     private static SyncManager instance = new SyncManager();
+
 
     public static SyncManager getInstance() {
         return instance;
     }
 
+
     private FileSystemManager fileSystemManager = null;
     private static Logger log = Logger.getLogger(SyncManager.class.getName());
 
+
     private SyncManager() {
     }
+
 
     public void init(FileSystemManager fileSystemManager) {
         this.fileSystemManager = fileSystemManager;
@@ -33,6 +41,7 @@ public class SyncManager {
         }
     }
 
+
     public void syncWithOneAsync(Connection conn) {
         log.info("Sync with: " + conn.getHostPort().toString());
 
@@ -41,10 +50,12 @@ public class SyncManager {
         }
     }
 
+
     public void sendEventToAllAsync(FileSystemEvent fileSystemEvent) {
         Protocol protocol = eventToProtocol(fileSystemEvent);
         ConnectionManager.getInstance().broadcastMsgAsync(ProtocolFactory.marshalProtocol(protocol));
     }
+
 
     private void sendEventToOneAsync(FileSystemEvent fileSystemEvent, Connection conn) {
         Protocol protocol = eventToProtocol(fileSystemEvent);
@@ -84,6 +95,7 @@ public class SyncManager {
         }
         return protocol;
     }
+
 
     private void eventToFileDes(ProtocolField.FileDes fileDes, FileSystemEvent fileSystemEvent) {
         fileDes.path = fileSystemEvent.pathName;

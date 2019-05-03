@@ -1,14 +1,23 @@
 package unimelb.bitbox;
 
+
+import unimelb.bitbox.ConnectionPkg.IncomingConnectionHelper;
+import unimelb.bitbox.ConnectionPkg.OutgoingConnectionHelper;
 import unimelb.bitbox.util.Configuration;
-import unimelb.bitbox.util.FileSystemManager;
+import unimelb.bitbox.util.FileSystem.FileSystemManager;
+import unimelb.bitbox.util.MessageHandler;
+import unimelb.bitbox.util.Scheduler;
+import unimelb.bitbox.util.SyncManager;
+
 import java.util.logging.Logger;
+
 
 public class Peer {
     private static Logger log = Logger.getLogger(Peer.class.getName());
     private static IncomingConnectionHelper incomingConnectionManager;
     private static OutgoingConnectionHelper outgoingConnectionHelper;
     private static Scheduler scheduler;
+
 
     public static void main(String[] args) throws Exception {
         System.setProperty("java.util.logging.SimpleFormatter.format",

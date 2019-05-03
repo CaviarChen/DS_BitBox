@@ -1,8 +1,11 @@
-package unimelb.bitbox;
+package unimelb.bitbox.util;
 
 
+import unimelb.bitbox.ConnectionPkg.Connection;
+import unimelb.bitbox.Constants;
 import unimelb.bitbox.protocol.*;
-import unimelb.bitbox.util.FileSystemManager;
+import unimelb.bitbox.util.FileSystem.FileLoaderWrapper;
+import unimelb.bitbox.util.FileSystem.FileSystemManager;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -25,9 +28,10 @@ public class MessageHandler {
         fileSystemManager = fsm;
     }
 
+
     public static void handleMessage(String message, Connection conn) {
 
-        try{
+        try {
             Protocol protocol = ProtocolFactory.parseProtocol(message);
 
             ProtocolType protocolType = ProtocolType.typeOfProtocol(protocol);
@@ -75,11 +79,12 @@ public class MessageHandler {
                     throw new InvalidProtocolException("Unexpected command: " + protocol.getClass().getName(), null);
             }
 
-        } catch (InvalidProtocolException e){
+        } catch (InvalidProtocolException e) {
             conn.abortWithInvalidProtocol(e.getMessage());
         }
 
     }
+
 
     private static void handleSpecificProtocol(Protocol.FileCreateRequest fileCreateRequest, Connection conn) {
 
@@ -93,7 +98,7 @@ public class MessageHandler {
             conn.send(ProtocolFactory.marshalProtocol(response));
         }
 
-        try{
+        try {
             FileLoaderWrapper fileLoaderWrapper = fileLoaderWrapperMap.get(fd.path);
 
             if (fileLoaderWrapper == null) {
@@ -125,12 +130,13 @@ public class MessageHandler {
                     response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_FILE_ANOTHER_IS_TRANSMITTING;
                 }
             }
-        }catch (IOException | NoSuchAlgorithmException e){
+        } catch (IOException | NoSuchAlgorithmException e) {
             response.response.status = false;
             response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_FILE_CREATE_FAIL_PREFIX + e.getMessage();
         }
         conn.send(ProtocolFactory.marshalProtocol(response));
     }
+
 
     private static void handleSpecificProtocol(Protocol.FileDeleteRequest fileDeleteRequest, Connection conn) {
 
@@ -143,12 +149,12 @@ public class MessageHandler {
                 response.response.status = false;
                 response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_FILE_DOES_NOT_EXIST;
             } else {
-                try{
-                    response.response.status = fileSystemManager.deleteFile(fd.path,fd.lastModified,fd.md5);
+                try {
+                    response.response.status = fileSystemManager.deleteFile(fd.path, fd.lastModified, fd.md5);
                     response.response.msg = response.response.status ?
                             Constants.PROTOCOL_RESPONSE_MESSAGE_FILE_DELETE_SUCCESS :
                             Constants.PROTOCOL_RESPONSE_MESSAGE_FILE_DELETE_FAIL;
-                }catch (Exception e){
+                } catch (Exception e) {
                     response.response.status = false;
                     response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_FILE_DELETE_FAIL_PREFIX + e.getMessage();
                 }
@@ -160,6 +166,7 @@ public class MessageHandler {
 
         conn.send(ProtocolFactory.marshalProtocol(response));
     }
+
 
     private static void handleSpecificProtocol(Protocol.FileModifyRequest fileModifyRequest, Connection conn) {
         ProtocolField.FileDes fd = fileModifyRequest.fileDes;
@@ -173,7 +180,7 @@ public class MessageHandler {
             return;
         }
 
-        try{
+        try {
             FileLoaderWrapper fileLoaderWrapper = fileLoaderWrapperMap.get(fd.path);
 
             if (fileLoaderWrapper == null) {
@@ -205,12 +212,13 @@ public class MessageHandler {
                     response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_FILE_ANOTHER_IS_TRANSMITTING;
                 }
             }
-        }catch (IOException | NoSuchAlgorithmException e){
+        } catch (IOException | NoSuchAlgorithmException e) {
             response.response.status = false;
             response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_FILE_DELETE_FAIL_PREFIX + e.getMessage();
         }
         conn.send(ProtocolFactory.marshalProtocol(response));
     }
+
 
     private static void handleSpecificProtocol(Protocol.FileBytesRequest fileBytesRequest, Connection conn) {
         Protocol.FileBytesResponse response = new Protocol.FileBytesResponse();
@@ -252,6 +260,7 @@ public class MessageHandler {
         conn.send(ProtocolFactory.marshalProtocol(response));
     }
 
+
     private static void handleSpecificProtocol(Protocol.FileBytesResponse fileBytesResponse, Connection conn) {
 
         String filePath = fileBytesResponse.fileDes.path;
@@ -264,6 +273,7 @@ public class MessageHandler {
             }
         }
     }
+
 
     private static void handleSpecificProtocol(Protocol.DirectoryCreateRequest directoryCreateRequest, Connection conn) {
 
@@ -290,6 +300,7 @@ public class MessageHandler {
         conn.send(ProtocolFactory.marshalProtocol(response));
     }
 
+
     private static void handleSpecificProtocol(Protocol.DirectoryDeleteRequest directoryDeleteRequest, Connection conn) {
 
         Protocol.DirectoryDeleteResponse response = new Protocol.DirectoryDeleteResponse();
@@ -315,13 +326,15 @@ public class MessageHandler {
         conn.send(ProtocolFactory.marshalProtocol(response));
     }
 
+
     public static void removeFileLoaderWrapper(FileLoaderWrapper fileLoaderWrapper, String filePath) {
         fileLoaderWrapperMap.remove(filePath, fileLoaderWrapper);
     }
 
+
     public static void cleanUpFileLoaderWrapper() {
         // thread-safe, the iterator is a snapshot
-        for(Map.Entry<String, FileLoaderWrapper> entry : fileLoaderWrapperMap.entrySet()) {
+        for (Map.Entry<String, FileLoaderWrapper> entry : fileLoaderWrapperMap.entrySet()) {
             entry.getValue().clean();
         }
     }

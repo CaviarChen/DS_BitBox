@@ -1,14 +1,15 @@
 package unimelb.bitbox;
 
+
 public class Constants {
 
     // Configurations
-    public static final String CONFIG_HOSTNAME_PORT_SEPARATOR=":";
-    public static final String CONFIG_PEERS_SEPARATOR=",";
-    public static final String CONFIG_FIELD_PEERS ="peers";
-    public static final String CONFIG_FIELD_PORT="port";
+    public static final String CONFIG_HOSTNAME_PORT_SEPARATOR = ":";
+    public static final String CONFIG_PEERS_SEPARATOR = ",";
+    public static final String CONFIG_FIELD_PEERS = "peers";
+    public static final String CONFIG_FIELD_PORT = "port";
     public static final String CONFIG_FIELD_AD_NAME = "advertisedName";
-    public static final String CONFIG_FIELD_BLOCKSIZE= "blockSize";
+    public static final String CONFIG_FIELD_BLOCKSIZE = "blockSize";
 
     // Protocol fields
     public static final String PROTOCOL_FIELD_CMD = "command";

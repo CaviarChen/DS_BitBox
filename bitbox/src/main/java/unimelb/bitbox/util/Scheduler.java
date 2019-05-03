@@ -1,12 +1,12 @@
-package unimelb.bitbox;
+package unimelb.bitbox.util;
 
-import unimelb.bitbox.util.Configuration;
-import unimelb.bitbox.util.FileSystemManager;
+
 import unimelb.bitbox.util.ThreadPool.Priority;
 import unimelb.bitbox.util.ThreadPool.PriorityTask;
 import unimelb.bitbox.util.ThreadPool.PriorityThreadPool;
 
 import java.util.logging.Logger;
+
 
 public class Scheduler {
 
@@ -16,6 +16,7 @@ public class Scheduler {
 
     private final long syncInterval;
     private Thread thread;
+
 
     public Scheduler() {
         syncInterval = Long.parseLong(Configuration.getConfigurationValue("syncInterval")) * MILLIS_PER_SEC;
@@ -28,7 +29,7 @@ public class Scheduler {
         }
 
 
-        thread = new Thread(()->{
+        thread = new Thread(() -> {
             while (!thread.isInterrupted()) {
                 try {
                     Thread.sleep(syncInterval);

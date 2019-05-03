@@ -1,5 +1,7 @@
-package unimelb.bitbox;
+package unimelb.bitbox.ConnectionPkg;
 
+
+import unimelb.bitbox.Constants;
 import unimelb.bitbox.protocol.InvalidProtocolException;
 import unimelb.bitbox.protocol.Protocol;
 import unimelb.bitbox.protocol.ProtocolFactory;
@@ -14,6 +16,7 @@ import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.logging.Logger;
+
 
 public class IncomingConnectionHelper {
     private static final int HANDSHAKE_TIMEOUT = 10000;
@@ -34,7 +37,7 @@ public class IncomingConnectionHelper {
         handshakeResponse.peer.port = port;
         handshakeResponseJson = ProtocolFactory.marshalProtocol(handshakeResponse);
 
-        thread = new Thread(()->{
+        thread = new Thread(() -> {
             try {
                 execute(port);
             } catch (Exception e) {
@@ -44,6 +47,7 @@ public class IncomingConnectionHelper {
         });
         thread.start();
     }
+
 
     private void execute(int port) throws Exception {
         ServerSocket serverSocket = new ServerSocket(port);
@@ -73,6 +77,7 @@ public class IncomingConnectionHelper {
 
         log.info("Stop listening to incoming connection");
     }
+
 
     private void handleHandshake(Connection conn) {
 
@@ -120,9 +125,10 @@ public class IncomingConnectionHelper {
 
     }
 
+
     private ArrayList<HostPort> getCachedPeers() {
         synchronized (connectedPeersCacheLock) {
-            if ( System.currentTimeMillis() - connectedPeersCacheTime > PEERS_CACHE_TIMEOUT) {
+            if (System.currentTimeMillis() - connectedPeersCacheTime > PEERS_CACHE_TIMEOUT) {
                 connectedPeersCache = ConnectionManager.getInstance().getConnectedPeers();
                 connectedPeersCacheTime = System.currentTimeMillis();
             }

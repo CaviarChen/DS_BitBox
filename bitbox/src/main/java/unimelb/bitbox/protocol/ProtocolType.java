@@ -4,7 +4,7 @@ package unimelb.bitbox.protocol;
 import unimelb.bitbox.Constants;
 
 
-public enum ProtocolType{
+public enum ProtocolType {
     INVALID_PROTOCOL(Constants.PROTOCOL_TYPE_INVALID_PROTOCOL, Protocol.InvalidProtocol.class),
     CONNECTION_REFUSED(Constants.PROTOCOL_TYPE_CONNECTION_REFUSED, Protocol.ConnectionRefused.class),
     HANDSHAKE_REQUEST(Constants.PROTOCOL_TYPE_HANDSHAKE_REQUEST, Protocol.HandshakeRequest.class),
@@ -23,21 +23,25 @@ public enum ProtocolType{
     DIRECTORY_DELETE_RESPONSE(Constants.PROTOCOL_TYPE_DIRECTORY_DELETE_RESPONSE, Protocol.DirectoryDeleteResponse.class);
 
 
-
     private final String key;
     private final Class value;
+
 
     ProtocolType(String key, Class value) {
         this.key = key;
         this.value = value;
     }
 
+
     public String getKey() {
         return key;
     }
+
+
     public Class getValue() {
         return value;
     }
+
 
     public static ProtocolType typeOfCommand(String command) throws InvalidProtocolException {
         for (ProtocolType e : values()) {
@@ -47,6 +51,7 @@ public enum ProtocolType{
         }
         throw new InvalidProtocolException("Unknown command: " + command, null);
     }
+
 
     public static ProtocolType typeOfProtocol(Protocol protocol) {
         for (ProtocolType e : values()) {

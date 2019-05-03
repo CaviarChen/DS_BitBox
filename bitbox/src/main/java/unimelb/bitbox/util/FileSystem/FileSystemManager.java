@@ -1,4 +1,7 @@
-package unimelb.bitbox.util;
+package unimelb.bitbox.util.FileSystem;
+
+
+import unimelb.bitbox.util.Document;
 
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -10,6 +13,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.logging.Logger;
+
 
 /**
  * A file system manager, that recursively monitors a given share directory,
@@ -50,6 +54,7 @@ public class FileSystemManager extends Thread {
      */
     public final String loadingSuffix = "(bitbox)";
 
+
     /**
      * Possible file system events.
      * <li>{@link #FILE_CREATE}</li>
@@ -85,6 +90,7 @@ public class FileSystemManager extends Thread {
         DIRECTORY_DELETE
     }
 
+
     /**
      * Describes the case when a file is
      * created/deleted/modified or when a directory is created/deleted.
@@ -118,6 +124,7 @@ public class FileSystemManager extends Thread {
          */
         public FileDescriptor fileDescriptor;
 
+
         /**
          * Constructor for file events.
          *
@@ -135,6 +142,7 @@ public class FileSystemManager extends Thread {
             this.event = event;
         }
 
+
         /**
          * Constructor for directory events.
          *
@@ -150,10 +158,12 @@ public class FileSystemManager extends Thread {
             this.event = event;
         }
 
+
         public String toString() {
             return event.name() + " " + pathName;
         }
     }
+
 
     /**
      * Additional information about a given file.
@@ -172,6 +182,7 @@ public class FileSystemManager extends Thread {
          */
         public long fileSize;
 
+
         /**
          * Constructor
          *
@@ -184,6 +195,7 @@ public class FileSystemManager extends Thread {
             this.fileSize = fileSize;
         }
 
+
         /**
          * Provide the {@link #Document} for this object.
          */
@@ -195,6 +207,7 @@ public class FileSystemManager extends Thread {
             return doc;
         }
     }
+
 
     /**
      * Construct a new file system manager. If the supplied share directory is not a directory
@@ -263,6 +276,7 @@ public class FileSystemManager extends Thread {
 
     // directories
 
+
     /**
      * Returns true if the directory name exists.
      *
@@ -294,6 +308,7 @@ public class FileSystemManager extends Thread {
         }
     }
 
+
     /**
      * Attempts to delete a directory, the directory must be
      * empty.
@@ -314,6 +329,7 @@ public class FileSystemManager extends Thread {
 
     // files
 
+
     /**
      * Test if the file exists, ignoring the contents of the file.
      *
@@ -330,6 +346,7 @@ public class FileSystemManager extends Thread {
             return watchedFiles.containsKey(root + FileSystems.getDefault().getSeparator() + pathName);
         }
     }
+
 
     /**
      * Test if the file exists and is has matching content.
@@ -350,6 +367,7 @@ public class FileSystemManager extends Thread {
                     watchedFiles.get(fullPathName).md5.equals(md5);
         }
     }
+
 
     /**
      * Attempt to delete a file. The file must exist and it must
@@ -375,6 +393,7 @@ public class FileSystemManager extends Thread {
             } else return false;
         }
     }
+
 
     /**
      * Create a file loader for given file name. The file name must not
@@ -405,6 +424,7 @@ public class FileSystemManager extends Thread {
         return true;
     }
 
+
     /**
      * Requests the file loader for the associated file name to write the supplied byte buffer
      * at the supplied position in the loader file.
@@ -425,6 +445,7 @@ public class FileSystemManager extends Thread {
         }
         return true;
     }
+
 
     /**
      * Read bytes from any file containing the matching specific content.
@@ -470,6 +491,7 @@ public class FileSystemManager extends Thread {
         }
     }
 
+
     /**
      * Requests the file loader for the associated file name to check if all of the content for the file
      * has been written. It does this by checking the MD5 hash of the written bytes to see if
@@ -505,6 +527,7 @@ public class FileSystemManager extends Thread {
         }
     }
 
+
     /**
      * Should be called directly after creating a file loader, but can be called at any time.
      * Requests the file loader to check if another file already exists with the same content,
@@ -539,6 +562,7 @@ public class FileSystemManager extends Thread {
         }
     }
 
+
     /**
      * Called to create a file loader in the case when a file name already exists. The existing
      * file must have a last modified timestamp that is less than or equal to the supplied one. See
@@ -565,6 +589,7 @@ public class FileSystemManager extends Thread {
         }
         return true;
     }
+
 
     /**
      * Cancel a file loader. Removes the file loader if present, including the loader file.
@@ -597,6 +622,7 @@ public class FileSystemManager extends Thread {
 
     // synchronization
 
+
     /**
      * Typically called at the beginning of a connection, in order to ensure that
      * the remote directory has all of the same contents as the local directory.
@@ -627,6 +653,7 @@ public class FileSystemManager extends Thread {
     // Internals
     ////////////////////
 
+
     private class FileLoader {
         private String md5;
         private long length;
@@ -636,6 +663,7 @@ public class FileSystemManager extends Thread {
         private FileLock lock;
         private File file;
         private RandomAccessFile raf;
+
 
         public FileLoader(String pathName, String md5, long length, long lastModified) throws IOException {
             this.pathName = pathName;
@@ -651,12 +679,14 @@ public class FileSystemManager extends Thread {
             lock = channel.lock();
         }
 
+
         public boolean cancel() throws IOException {
             lock.release();
             channel.close();
             raf.close();
             return file.delete();
         }
+
 
         public boolean checkShortcut() throws NoSuchAlgorithmException, IOException {
             // check for a shortcut
@@ -701,10 +731,12 @@ public class FileSystemManager extends Thread {
             return success;
         }
 
+
         public void writeFile(ByteBuffer src, long position) throws IOException {
             if (position > length) throw new IOException("trying to write bytes beyond what is expected");
             channel.write(src, position);
         }
+
 
         public boolean checkWriteComplete() throws NoSuchAlgorithmException, IOException {
             String currentMd5 = hashFile(file, pathName, 0, raf);
@@ -721,6 +753,7 @@ public class FileSystemManager extends Thread {
             return false;
         }
     }
+
 
     private HashSet<String> watchedDirectories;
     private HashMap<String, HashSet<String>> hashMap;
@@ -798,6 +831,7 @@ public class FileSystemManager extends Thread {
 
     }
 
+
     private String hashFile(File file, String name, long lastModified) throws NoSuchAlgorithmException, IOException {
         log.info("hashing file " + name);
         if (lastModified != 0 && lastModified == file.lastModified()) {
@@ -808,6 +842,7 @@ public class FileSystemManager extends Thread {
         return checksum;
     }
 
+
     private String hashFile(File file, String name, long lastModified, RandomAccessFile raf) throws NoSuchAlgorithmException, IOException {
         log.info("hashing file " + name);
         if (lastModified != 0 && lastModified == file.lastModified()) {
@@ -817,6 +852,7 @@ public class FileSystemManager extends Thread {
         String checksum = getFileChecksum(md5Digest, raf);
         return checksum;
     }
+
 
     private ArrayList<FileSystemEvent> scanDirectoryTree(String name) throws IOException, NoSuchAlgorithmException {
         ArrayList<FileSystemEvent> pathEvents = new ArrayList<FileSystemEvent>();
@@ -857,11 +893,13 @@ public class FileSystemManager extends Thread {
         return pathEvents;
     }
 
+
     private void removeHash(String name) {
         HashSet<String> hs = hashMap.get(watchedFiles.get(name).md5);
         hs.remove(name);
         if (hs.size() == 0) hs.remove(watchedFiles.get(name).md5);
     }
+
 
     private void addHash(String md5, String name) {
         if (!hashMap.containsKey(md5)) {
@@ -869,6 +907,7 @@ public class FileSystemManager extends Thread {
         }
         hashMap.get(md5).add(name);
     }
+
 
     private void modifyFile(String name, String md5, long lastModified, long fileSize) {
         log.info("modified file " + name);
@@ -879,11 +918,13 @@ public class FileSystemManager extends Thread {
         addHash(md5, name);
     }
 
+
     private void dropFile(String name) {
         log.info("dropping file " + name);
         removeHash(name);
         watchedFiles.remove(name);
     }
+
 
     private void addFile(String name, FileDescriptor fileDescriptor) {
         log.info("adding file " + name);
@@ -891,15 +932,18 @@ public class FileSystemManager extends Thread {
         watchedFiles.put(name, fileDescriptor);
     }
 
+
     private void dropDir(String name) {
         log.info("dropping directory " + name);
         watchedDirectories.remove(name);
     }
 
+
     private void addDir(String name) {
         log.info("adding new directory " + name);
         watchedDirectories.add(name);
     }
+
 
     private static String getFileChecksum(MessageDigest digest, RandomAccessFile fis) throws IOException {
         byte[] byteArray = new byte[1024];
@@ -908,7 +952,6 @@ public class FileSystemManager extends Thread {
         while ((bytesCount = fis.read(byteArray)) != -1) {
             digest.update(byteArray, 0, bytesCount);
         }
-        ;
         byte[] bytes = digest.digest();
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < bytes.length; i++) {
@@ -917,6 +960,7 @@ public class FileSystemManager extends Thread {
         return sb.toString();
     }
 
+
     private static String getFileChecksum(MessageDigest digest, File file) throws IOException {
         FileInputStream fis = new FileInputStream(file);
         byte[] byteArray = new byte[1024];
@@ -924,7 +968,6 @@ public class FileSystemManager extends Thread {
         while ((bytesCount = fis.read(byteArray)) != -1) {
             digest.update(byteArray, 0, bytesCount);
         }
-        ;
         fis.close();
         byte[] bytes = digest.digest();
         StringBuilder sb = new StringBuilder();
@@ -933,6 +976,7 @@ public class FileSystemManager extends Thread {
         }
         return sb.toString();
     }
+
 
     private static String separatorsToSystem(String res) {
         if (res == null) return null;

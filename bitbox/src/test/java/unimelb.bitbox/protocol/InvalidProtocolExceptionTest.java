@@ -22,6 +22,7 @@ public class InvalidProtocolExceptionTest {
         }
     }
 
+
     @Test
     public void testInvalidProtocolException2() {
         try {

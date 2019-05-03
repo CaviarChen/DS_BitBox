@@ -1,5 +1,6 @@
 package unimelb.bitbox.util;
 
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -8,6 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Logger;
+
 
 /**
  * Simple wrapper for using Properties(). Example:
@@ -50,6 +52,7 @@ public class Configuration {
     public static String getConfigurationValue(String key) {
         return properties.getProperty(key);
     }
+
 
     // private constructor to prevent initialization
     private Configuration() {

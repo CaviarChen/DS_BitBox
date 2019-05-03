@@ -1,23 +1,27 @@
 package unimelb.bitbox.protocol;
 
+
 import unimelb.bitbox.util.Document;
-import unimelb.bitbox.util.HostPort;
 
 import java.util.Objects;
 
 import static unimelb.bitbox.Constants.*;
 
-public abstract class ProtocolField implements IProtocol{
+
+public abstract class ProtocolField implements IProtocol {
 
 //  subclass  ------------------------------------
 
+
     public static class Path extends ProtocolField {
         public String path;         // pathName
+
 
         @Override
         public void unmarshalFromJson(Document doc) {
             this.path = doc.getString(PROTOCOL_FIELD_PATH_NAME);
         }
+
 
         @Override
         public void marshalToJson(Document doc) {
@@ -26,10 +30,11 @@ public abstract class ProtocolField implements IProtocol{
     }
 
 
-    public static class FileDes extends Path{
+    public static class FileDes extends Path {
         public String md5;
         public long lastModified;
         public long fileSize;
+
 
         @Override
         public void unmarshalFromJson(Document doc) {
@@ -40,6 +45,7 @@ public abstract class ProtocolField implements IProtocol{
             this.fileSize = subDoc.getLong(PROTOCOL_FIELD_FILE_SIZE);
             this.path = doc.getString(PROTOCOL_FIELD_PATH_NAME);
         }
+
 
         @Override
         public void marshalToJson(Document doc) {
@@ -52,15 +58,18 @@ public abstract class ProtocolField implements IProtocol{
         }
     }
 
-    public static class Response extends ProtocolField{
+
+    public static class Response extends ProtocolField {
         public String msg;         // message
         public Boolean status;      // status
+
 
         @Override
         public void unmarshalFromJson(Document doc) {
             this.msg = doc.getString(PROTOCOL_FIELD_MSG);
             this.status = doc.getBoolean(PROTOCOL_FIELD_STATUS);
         }
+
 
         @Override
         public void marshalToJson(Document doc) {
@@ -69,9 +78,11 @@ public abstract class ProtocolField implements IProtocol{
         }
     }
 
-    public static class FilePosition extends ProtocolField{
+
+    public static class FilePosition extends ProtocolField {
         public long pos;         // position
         public long len;         // length
+
 
         @Override
         public void unmarshalFromJson(Document doc) {
@@ -79,11 +90,13 @@ public abstract class ProtocolField implements IProtocol{
             this.len = doc.getLong(PROTOCOL_FIELD_LENGTH);
         }
 
+
         @Override
         public void marshalToJson(Document doc) {
             doc.append(PROTOCOL_FIELD_POSITION, this.pos);
             doc.append(PROTOCOL_FIELD_LENGTH, this.len);
         }
+
 
         @Override
         public boolean equals(Object o) {
@@ -97,6 +110,7 @@ public abstract class ProtocolField implements IProtocol{
             return p.pos == pos && p.len == len;
         }
 
+
         // for hashmap
         @Override
         public int hashCode() {
@@ -104,14 +118,17 @@ public abstract class ProtocolField implements IProtocol{
         }
     }
 
-    public static class FileContent extends FilePosition{
+
+    public static class FileContent extends FilePosition {
         public String content;      // content
+
 
         @Override
         public void unmarshalFromJson(Document doc) {
             super.unmarshalFromJson(doc);
             this.content = doc.getString(PROTOCOL_FIELD_CONTENT);
         }
+
 
         @Override
         public void marshalToJson(Document doc) {
