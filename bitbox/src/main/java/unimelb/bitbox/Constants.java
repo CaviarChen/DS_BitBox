@@ -18,6 +18,7 @@ public class Constants {
     public static final String CONFIG_FIELD_PORT = "port";
     public static final String CONFIG_FIELD_AD_NAME = "advertisedName";
     public static final String CONFIG_FIELD_BLOCKSIZE = "blockSize";
+    public static final String CONFIG_FIELD_PATH = "path";
 
     // Protocol fields
     public static final String PROTOCOL_FIELD_CMD = "command";
