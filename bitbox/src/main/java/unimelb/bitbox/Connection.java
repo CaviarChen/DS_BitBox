@@ -171,7 +171,7 @@ public class Connection {
             // unregister from ConnectionManager
             ConnectionManager.getInstance().removeConnection(this);
 
-            // re-add hostPort if outgoing connection
+            // if it is a outgoing connection, add back to queue for retry
             if (type == ConnectionType.OUTGOING) {
                 outgoingConnectionHelper.addPeerInfo(hostPort);
             }
@@ -209,7 +209,7 @@ public class Connection {
             this.close();
 
         } catch (Exception e) {
-            // TODO: log
+            log.warning( currentHostPort() + ", Exception: " + e.toString() + "");
             this.close();
         }
     }

@@ -118,9 +118,11 @@ public class FileLoaderWrapper {
 
         try {
             fileSystemManager.checkWriteComplete(fileBytesResponse.fileDes.path);
-        } catch (NoSuchAlgorithmException | IOException e) {
+        } catch (NoSuchAlgorithmException | IOException ignored) {
             cancel();
         }
+
+        MessageHandler.removeFileLoaderWrapper(this, fileDes.path);
     }
 
     private void send(int limit, Connection conn) {
@@ -177,11 +179,15 @@ public class FileLoaderWrapper {
                 if (System.currentTimeMillis() - entry.getValue().lastActiveTime > TIMEOUT_IN_MILLIS) {
                     pending.addAll(entry.getValue().waiting);
                     it.remove();
+
+                    log.info("Connection cleaned, path:" + fileDes.path
+                            + ", Connection: " + entry.getKey().getHostPort().toString());
                 }
             }
 
             // no active connection, cancel
             if (connectionInfoMap.isEmpty()) {
+                log.info("Task cleaned, path:" + fileDes.path);
                 cancel();
             }
         }

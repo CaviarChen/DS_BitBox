@@ -3,8 +3,7 @@ package unimelb.bitbox;
 import unimelb.bitbox.util.Configuration;
 import unimelb.bitbox.util.HostPort;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ConnectionManager {
     private static ConnectionManager instance = new ConnectionManager();
@@ -12,18 +11,18 @@ public class ConnectionManager {
     private static final int MAX_INCOMING_CONNECTIONS =
             Integer.parseInt(Configuration.getConfigurationValue("maximumIncommingConnections"));
 
-    private static int incomingConnCounter = 0;
-    private static Map<HostPort, Connection> connectionMap;
-
     public static ConnectionManager getInstance() {
         return instance;
     }
 
+    private int incomingConnCounter = 0;
+    private ConcurrentHashMap<HostPort, Connection> connectionMap;
+
     private ConnectionManager() {
-        connectionMap = new HashMap<>();
+        connectionMap = new ConcurrentHashMap<>();
     }
 
-    // TODO: maybe change to exception
+
     // 0: ok, -1: exceed connection limit, -2: connection already exists
     public int addConnection(Connection conn, HostPort hostPort) {
         synchronized (this) {
@@ -49,29 +48,31 @@ public class ConnectionManager {
     }
 
     public void broadcastMsgAsync(String msg) {
-        // TODO: better locking
+        // no need to lock
+        for (Connection conn: connectionMap.values()) {
+            conn.sendAsync(msg);
+        }
+    }
+
+    public int getIncomingConnCounter() {
         synchronized (this) {
-            for (Connection conn: connectionMap.values()) {
-                conn.sendAsync(msg);
-            }
+            return incomingConnCounter;
         }
     }
 
     public boolean removeConnection(Connection conn) {
-        synchronized (this) {
-            HostPort hostPort = conn.getHostPort();
-            boolean res = connectionMap.remove(hostPort, conn);
-            if (res && conn.type == Connection.ConnectionType.INCOMING) {
+        HostPort hostPort = conn.getHostPort();
+        boolean res = connectionMap.remove(hostPort, conn);
+        if (res && conn.type == Connection.ConnectionType.INCOMING) {
+            synchronized (this) {
                 incomingConnCounter -= 1;
             }
-            return res;
         }
+        return res;
     }
 
     public boolean checkExist(HostPort hostPort) {
-        synchronized (this) {
-            return connectionMap.containsKey(hostPort);
-        }
+        return connectionMap.containsKey(hostPort);
     }
 
 }

@@ -9,7 +9,6 @@ import java.nio.ByteBuffer;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
@@ -21,7 +20,6 @@ public class MessageHandler {
     private static ConcurrentHashMap<String, FileLoaderWrapper> fileLoaderWrapperMap = new ConcurrentHashMap<>();
 
 
-    // TODO: may need refator
     // not thread-safe, set this at the initialization stage
     public static void setFileSystemManager(FileSystemManager fsm) {
         fileSystemManager = fsm;
@@ -36,7 +34,7 @@ public class MessageHandler {
             if (protocolType != null) {
                 switch (protocolType) {
                     case INVALID_PROTOCOL:
-                        // log then disconnect (?)
+                        log.warning("received INVALID_PROTOCOL " + conn.getHostPort().toString());
                         break;
 
                     case FILE_CREATE_REQUEST:
@@ -87,13 +85,14 @@ public class MessageHandler {
     private static void handleSpecificProtocol(Protocol.FileCreateRequest fileCreateRequest, Connection conn) {
 
         ProtocolField.FileDes fd = fileCreateRequest.fileDes;
-        if (!fileSystemManager.isSafePathName(fd.path)) {
-            // TODO: response
-            return ;
-        }
-
         Protocol.FileCreateResponse response = new Protocol.FileCreateResponse();
         response.fileDes = fd;
+
+        if (!fileSystemManager.isSafePathName(fd.path)) {
+            response.response.status = false;
+            response.response.msg = "Invalid path";
+            conn.send(ProtocolFactory.marshalProtocol(response));
+        }
 
         try{
             FileLoaderWrapper fileLoaderWrapper = fileLoaderWrapperMap.get(fd.path);
@@ -138,19 +137,24 @@ public class MessageHandler {
 
         Protocol.FileDeleteResponse response = new Protocol.FileDeleteResponse();
         response.fileDes = fileDeleteRequest.fileDes;
-
         ProtocolField.FileDes fd = fileDeleteRequest.fileDes;
-        if (!fileSystemManager.fileNameExists(fd.path)) {
-            response.response.status = false;
-            response.response.msg = "Can't find the specified file";
-        } else {
-            try{
-                response.response.status = fileSystemManager.deleteFile(fd.path,fd.lastModified,fd.md5);
-                response.response.msg = response.response.status ? "File Deleted" : "unknown error";
-            }catch (Exception e){
+
+        if (fileSystemManager.isSafePathName(fd.path)) {
+            if (!fileSystemManager.fileNameExists(fd.path)) {
                 response.response.status = false;
-                response.response.msg = "Failed to delete file Error:"+e.getMessage();
+                response.response.msg = "Can't find the specified file";
+            } else {
+                try{
+                    response.response.status = fileSystemManager.deleteFile(fd.path,fd.lastModified,fd.md5);
+                    response.response.msg = response.response.status ? "File Deleted" : "unknown error";
+                }catch (Exception e){
+                    response.response.status = false;
+                    response.response.msg = "Failed to delete file Error:"+e.getMessage();
+                }
             }
+        } else {
+            response.response.status = false;
+            response.response.msg = "invalid path";
         }
 
         conn.send(ProtocolFactory.marshalProtocol(response));
@@ -158,19 +162,20 @@ public class MessageHandler {
 
     private static void handleSpecificProtocol(Protocol.FileModifyRequest fileModifyRequest, Connection conn) {
         ProtocolField.FileDes fd = fileModifyRequest.fileDes;
-        if (!fileSystemManager.isSafePathName(fd.path)) {
-            // TODO: response
-            return ;
-        }
-
         Protocol.FileCreateResponse response = new Protocol.FileCreateResponse();
         response.fileDes = fd;
+
+        if (!fileSystemManager.isSafePathName(fd.path)) {
+            response.response.status = false;
+            response.response.msg = "Invalid path";
+            conn.send(ProtocolFactory.marshalProtocol(response));
+            return;
+        }
 
         try{
             FileLoaderWrapper fileLoaderWrapper = fileLoaderWrapperMap.get(fd.path);
 
             if (fileLoaderWrapper == null) {
-                // TODO: FILE SIZE
                 if (fileSystemManager.modifyFileLoader(fd.path, fd.md5, fd.fileSize, fd.lastModified)) {
                     response.response.status = true;
                     if (fileSystemManager.checkShortcut(fd.path)) {
@@ -207,16 +212,18 @@ public class MessageHandler {
     }
 
     private static void handleSpecificProtocol(Protocol.FileBytesRequest fileBytesRequest, Connection conn) {
-
-        // discard the message if the path not safe;
-        if (!fileSystemManager.isSafePathName(fileBytesRequest.fileDes.path)) {
-            return ;
-        }
-
         Protocol.FileBytesResponse response = new Protocol.FileBytesResponse();
         response.fileDes = fileBytesRequest.fileDes;
         response.fileContent.len = fileBytesRequest.filePos.len;
         response.fileContent.pos = fileBytesRequest.filePos.pos;
+
+        // discard the message if the path not safe;
+        if (!fileSystemManager.isSafePathName(fileBytesRequest.fileDes.path)) {
+            response.response.status = false;
+            response.response.msg = "Invalid path";
+            conn.send(ProtocolFactory.marshalProtocol(response));
+            return;
+        }
 
         ProtocolField.FileDes fd = fileBytesRequest.fileDes;
         ProtocolField.FilePosition fp = fileBytesRequest.filePos;
@@ -236,7 +243,7 @@ public class MessageHandler {
             response.response.status = true;
             response.response.msg = "successful read";
             conn.send(ProtocolFactory.marshalProtocol(response));
-            return ;
+            return;
         }
 
         response.response.status = false;
@@ -263,12 +270,18 @@ public class MessageHandler {
         response.dirPath = directoryCreateRequest.dirPath;
 
         String path = directoryCreateRequest.dirPath.path;
-        if (fileSystemManager.dirNameExists(path)) {
-            response.response.status = false;
-            response.response.msg = "Directory already exists";
+
+        if (fileSystemManager.isSafePathName(path)) {
+            if (fileSystemManager.dirNameExists(path)) {
+                response.response.status = false;
+                response.response.msg = "Directory already exists";
+            } else {
+                response.response.status = fileSystemManager.makeDirectory(path);
+                response.response.msg = response.response.status ? "Directory created" : "Unknown error";
+            }
         } else {
-            response.response.status = fileSystemManager.makeDirectory(path);
-            response.response.msg = response.response.status ? "Directory created" : "Unknown error";
+            response.response.status = false;
+            response.response.msg = "Invalid path";
         }
 
         conn.send(ProtocolFactory.marshalProtocol(response));
@@ -280,12 +293,18 @@ public class MessageHandler {
         response.dirPath = directoryDeleteRequest.dirPath;
 
         String path = directoryDeleteRequest.dirPath.path;
-        if (!fileSystemManager.dirNameExists(path)) {
-            response.response.status = false;
-            response.response.msg = "Can't find specified directory";
+
+        if (fileSystemManager.isSafePathName(path)) {
+            if (!fileSystemManager.dirNameExists(path)) {
+                response.response.status = false;
+                response.response.msg = "Can't find specified directory";
+            } else {
+                response.response.status = fileSystemManager.deleteDirectory(path);
+                response.response.msg = response.response.status ? "Directory deleted" : "Unknown error";
+            }
         } else {
-            response.response.status = fileSystemManager.deleteDirectory(path);
-            response.response.msg = response.response.status ? "Directory deleted" : "Unknown error";
+            response.response.status = false;
+            response.response.msg = "Invalid path";
         }
 
         conn.send(ProtocolFactory.marshalProtocol(response));

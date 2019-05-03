@@ -25,7 +25,7 @@ public class OutgoingConnectionHelper {
     private static Logger log = Logger.getLogger(OutgoingConnectionHelper.class.getName());
 
     private String handshakeRequestJson;
-    private PriorityQueue<PeerInfo> queue;
+    private final PriorityQueue<PeerInfo> queue;
 
     public OutgoingConnectionHelper(String advertisedName, int port) {
 
@@ -122,7 +122,6 @@ public class OutgoingConnectionHelper {
                 conn.close();
                 break;
             case INVALID_PROTOCOL:
-                // TODO add into log
                 conn.close();
                 break;
             default:
