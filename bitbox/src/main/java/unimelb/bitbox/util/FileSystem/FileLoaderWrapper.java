@@ -1,7 +1,7 @@
 package unimelb.bitbox.util.FileSystem;
 
 
-import unimelb.bitbox.ConnectionPkg.Connection;
+import unimelb.bitbox.util.ConnectionUtils.Connection;
 import unimelb.bitbox.Constants;
 import unimelb.bitbox.protocol.Protocol;
 import unimelb.bitbox.protocol.ProtocolFactory;

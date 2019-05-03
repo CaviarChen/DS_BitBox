@@ -1,4 +1,4 @@
-package unimelb.bitbox.ConnectionPkg;
+package unimelb.bitbox.util.ConnectionUtils;
 
 
 import unimelb.bitbox.protocol.Protocol;

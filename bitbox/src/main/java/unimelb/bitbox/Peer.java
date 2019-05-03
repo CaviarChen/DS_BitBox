@@ -1,8 +1,8 @@
 package unimelb.bitbox;
 
 
-import unimelb.bitbox.ConnectionPkg.IncomingConnectionHelper;
-import unimelb.bitbox.ConnectionPkg.OutgoingConnectionHelper;
+import unimelb.bitbox.util.ConnectionUtils.IncomingConnectionHelper;
+import unimelb.bitbox.util.ConnectionUtils.OutgoingConnectionHelper;
 import unimelb.bitbox.util.Configuration;
 import unimelb.bitbox.util.FileSystem.FileSystemManager;
 import unimelb.bitbox.util.MessageHandler;

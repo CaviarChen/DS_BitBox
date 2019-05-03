@@ -1,4 +1,4 @@
-package unimelb.bitbox.ConnectionPkg;
+package unimelb.bitbox.util.ConnectionUtils;
 
 
 import unimelb.bitbox.Constants;
@@ -32,7 +32,7 @@ public class OutgoingConnectionHelper {
 
     private static final int PENALTY_TIME = 60000;
     private static final int CHECK_INTERVAL = 10000;
-    private static final int HANDSHAKE_TIMEOUT = 20000;
+    private static final int HANDSHAKE_TIMEOUT = 10000;
     private static Logger log = Logger.getLogger(OutgoingConnectionHelper.class.getName());
 
     private String handshakeRequestJson;
@@ -77,7 +77,7 @@ public class OutgoingConnectionHelper {
                     log.info(String.format("Start connecting to port: %d", peer.getPort()));
                     requestHandshake(conn);
                 } catch (IOException e) {
-                    log.warning(e.toString());
+                    log.warning(peer.hostPort.toString() + " " + e.toString());
                     peer.setPenaltyTime();
                     addPeerInfo(peer);
                 }

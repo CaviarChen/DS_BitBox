@@ -1,8 +1,8 @@
 package unimelb.bitbox.util;
 
 
-import unimelb.bitbox.ConnectionPkg.Connection;
-import unimelb.bitbox.ConnectionPkg.ConnectionManager;
+import unimelb.bitbox.util.ConnectionUtils.Connection;
+import unimelb.bitbox.util.ConnectionUtils.ConnectionManager;
 import unimelb.bitbox.protocol.Protocol;
 import unimelb.bitbox.protocol.ProtocolFactory;
 import unimelb.bitbox.protocol.ProtocolField;
