@@ -7,7 +7,9 @@ import static unimelb.bitbox.Constants.PROTOCOL_FIELD_CMD;
 
 
 /**
- *
+ * A factory of protocols.
+ * Used to convert from JSON string to corresponding protocol class
+ * and from protocol class to JSON string
  *
  * @author Wenqing Xue (813044)
  * @author Weizhi Xu (752454)
@@ -17,9 +19,8 @@ import static unimelb.bitbox.Constants.PROTOCOL_FIELD_CMD;
 public class ProtocolFactory {
 
     /**
-     * connection related json to each protocol method
+     * un-marshal parse a JSON string to the corresponding protocol class
      */
-
     public static Protocol parseProtocol(String json) throws InvalidProtocolException {
         try {
 
@@ -41,6 +42,11 @@ public class ProtocolFactory {
     }
 
 
+    /**
+     * marshal protocol class to JSON string
+     * @param protocol
+     * @return
+     */
     public static String marshalProtocol(Protocol protocol) {
         Document doc = new Document();
         doc.append(PROTOCOL_FIELD_CMD, ProtocolType.typeOfProtocol(protocol).getKey());

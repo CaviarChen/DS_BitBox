@@ -2,7 +2,8 @@ package unimelb.bitbox.protocol;
 
 
 /**
- *
+ * Exception Wrapper for Invalid Protocol
+ * so that the error messages are meaningful
  *
  * @author Wenqing Xue (813044)
  * @author Weizhi Xu (752454)

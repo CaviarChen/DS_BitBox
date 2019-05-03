@@ -5,7 +5,7 @@ import unimelb.bitbox.Constants;
 
 
 /**
- *
+ * ProtocolType contains all the protocols class type
  *
  * @author Wenqing Xue (813044)
  * @author Weizhi Xu (752454)
@@ -51,6 +51,12 @@ public enum ProtocolType {
     }
 
 
+    /**
+     * Get the protocol type of the given command
+     * @param command the command string to match
+     * @return a corresponding protocol type
+     * @throws InvalidProtocolException the command does not match any of the protocol in the system
+     */
     public static ProtocolType typeOfCommand(String command) throws InvalidProtocolException {
         for (ProtocolType e : values()) {
             if (e.key.equals(command)) {
@@ -61,6 +67,11 @@ public enum ProtocolType {
     }
 
 
+    /**
+     * Get the protocol type from a protocol
+     * @param protocol a protocol
+     * @return protocol type
+     */
     public static ProtocolType typeOfProtocol(Protocol protocol) {
         for (ProtocolType e : values()) {
             if (e.value == protocol.getClass()) {

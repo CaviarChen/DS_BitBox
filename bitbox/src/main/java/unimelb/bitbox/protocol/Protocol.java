@@ -13,7 +13,8 @@ import static unimelb.bitbox.Constants.*;
 
 
 /**
- *
+ * Protocol construct all protocols in the system.
+ * Using reflection to get all related fields value.
  *
  * @author Wenqing Xue (813044)
  * @author Weizhi Xu (752454)
@@ -21,26 +22,6 @@ import static unimelb.bitbox.Constants.*;
  * @author Zijun Chen (813190)
  */
 public abstract class Protocol implements IProtocol {
-
-    // get all public ProtocolField properties of current instance
-    private ArrayList<ProtocolField> getAllProtocolFields() {
-        ArrayList<ProtocolField> protocolFields = new ArrayList<>();
-
-        Field[] child_fields = this.getClass().getDeclaredFields(); //这个没有拿到parent 的field
-        Field[] parent_fields = this.getClass().getSuperclass().getDeclaredFields();
-        Field[] fields = Stream.concat(Arrays.stream(child_fields), Arrays.stream(parent_fields))
-                .toArray(Field[]::new);
-        for (Field field : fields) {
-            try {
-                Object obj = field.get(this);
-                if (obj instanceof ProtocolField) {
-                    protocolFields.add((ProtocolField) obj);
-                }
-            } catch (Exception ignored) {
-            }
-        }
-        return protocolFields;
-    }
 
 
     @Override
@@ -60,7 +41,7 @@ public abstract class Protocol implements IProtocol {
 
 
     public static class InvalidProtocol extends Protocol {
-        public String msg; //message
+        public String msg;
 
 
         @Override
@@ -80,7 +61,7 @@ public abstract class Protocol implements IProtocol {
 
 
     public static class ConnectionRefused extends Protocol {
-        public String msg;                // message
+        public String msg;
         public ArrayList<HostPort> peers = new ArrayList<>(); // list of peers
 
 
@@ -190,4 +171,28 @@ public abstract class Protocol implements IProtocol {
     public static class DirectoryDeleteResponse extends DirectoryCreateResponse {
     }
 
+
+    // get all public ProtocolField properties of current instance
+    private ArrayList<ProtocolField> getAllProtocolFields() {
+        ArrayList<ProtocolField> protocolFields = new ArrayList<>();
+
+        // get fields from parent
+        Field[] child_fields = this.getClass().getDeclaredFields();
+        Field[] parent_fields = this.getClass().getSuperclass().getDeclaredFields();
+        Field[] fields = Stream.concat(Arrays.stream(child_fields), Arrays.stream(parent_fields))
+                .toArray(Field[]::new);
+
+        // add fields to the class
+        for (Field field : fields) {
+            try {
+                Object obj = field.get(this);
+                if (obj instanceof ProtocolField) {
+                    protocolFields.add((ProtocolField) obj);
+                }
+            } catch (Exception ignored) {
+            }
+        }
+
+        return protocolFields;
+    }
 }

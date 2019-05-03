@@ -9,7 +9,7 @@ import static unimelb.bitbox.Constants.*;
 
 
 /**
- *
+ * Protocol Field contains all the files in the protocols of the system
  *
  * @author Wenqing Xue (813044)
  * @author Weizhi Xu (752454)
