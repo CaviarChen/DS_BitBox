@@ -3,6 +3,7 @@ package unimelb.bitbox;
 import unimelb.bitbox.util.Configuration;
 import unimelb.bitbox.util.HostPort;
 
+import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ConnectionManager {
@@ -73,6 +74,16 @@ public class ConnectionManager {
 
     public boolean checkExist(HostPort hostPort) {
         return connectionMap.containsKey(hostPort);
+    }
+
+    public ArrayList<HostPort> getConnectedPeers() {
+        ArrayList<HostPort> hostPorts = new ArrayList<>();
+        // no need to lock
+        for (Connection conn: connectionMap.values()) {
+            hostPorts.add(conn.getHostPort());
+        }
+
+        return hostPorts;
     }
 
 }

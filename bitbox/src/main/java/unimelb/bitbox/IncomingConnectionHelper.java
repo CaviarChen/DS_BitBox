@@ -12,14 +12,20 @@ import unimelb.bitbox.util.ThreadPool.PriorityThreadPool;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.util.ArrayList;
 import java.util.logging.Logger;
 
 public class IncomingConnectionHelper {
     private static final int HANDSHAKE_TIMEOUT = 10000;
+    private static final long PEERS_CACHE_TIMEOUT = 10000;
     private static Logger log = Logger.getLogger(IncomingConnectionHelper.class.getName());
 
     private Thread thread;
     private String handshakeResponseJson;
+    private ArrayList<HostPort> connectedPeersCache;
+    private long connectedPeersCacheTime = 0;
+    private final Object connectedPeersCacheLock = new Object();
+
 
     public IncomingConnectionHelper(String advertisedName, int port) {
 
@@ -92,11 +98,14 @@ public class IncomingConnectionHelper {
                     return;
                 }
 
+                Protocol.ConnectionRefused connectionRefused = new Protocol.ConnectionRefused();
+                connectionRefused.peers = getCachedPeers();
                 if (res == -1) {
-                    // exceed limit
+                    connectionRefused.msg = "Incoming connection limit reached";
                 } else if (res == -2) {
-                    // already exists
+                    connectionRefused.msg = "Connection with the same host&port already exists";
                 }
+                conn.send(ProtocolFactory.marshalProtocol(connectionRefused));
                 conn.close();
                 return;
             }
@@ -109,6 +118,16 @@ public class IncomingConnectionHelper {
             conn.abortWithInvalidProtocol(e.getMessage());
         }
 
+    }
+
+    private ArrayList<HostPort> getCachedPeers() {
+        synchronized (connectedPeersCacheLock) {
+            if ( System.currentTimeMillis() - connectedPeersCacheTime > PEERS_CACHE_TIMEOUT) {
+                connectedPeersCache = ConnectionManager.getInstance().getConnectedPeers();
+                connectedPeersCacheTime = System.currentTimeMillis();
+            }
+            return connectedPeersCache;
+        }
     }
 
 }

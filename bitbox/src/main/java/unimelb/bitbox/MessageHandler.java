@@ -206,7 +206,7 @@ public class MessageHandler {
             }
         }catch (IOException | NoSuchAlgorithmException e){
             response.response.status = false;
-            response.response.msg = "Failed to create file Error:"+e.getMessage();
+            response.response.msg = "Failed to create file Error: " + e.getMessage();
         }
         conn.send(ProtocolFactory.marshalProtocol(response));
     }
