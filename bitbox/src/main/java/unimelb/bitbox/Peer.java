@@ -46,6 +46,7 @@ public class Peer {
         int port = Integer.parseInt(Configuration.getConfigurationValue(Constants.CONFIG_FIELD_PORT));
         String advertisedName = Configuration.getConfigurationValue(Constants.CONFIG_FIELD_AD_NAME);
         incomingConnectionManager = new IncomingConnectionHelper(advertisedName, port);
+        incomingConnectionManager.start();
         outgoingConnectionHelper = new OutgoingConnectionHelper(advertisedName, port);
         outgoingConnectionHelper.execute();
     }

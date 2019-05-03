@@ -18,7 +18,7 @@ import java.util.LinkedList;
 import java.util.logging.Logger;
 
 
-/**
+/** Class for a specific connection with other peer
  *
  *
  * @author Wenqing Xue (813044)
@@ -27,8 +27,19 @@ import java.util.logging.Logger;
  * @author Zijun Chen (813190)
  */
 public class Connection {
-    private static final int MAX_LOG_LEN = 250;
+
+    /**
+     * enum for connection types
+     */
+    public enum ConnectionType {
+        INCOMING,
+        OUTGOING
+    }
+
+
     private static Logger log = Logger.getLogger(Connection.class.getName());
+    private static final int MAX_LOG_LEN = 250;
+
 
     public final ConnectionType type;
 
@@ -44,7 +55,7 @@ public class Connection {
     private HostPort hostPort;
     private OutgoingConnectionHelper outgoingConnectionHelper = null;
 
-
+    // main constructor
     private Connection(ConnectionType type, Socket socket) throws IOException {
         this.type = type;
         this.socket = socket;
@@ -54,19 +65,34 @@ public class Connection {
         hostPort = null;
     }
 
-
+    /**
+     * Constructor
+     * @param socket the established socket
+     * @throws IOException
+     */
     public Connection(Socket socket) throws IOException {
         this(ConnectionType.INCOMING, socket);
     }
 
 
+    /**
+     * Constructor
+     * @param socket the established socket
+     * @param outgoingConnectionHelper the helper which established the given connection
+     * @throws IOException
+     */
     public Connection(Socket socket, OutgoingConnectionHelper outgoingConnectionHelper) throws IOException {
         this(ConnectionType.OUTGOING, socket);
         this.outgoingConnectionHelper = outgoingConnectionHelper;
     }
 
 
-    // not thread-safe
+    /**
+     * Wait and get one message form this connection
+     * blocking & not thread-safe, should only be called outside during the handshake
+     * should only be used internally after the handshake
+     * @return a message string or null
+     */
     public String waitForOneMessage() {
         String msg = "";
         try {
@@ -79,7 +105,14 @@ public class Connection {
     }
 
 
-    // not thread-safe
+    /**
+     * Wait and get one message form this connection
+     * blocking & not thread-safe, should only be called outside during the handshake
+     * should only be used internally after the handshake
+     * @param timeout in millis
+     * @return  a message string or null
+     * @throws SocketTimeoutException if timeout
+     */
     public String waitForOneMessage(int timeout) throws SocketTimeoutException {
         String msg;
         try {
@@ -92,14 +125,17 @@ public class Connection {
             if (e instanceof SocketTimeoutException) {
                 throw (SocketTimeoutException) e;
             }
-            // log
             close();
             return null;
         }
         return msg;
     }
 
-
+    /**
+     * send a json string (without \n) to the peer
+     * blocking method
+     * @param msg the json message string
+     */
     public void send(String msg) {
         synchronized (bufferedWriter) {
             try {
@@ -114,7 +150,10 @@ public class Connection {
         }
     }
 
-
+    /**
+     * Async version of the send
+     * @param msg the json message string
+     */
     public void sendAsync(String msg) {
         boolean isEmpty;
         synchronized (sendingQueue) {
@@ -132,29 +171,10 @@ public class Connection {
         }
     }
 
-
-    private String currentHostPort() {
-        return (hostPort == null) ? "[Unknown]" : "[" + hostPort.toString() + "]";
-    }
-
-
-    private void asyncSendingThread() {
-        boolean isLastOne = false;
-        while (!isLastOne) {
-            String msg;
-            synchronized (sendingQueue) {
-                if (sendingQueue.isEmpty()) {
-                    return;
-                }
-                msg = sendingQueue.removeFirst();
-                isLastOne = sendingQueue.isEmpty();
-            }
-
-            send(msg);
-        }
-    }
-
-
+    /**
+     * send InvalidProtocol and close this connection
+     * @param additionalMsg additional message in the InvalidProtocol
+     */
     public void abortWithInvalidProtocol(String additionalMsg) {
         Protocol.InvalidProtocol invalidProtocol = new Protocol.InvalidProtocol();
         invalidProtocol.msg = additionalMsg;
@@ -163,6 +183,9 @@ public class Connection {
     }
 
 
+    /**
+     * close this connection
+     */
     public void close() {
 
         synchronized (socket) {
@@ -199,8 +222,11 @@ public class Connection {
     }
 
 
-    // active connection will create its own thread for waiting for request
-    // non-blocking method might be better here
+    /**
+     * active connection will create its own thread for waiting for request
+     * A better way could be waiting all requests using non-blocking method
+     * @param hostPort the host&port got from handshake process
+     */
     public void active(HostPort hostPort) {
         if (!active) {
             active = true;
@@ -211,6 +237,44 @@ public class Connection {
     }
 
 
+    /**
+     * @return hostPort
+     */
+    public HostPort getHostPort() {
+        return hostPort;
+    }
+
+    /**
+     * @return true if the connection is active (passed handshake)
+     */
+    public boolean isActive() {
+        return active;
+    }
+
+    // get a string that represents this connection
+    private String currentHostPort() {
+        return (hostPort == null) ? "[Unknown]" : "[" + hostPort.toString() + "]";
+    }
+
+    // function for async sending
+    private void asyncSendingThread() {
+        boolean isLastOne = false;
+        // stop when there is no more jobs
+        // this will be trigger again when there is a job after a while
+        while (!isLastOne) {
+            String msg;
+            synchronized (sendingQueue) {
+                if (sendingQueue.isEmpty()) {
+                    return;
+                }
+                msg = sendingQueue.removeFirst();
+                isLastOne = sendingQueue.isEmpty();
+            }
+            send(msg);
+        }
+    }
+
+    // work thread for waiting request
     private void work() {
         try {
 
@@ -237,18 +301,4 @@ public class Connection {
     }
 
 
-    public HostPort getHostPort() {
-        return hostPort;
-    }
-
-
-    public boolean isActive() {
-        return active;
-    }
-
-
-    public enum ConnectionType {
-        INCOMING,
-        OUTGOING
-    }
 }

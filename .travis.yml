@@ -1,0 +1,15 @@
+language: java
+
+jdk:
+  - openjdk8
+
+# Only clone the most recent commit.
+git:
+  depth: 1
+
+# Don't email me
+notifications:
+  email: false
+
+
+before_script: cd bitbox
