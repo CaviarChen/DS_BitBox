@@ -40,7 +40,7 @@ public class OutgoingConnectionHelper {
 
         for (String peer : peers) {
             if (!peer.isEmpty()) {
-                addPeerInfo(new PeerInfo(peer));
+                addPeerInfo(new HostPort(peer));
             }
         }
     }
@@ -130,6 +130,7 @@ public class OutgoingConnectionHelper {
     }
 
     public void addPeerInfo(HostPort hostPort) {
+        log.info("New target: " + hostPort.toString());
         synchronized (queue) {
             queue.add(new PeerInfo(hostPort));
         }
@@ -149,12 +150,6 @@ public class OutgoingConnectionHelper {
 
         PeerInfo(HostPort hostPort) {
             this.hostPort = hostPort;
-            this.time = System.currentTimeMillis();
-            this.penaltyMin = 1;
-        }
-
-        PeerInfo(String hostPort) {
-            this.hostPort = new HostPort(hostPort);
             this.time = System.currentTimeMillis();
             this.penaltyMin = 1;
         }
