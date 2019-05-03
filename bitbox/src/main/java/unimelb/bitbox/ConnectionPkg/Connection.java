@@ -1,8 +1,11 @@
-package unimelb.bitbox;
+package unimelb.bitbox.ConnectionPkg;
+
 
 import unimelb.bitbox.protocol.Protocol;
 import unimelb.bitbox.protocol.ProtocolFactory;
 import unimelb.bitbox.util.HostPort;
+import unimelb.bitbox.util.MessageHandler;
+import unimelb.bitbox.util.SyncManager;
 import unimelb.bitbox.util.ThreadPool.Priority;
 import unimelb.bitbox.util.ThreadPool.PriorityTask;
 import unimelb.bitbox.util.ThreadPool.PriorityThreadPool;
@@ -33,23 +36,27 @@ public class Connection {
     private HostPort hostPort;
     private OutgoingConnectionHelper outgoingConnectionHelper = null;
 
+
     private Connection(ConnectionType type, Socket socket) throws IOException {
         this.type = type;
         this.socket = socket;
         bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        bufferedWriter =  new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8));
+        bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8));
         active = false;
         hostPort = null;
     }
+
 
     public Connection(Socket socket) throws IOException {
         this(ConnectionType.INCOMING, socket);
     }
 
+
     public Connection(Socket socket, OutgoingConnectionHelper outgoingConnectionHelper) throws IOException {
         this(ConnectionType.OUTGOING, socket);
         this.outgoingConnectionHelper = outgoingConnectionHelper;
     }
+
 
     // not thread-safe
     public String waitForOneMessage() {
@@ -62,6 +69,7 @@ public class Connection {
         }
         return msg;
     }
+
 
     // not thread-safe
     public String waitForOneMessage(int timeout) throws SocketTimeoutException {
@@ -83,12 +91,13 @@ public class Connection {
         return msg;
     }
 
+
     public void send(String msg) {
         synchronized (bufferedWriter) {
             try {
                 bufferedWriter.write(msg + '\n');
                 bufferedWriter.flush();
-                log.info( currentHostPort() + " Message Sent: "
+                log.info(currentHostPort() + " Message Sent: "
                         + msg.substring(0, Math.min(MAX_LOG_LEN, msg.length())));
             } catch (IOException e) {
                 // log
@@ -96,6 +105,7 @@ public class Connection {
             }
         }
     }
+
 
     public void sendAsync(String msg) {
         boolean isEmpty;
@@ -114,9 +124,11 @@ public class Connection {
         }
     }
 
+
     private String currentHostPort() {
         return (hostPort == null) ? "[Unknown]" : "[" + hostPort.toString() + "]";
     }
+
 
     private void asyncSendingThread() {
         boolean isLastOne = false;
@@ -135,13 +147,13 @@ public class Connection {
     }
 
 
-
     public void abortWithInvalidProtocol(String additionalMsg) {
         Protocol.InvalidProtocol invalidProtocol = new Protocol.InvalidProtocol();
         invalidProtocol.msg = additionalMsg;
         send(ProtocolFactory.marshalProtocol(invalidProtocol));
         close();
     }
+
 
     public void close() {
 
@@ -178,6 +190,7 @@ public class Connection {
         }
     }
 
+
     // active connection will create its own thread for waiting for request
     // non-blocking method might be better here
     public void active(HostPort hostPort) {
@@ -188,6 +201,7 @@ public class Connection {
             thread.start();
         }
     }
+
 
     private void work() {
         try {
@@ -209,18 +223,21 @@ public class Connection {
             this.close();
 
         } catch (Exception e) {
-            log.warning( currentHostPort() + ", Exception: " + e.toString() + "");
+            log.warning(currentHostPort() + ", Exception: " + e.toString() + "");
             this.close();
         }
     }
+
 
     public HostPort getHostPort() {
         return hostPort;
     }
 
+
     public boolean isActive() {
         return active;
     }
+
 
     public enum ConnectionType {
         INCOMING,

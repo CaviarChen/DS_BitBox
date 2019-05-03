@@ -4,7 +4,7 @@ package unimelb.bitbox.util.ThreadPool;
 import java.util.logging.Logger;
 
 
-public class PriorityTask implements Runnable, Comparable<PriorityTask>{
+public class PriorityTask implements Runnable, Comparable<PriorityTask> {
 
     private String name;
     private Priority priority;
@@ -18,13 +18,16 @@ public class PriorityTask implements Runnable, Comparable<PriorityTask>{
         this.task = task;
     }
 
+
     public Priority getPriority() {
         return this.priority;
     }
 
+
     public void setPriority(Priority priority) {
         this.priority = priority;
     }
+
 
     @Override
     public void run() {
@@ -34,6 +37,7 @@ public class PriorityTask implements Runnable, Comparable<PriorityTask>{
             log.severe("Task run failed" + e.toString());
         }
     }
+
 
     @Override
     public int compareTo(PriorityTask o) {

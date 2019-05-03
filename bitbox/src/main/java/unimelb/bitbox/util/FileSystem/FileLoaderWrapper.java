@@ -1,11 +1,13 @@
-package unimelb.bitbox;
+package unimelb.bitbox.util.FileSystem;
 
+
+import unimelb.bitbox.ConnectionPkg.Connection;
+import unimelb.bitbox.Constants;
 import unimelb.bitbox.protocol.Protocol;
 import unimelb.bitbox.protocol.ProtocolFactory;
 import unimelb.bitbox.protocol.ProtocolField;
 import unimelb.bitbox.util.Configuration;
-import unimelb.bitbox.util.FileSystemManager;
-import unimelb.bitbox.util.HostPort;
+import unimelb.bitbox.util.MessageHandler;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -17,7 +19,8 @@ import java.util.logging.Logger;
 public class FileLoaderWrapper {
     private static Logger log = Logger.getLogger(Connection.class.getName());
 
-    private static final long BLOCK_SIZE = Long.parseLong(Configuration.getConfigurationValue("blockSize"));
+    private static final long BLOCK_SIZE =
+            Long.parseLong(Configuration.getConfigurationValue(Constants.CONFIG_FIELD_BLOCKSIZE));
     private static final int REQUEST_LIMIT = 10;
     private static final long TIMEOUT_IN_MILLIS = 20000;
 
@@ -26,6 +29,7 @@ public class FileLoaderWrapper {
 
     private ProtocolField.FileDes fileDes;
     private FileSystemManager fileSystemManager;
+
 
     public FileLoaderWrapper(ProtocolField.FileDes fileDes, FileSystemManager fileSystemManager, Connection conn) {
 
@@ -51,9 +55,11 @@ public class FileLoaderWrapper {
         send(REQUEST_LIMIT, conn);
     }
 
-    public boolean checkMd5(String md5){
+
+    public boolean checkMd5(String md5) {
         return this.fileDes.md5.equals(md5);
     }
+
 
     public void addNewConnection(ProtocolField.FileDes fileDes, Connection conn) {
         // need to check md5 before adding
@@ -68,12 +74,11 @@ public class FileLoaderWrapper {
     }
 
 
-
     public void received(Protocol.FileBytesResponse fileBytesResponse, Connection conn) {
         String filePath = fileBytesResponse.fileDes.path;
 
         if (!fileDes.md5.equals(fileBytesResponse.fileDes.md5)) {
-            return ;
+            return;
         }
 
         ProtocolField.FilePosition pos = new ProtocolField.FilePosition();
@@ -94,13 +99,13 @@ public class FileLoaderWrapper {
         ProtocolField.FileContent fc = fileBytesResponse.fileContent;
         ByteBuffer src = ByteBuffer.wrap(Base64.getDecoder().decode(fc.content));
         try {
-            if (!fileSystemManager.writeFile(filePath, src , fc.pos)) {
+            if (!fileSystemManager.writeFile(filePath, src, fc.pos)) {
                 cancel();
                 return;
             }
         } catch (IOException e) {
             log.warning(e.toString());
-            return ;
+            return;
         }
 
 
@@ -124,6 +129,7 @@ public class FileLoaderWrapper {
 
         MessageHandler.removeFileLoaderWrapper(this, fileDes.path);
     }
+
 
     private void send(int limit, Connection conn) {
         ArrayList<ProtocolField.FilePosition> posList = new ArrayList<>();
@@ -149,6 +155,7 @@ public class FileLoaderWrapper {
         }
     }
 
+
     private void SendFileByteRequest(ProtocolField.FilePosition filePosition, Connection conn) {
         Protocol.FileBytesRequest fileBytesRequest = new Protocol.FileBytesRequest();
 
@@ -157,6 +164,7 @@ public class FileLoaderWrapper {
 
         conn.send(ProtocolFactory.marshalProtocol(fileBytesRequest));
     }
+
 
     private void cancel() {
         try {
@@ -167,13 +175,14 @@ public class FileLoaderWrapper {
         MessageHandler.removeFileLoaderWrapper(this, fileDes.path);
     }
 
+
     public void clean() {
         // not accurate since this will be triggered roughly every syncInterval and with low priority
         synchronized (this) {
 
             Iterator<Map.Entry<Connection, ConnectionInfo>> it = connectionInfoMap.entrySet().iterator();
 
-            while (it.hasNext()){
+            while (it.hasNext()) {
                 Map.Entry<Connection, ConnectionInfo> entry = it.next();
                 // time out, remove this connection and add everything back to pending list
                 if (System.currentTimeMillis() - entry.getValue().lastActiveTime > TIMEOUT_IN_MILLIS) {
@@ -193,9 +202,11 @@ public class FileLoaderWrapper {
         }
     }
 
+
     private static class ConnectionInfo {
         HashSet<ProtocolField.FilePosition> waiting;
         long lastActiveTime;
+
 
         public ConnectionInfo() {
             waiting = new HashSet<>();

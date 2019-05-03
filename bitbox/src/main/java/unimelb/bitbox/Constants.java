@@ -1,14 +1,15 @@
 package unimelb.bitbox;
 
+
 public class Constants {
 
     // Configurations
-    public static final String CONFIG_HOSTNAME_PORT_SEPARATOR=":";
-    public static final String CONFIG_PEERS_SEPARATOR=",";
-    public static final String CONFIG_FIELD_PEERS ="peers";
-    public static final String CONFIG_FIELD_PORT="port";
+    public static final String CONFIG_HOSTNAME_PORT_SEPARATOR = ":";
+    public static final String CONFIG_PEERS_SEPARATOR = ",";
+    public static final String CONFIG_FIELD_PEERS = "peers";
+    public static final String CONFIG_FIELD_PORT = "port";
     public static final String CONFIG_FIELD_AD_NAME = "advertisedName";
-    public static final String CONFIG_FIELD_BLOCKSIZE= "blockSize";
+    public static final String CONFIG_FIELD_BLOCKSIZE = "blockSize";
 
     // Protocol fields
     public static final String PROTOCOL_FIELD_CMD = "command";
@@ -44,4 +45,30 @@ public class Constants {
     public static final String PROTOCOL_TYPE_DIRECTORY_CREATE_RESPONSE = "DIRECTORY_CREATE_RESPONSE";
     public static final String PROTOCOL_TYPE_DIRECTORY_DELETE_REQUEST = "DIRECTORY_DELETE_REQUEST";
     public static final String PROTOCOL_TYPE_DIRECTORY_DELETE_RESPONSE = "DIRECTORY_DELETE_RESPONSE";
+
+    // Protocol response messages
+    public static final String PROTOCOL_RESPONSE_MESSAGE_INVALID_PATH = "invalid path";
+    public static final String PROTOCOL_RESPONSE_MESSAGE_FILE_CREATE_SHORTCUT_USED = "file created successfully using shortcut";
+    public static final String PROTOCOL_RESPONSE_MESSAGE_FILE_MODIFY_SHORTCUT_USED = "file modified successfully using shortcut";
+    public static final String PROTOCOL_RESPONSE_MESSAGE_FILE_CREATE_LOADER_READY = "file create loader opened";
+    public static final String PROTOCOL_RESPONSE_MESSAGE_FILE_MODIFY_LOADER_READY = "file modify loader opened";
+    public static final String PROTOCOL_RESPONSE_MESSAGE_FILE_DOES_NOT_EXIST = "file already exists";
+    public static final String PROTOCOL_RESPONSE_MESSAGE_FILE_ALREADY_EXISTS = "file already exists";
+    public static final String PROTOCOL_RESPONSE_MESSAGE_FILE_ANOTHER_IS_TRANSMITTING = "file with the same path and name is transmitting";
+    public static final String PROTOCOL_RESPONSE_MESSAGE_FILE_READ_SUCCESS = "file read successfully";
+    public static final String PROTOCOL_RESPONSE_MESSAGE_FILE_READ_FAIL = "file read failed";
+    public static final String PROTOCOL_RESPONSE_MESSAGE_FILE_CREATE_FAIL_PREFIX = "failed to create file: ";
+    public static final String PROTOCOL_RESPONSE_MESSAGE_FILE_DELETE_FAIL_PREFIX = "failed to delete file: ";
+    public static final String PROTOCOL_RESPONSE_MESSAGE_FILE_CREATE_LOADER_COLLABORATING = "file create loader opened: collaborating.";
+    public static final String PROTOCOL_RESPONSE_MESSAGE_FILE_MODIFY_LOADER_COLLABORATING = "file modify loader opened: collaborating.";
+    public static final String PROTOCOL_RESPONSE_MESSAGE_FILE_DELETE_SUCCESS = "file deleted successfully";
+    public static final String PROTOCOL_RESPONSE_MESSAGE_FILE_DELETE_FAIL = "file deleted failed";
+    public static final String PROTOCOL_RESPONSE_MESSAGE_DIR_NOT_EXIST = "directory does not exist";
+    public static final String PROTOCOL_RESPONSE_MESSAGE_DIR_ALREADY_EXISTS = "directory already exist";
+    public static final String PROTOCOL_RESPONSE_MESSAGE_DIR_CREATED = "directory created";
+    public static final String PROTOCOL_RESPONSE_MESSAGE_DIR_DELETED = "directory deleted";
+    public static final String PROTOCOL_RESPONSE_MESSAGE_DIR_CREATE_FAIL = "failed to create directory";
+    public static final String PROTOCOL_RESPONSE_MESSAGE_DIR_DELETE_FAIL = "failed to create directory";
+    public static final String PROTOCOL_RESPONSE_MESSAGE_CONNECTION_REFUSED_LIMIT_REACHED = "Incoming connection limit reached";
+    public static final String PROTOCOL_RESPONSE_MESSAGE_CONNECTION_REFUSED_ALREADY_EXIST = "Connection with the same hostname and port already exists";
 }

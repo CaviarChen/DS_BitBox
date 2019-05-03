@@ -1,5 +1,6 @@
 package unimelb.bitbox.protocol;
 
+
 import org.json.JSONException;
 import org.junit.Assert;
 import org.junit.Before;
@@ -20,6 +21,7 @@ public class ProtocolFactoryTest {
     String expected;
     Protocol.HandshakeResponse handshakeResponse;
 
+
     @Before
     public void initialize() {
         this.expected = "{" +
@@ -32,6 +34,7 @@ public class ProtocolFactoryTest {
         this.handshakeResponse = new Protocol.HandshakeResponse();
         this.handshakeResponse.unmarshalFromJson(Document.parse(this.expected));
     }
+
 
     @Test
     public void testMarshalProtocol() {
@@ -50,7 +53,7 @@ public class ProtocolFactoryTest {
     public void testParseProtocol() throws InvalidProtocolException {
 
         Protocol actual = ProtocolFactory.parseProtocol(this.expected);
-        Protocol.HandshakeResponse actualProtocol = (Protocol.HandshakeResponse)actual;
+        Protocol.HandshakeResponse actualProtocol = (Protocol.HandshakeResponse) actual;
 
         try {
             assertEquals(this.handshakeResponse.peer, actualProtocol.peer);

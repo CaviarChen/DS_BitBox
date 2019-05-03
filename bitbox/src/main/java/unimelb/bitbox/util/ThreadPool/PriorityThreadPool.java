@@ -1,7 +1,9 @@
 package unimelb.bitbox.util.ThreadPool;
 
 
-import java.util.concurrent.*;
+import java.util.concurrent.PriorityBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 
@@ -16,9 +18,11 @@ public class PriorityThreadPool {
 
     private static PriorityThreadPool instance = new PriorityThreadPool();
 
+
     public static PriorityThreadPool getInstance() {
         return instance;
     }
+
 
     private PriorityThreadPool() {
         corePoolSize = Runtime.getRuntime().availableProcessors() + 1;
@@ -33,9 +37,10 @@ public class PriorityThreadPool {
                 TimeUnit.MILLISECONDS,
                 new PriorityBlockingQueue<>(queueSize),
                 new ThreadPoolExecutor.AbortPolicy()
-                );
+        );
         log.info("Thread pool is ready to go");
     }
+
 
     public void submitTask(PriorityTask priorityTask) {
         synchronized (this) {

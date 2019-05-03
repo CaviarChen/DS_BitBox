@@ -1,14 +1,16 @@
 package unimelb.bitbox.protocol;
 
+
 import unimelb.bitbox.util.Document;
 
-import static unimelb.bitbox.Constants.*;
+import static unimelb.bitbox.Constants.PROTOCOL_FIELD_CMD;
+
 
 public class ProtocolFactory {
 
     /**
-     *  connection related json to each protocol method
-     *  */
+     * connection related json to each protocol method
+     */
 
     public static Protocol parseProtocol(String json) throws InvalidProtocolException {
         try {
@@ -18,7 +20,7 @@ public class ProtocolFactory {
 
 
             ProtocolType protocolType = ProtocolType.typeOfCommand(command);
-            Protocol protocol =  (Protocol) protocolType.getValue().newInstance();
+            Protocol protocol = (Protocol) protocolType.getValue().newInstance();
 
             protocol.unmarshalFromJson(doc);
 
@@ -29,6 +31,7 @@ public class ProtocolFactory {
         }
 
     }
+
 
     public static String marshalProtocol(Protocol protocol) {
         Document doc = new Document();

@@ -1,11 +1,13 @@
 package unimelb.bitbox.util;
 
+
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import java.util.ArrayList;
+
 
 /**
  * Helper class for using JSON. Example usage:
@@ -34,32 +36,38 @@ public class Document {
 
     protected JSONObject obj;
 
+
     public Document() {
         obj = new JSONObject();
     }
 
+
     public Document(JSONObject obj) {
         this.obj = obj;
     }
+
 
     @SuppressWarnings("unchecked")
     public void append(String key, String val) {
         if (val == null) {
             obj.put(key, null);
         } else {
-            obj.put(key, new String(val));
+            obj.put(key, val);
         }
     }
+
 
     @SuppressWarnings("unchecked")
     public void append(String key, Document doc) {
         obj.put(key, doc.obj);
     }
 
+
     @SuppressWarnings("unchecked")
     public void append(String key, boolean val) {
         obj.put(key, new Boolean(val));
     }
+
 
     @SuppressWarnings("unchecked")
     public void append(String key, ArrayList<?> val) {
@@ -74,19 +82,23 @@ public class Document {
         obj.put(key, list);
     }
 
+
     @SuppressWarnings("unchecked")
     public void append(String key, long val) {
         obj.put(key, new Long(val));
     }
+
 
     @SuppressWarnings("unchecked")
     public void append(String key, int val) {
         obj.put(key, new Integer(val));
     }
 
+
     public String toJson() {
         return obj.toJSONString();
     }
+
 
     public static Document parse(String json) {
         JSONParser parser = new JSONParser();
@@ -100,17 +112,20 @@ public class Document {
         }
     }
 
+
     public boolean containsKey(String key) {
         return obj.containsKey(key);
     }
+
 
     public String getString(String key) {
         return (String) obj.get(key);
     }
 
+
     private ArrayList<Object> getList(JSONArray o) {
         ArrayList<Object> list = new ArrayList<Object>();
-        for (Object l : (JSONArray) o) {
+        for (Object l : o) {
             if (l instanceof JSONObject) {
                 list.add(new Document((JSONObject) l));
             } else if (l instanceof JSONArray) {
@@ -122,10 +137,11 @@ public class Document {
         return list;
     }
 
+
     public Object get(String key) {
         Object o = obj.get(key);
         if (o instanceof JSONObject) {
-            return (Object) new Document((JSONObject) o);
+            return new Document((JSONObject) o);
         } else if (o instanceof JSONArray) {
             return getList((JSONArray) o);
         } else {
@@ -134,13 +150,16 @@ public class Document {
 
     }
 
+
     public int getInteger(String key) {
         return (int) obj.get(key);
     }
 
+
     public long getLong(String key) {
         return (long) obj.get(key);
     }
+
 
     public boolean getBoolean(String key) {
         return (boolean) obj.get(key);
