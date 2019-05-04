@@ -282,14 +282,21 @@ public class Connection {
             SyncManager.getInstance().syncWithOneAsync(this);
 
             while (!thread.isInterrupted()) {
-                String msg = this.waitForOneMessage();
-                if (msg == null) break;
+                try {
 
-                PriorityThreadPool.getInstance().submitTask(new PriorityTask(
-                        "Connection: MessageHandler",
-                        Priority.NORMAL,
-                        () -> MessageHandler.handleMessage(msg, this)
-                ));
+                    String msg = this.waitForOneMessage();
+                    if (msg == null) break;
+
+                    PriorityThreadPool.getInstance().submitTask(new PriorityTask(
+                            "Connection: MessageHandler",
+                            Priority.NORMAL,
+                            () -> MessageHandler.handleMessage(msg, this)
+                    ));
+
+                } catch (Exception e) {
+                    log.warning(currentHostPort() + ", Exception: " + e.toString() + "");
+                    break;
+                }
             }
 
             this.close();
