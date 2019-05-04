@@ -22,8 +22,8 @@ import java.util.logging.Logger;
  * In other words, a 'window' is used to get all the file bytes.
  * Additionally, it also tries to get file bytes from multiple connections if possible.
  *
- * @author Wenqing Xue (813044)
  * @author Weizhi Xu (752454)
+ * @author Wenqing Xue (813044)
  * @author Zijie Shen (741404)
  * @author Zijun Chen (813190)
  */

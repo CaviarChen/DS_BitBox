@@ -47,8 +47,8 @@ import java.util.logging.Logger;
  * Modified createFileLoader so that it overwrites the older file.
  * Modified modifyFileLoader so that the new file can have a larger size than the original one.
  *
- * @author Wenqing Xue (813044)
  * @author Weizhi Xu (752454)
+ * @author Wenqing Xue (813044)
  * @author Zijie Shen (741404)
  * @author Zijun Chen (813190)
  *
