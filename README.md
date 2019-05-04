@@ -5,6 +5,7 @@
 Maven project contains in the bitbox sub-folder.
 
 ## Author
+### Group: NP=No Problem
 Weizhi Xu (752454)  
 Wenqing Xue (813044)  
 Zijie Shen (741404)  
