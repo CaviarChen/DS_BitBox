@@ -13,7 +13,7 @@ import java.util.logging.Logger;
 
 
 /**
- *
+ * Sync Manager used to generate and send sync events
  *
  * @author Wenqing Xue (813044)
  * @author Weizhi Xu (752454)
@@ -37,11 +37,19 @@ public class SyncManager {
     }
 
 
+    /**
+     * initialize this manager
+     * @param fileSystemManager
+     */
     public void init(FileSystemManager fileSystemManager) {
         this.fileSystemManager = fileSystemManager;
     }
 
 
+    /**
+     * Sync everything with all the peers
+     * Async method
+     */
     public void syncWithAllAsync() {
         log.info("Sync with all");
         for (FileSystemEvent event : fileSystemManager.generateSyncEvents()) {
@@ -49,7 +57,11 @@ public class SyncManager {
         }
     }
 
-
+    /**
+     * Sync everything with a given peer
+     * Async method
+     * @param conn the connection of the given peer
+     */
     public void syncWithOneAsync(Connection conn) {
         log.info("Sync with: " + conn.getHostPort().toString());
 
@@ -59,18 +71,23 @@ public class SyncManager {
     }
 
 
+    /**
+     * Send a given fileSystemEvent to all the peers
+     * Async method
+     * @param fileSystemEvent the given fileSystemEvent
+     */
     public void sendEventToAllAsync(FileSystemEvent fileSystemEvent) {
         Protocol protocol = eventToProtocol(fileSystemEvent);
         ConnectionManager.getInstance().broadcastMsgAsync(ProtocolFactory.marshalProtocol(protocol));
     }
 
-
+    // Send a given fileSystemEvent to a given peer
     private void sendEventToOneAsync(FileSystemEvent fileSystemEvent, Connection conn) {
         Protocol protocol = eventToProtocol(fileSystemEvent);
         conn.sendAsync(ProtocolFactory.marshalProtocol(protocol));
     }
 
-
+    // generate a message using the given fileSystemEvent
     private Protocol eventToProtocol(FileSystemEvent fileSystemEvent) {
         Protocol protocol = null;
 
@@ -104,7 +121,7 @@ public class SyncManager {
         return protocol;
     }
 
-
+    // fill ProtocolField.FileDes based on the given event
     private void eventToFileDes(ProtocolField.FileDes fileDes, FileSystemEvent fileSystemEvent) {
         fileDes.path = fileSystemEvent.pathName;
         fileDes.md5 = fileSystemEvent.fileDescriptor.md5;

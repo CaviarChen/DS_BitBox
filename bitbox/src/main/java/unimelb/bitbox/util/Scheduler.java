@@ -9,7 +9,7 @@ import java.util.logging.Logger;
 
 
 /**
- *
+ * Scheduler for running methods periodically
  *
  * @author Wenqing Xue (813044)
  * @author Weizhi Xu (752454)
@@ -25,12 +25,16 @@ public class Scheduler {
     private final long syncInterval;
     private Thread thread;
 
-
+    /**
+     * Constructor
+     */
     public Scheduler() {
         syncInterval = Long.parseLong(Configuration.getConfigurationValue("syncInterval")) * MILLIS_PER_SEC;
     }
 
-
+    /**
+     * Start working
+     */
     public void start() {
         if (thread != null) {
             throw new RuntimeException("Already running");

@@ -2,7 +2,7 @@ package unimelb.bitbox;
 
 
 /**
- *
+ * Common constants used in bitbox
  *
  * @author Wenqing Xue (813044)
  * @author Weizhi Xu (752454)
