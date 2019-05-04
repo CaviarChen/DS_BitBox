@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 /**
- *
+ * MessageHandler for handling all message received from other peers
  *
  * @author Wenqing Xue (813044)
  * @author Weizhi Xu (752454)
@@ -30,12 +30,20 @@ public class MessageHandler {
     private static ConcurrentHashMap<String, FileLoaderWrapper> fileLoaderWrapperMap = new ConcurrentHashMap<>();
 
 
-    // not thread-safe, set this at the initialization stage
-    public static void setFileSystemManager(FileSystemManager fsm) {
+    /**
+     * Initialize the messageHandler
+     * Not thread-safe, should be called during the initialization stage
+     * @param fsm an instance of the fileSystemManager
+     */
+    public static void init(FileSystemManager fsm) {
         fileSystemManager = fsm;
     }
 
-
+    /**
+     * handle a given message
+     * @param message the given message string
+     * @param conn corresponding connection
+     */
     public static void handleMessage(String message, Connection conn) {
 
         try {
@@ -92,7 +100,27 @@ public class MessageHandler {
 
     }
 
+    /**
+     * remove a specific fileLoaderWrapper from the active map
+     * @param fileLoaderWrapper
+     * @param filePath the path of th fileLoader corresponding to
+     */
+    public static void removeFileLoaderWrapper(FileLoaderWrapper fileLoaderWrapper, String filePath) {
+        fileLoaderWrapperMap.remove(filePath, fileLoaderWrapper);
+    }
 
+
+    /**
+     * Trigger the clean method for all active fileLoaderWrappers
+     */
+    public static void cleanUpFileLoaderWrapper() {
+        // thread-safe, the iterator is a snapshot
+        for (Map.Entry<String, FileLoaderWrapper> entry : fileLoaderWrapperMap.entrySet()) {
+            entry.getValue().clean();
+        }
+    }
+
+    // handle FileCreateRequest
     private static void handleSpecificProtocol(Protocol.FileCreateRequest fileCreateRequest, Connection conn) {
 
         ProtocolField.FileDes fd = fileCreateRequest.fileDes;
@@ -144,7 +172,7 @@ public class MessageHandler {
         conn.send(ProtocolFactory.marshalProtocol(response));
     }
 
-
+    // handle FileDeleteRequest
     private static void handleSpecificProtocol(Protocol.FileDeleteRequest fileDeleteRequest, Connection conn) {
 
         Protocol.FileDeleteResponse response = new Protocol.FileDeleteResponse();
@@ -174,7 +202,7 @@ public class MessageHandler {
         conn.send(ProtocolFactory.marshalProtocol(response));
     }
 
-
+    // handle FileModifyRequest
     private static void handleSpecificProtocol(Protocol.FileModifyRequest fileModifyRequest, Connection conn) {
         ProtocolField.FileDes fd = fileModifyRequest.fileDes;
         Protocol.FileCreateResponse response = new Protocol.FileCreateResponse();
@@ -226,7 +254,7 @@ public class MessageHandler {
         conn.send(ProtocolFactory.marshalProtocol(response));
     }
 
-
+    // handle FileBytesRequest
     private static void handleSpecificProtocol(Protocol.FileBytesRequest fileBytesRequest, Connection conn) {
         Protocol.FileBytesResponse response = new Protocol.FileBytesResponse();
         response.fileDes = fileBytesRequest.fileDes;
@@ -268,6 +296,7 @@ public class MessageHandler {
     }
 
 
+    // handle FileBytesResponse
     private static void handleSpecificProtocol(Protocol.FileBytesResponse fileBytesResponse, Connection conn) {
 
         String filePath = fileBytesResponse.fileDes.path;
@@ -282,6 +311,7 @@ public class MessageHandler {
     }
 
 
+    // handle DirectoryCreateRequest
     private static void handleSpecificProtocol(Protocol.DirectoryCreateRequest directoryCreateRequest, Connection conn) {
 
         Protocol.DirectoryCreateResponse response = new Protocol.DirectoryCreateResponse();
@@ -308,6 +338,7 @@ public class MessageHandler {
     }
 
 
+    // handle DirectoryDeleteRequest
     private static void handleSpecificProtocol(Protocol.DirectoryDeleteRequest directoryDeleteRequest, Connection conn) {
 
         Protocol.DirectoryDeleteResponse response = new Protocol.DirectoryDeleteResponse();
@@ -333,16 +364,4 @@ public class MessageHandler {
         conn.send(ProtocolFactory.marshalProtocol(response));
     }
 
-
-    public static void removeFileLoaderWrapper(FileLoaderWrapper fileLoaderWrapper, String filePath) {
-        fileLoaderWrapperMap.remove(filePath, fileLoaderWrapper);
-    }
-
-
-    public static void cleanUpFileLoaderWrapper() {
-        // thread-safe, the iterator is a snapshot
-        for (Map.Entry<String, FileLoaderWrapper> entry : fileLoaderWrapperMap.entrySet()) {
-            entry.getValue().clean();
-        }
-    }
 }

@@ -13,7 +13,7 @@ import java.util.logging.Logger;
 
 
 /**
- *
+ * Main entrypoint of the bitbox
  *
  * @author Wenqing Xue (813044)
  * @author Weizhi Xu (752454)
@@ -26,7 +26,11 @@ public class Peer {
     private static OutgoingConnectionHelper outgoingConnectionHelper;
     private static Scheduler scheduler;
 
-
+    /**
+     * Entry point
+     * @param args arguments
+     * @throws Exception
+     */
     public static void main(String[] args) throws Exception {
         System.setProperty("java.util.logging.SimpleFormatter.format",
                 "[%1$tc] %2$s %4$s: %5$s%n");
@@ -38,7 +42,7 @@ public class Peer {
 
         SyncManager.getInstance().init(fileSystemManager);
 
-        MessageHandler.setFileSystemManager(fileSystemManager);
+        MessageHandler.init(fileSystemManager);
 
         scheduler = new Scheduler();
         scheduler.start();
