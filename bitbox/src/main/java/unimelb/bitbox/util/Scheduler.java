@@ -11,8 +11,8 @@ import java.util.logging.Logger;
 /**
  * Scheduler for running methods periodically
  *
- * @author Wenqing Xue (813044)
  * @author Weizhi Xu (752454)
+ * @author Wenqing Xue (813044)
  * @author Zijie Shen (741404)
  * @author Zijun Chen (813190)
  */

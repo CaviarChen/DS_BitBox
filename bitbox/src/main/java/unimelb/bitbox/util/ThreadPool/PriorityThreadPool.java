@@ -14,8 +14,8 @@ import java.util.logging.Logger;
  * PriorityThreadPool is a singleton class. It mainly handles all requests
  * and responses, sync events and clean up {@link unimelb.bitbox.util.FileSystem.FileLoaderWrapper}.
  *
- * @author Wenqing Xue (813044)
  * @author Weizhi Xu (752454)
+ * @author Wenqing Xue (813044)
  * @author Zijie Shen (741404)
  * @author Zijun Chen (813190)
  */

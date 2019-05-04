@@ -10,8 +10,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * ConnectionManager manages all connections and contains helper functions for them
- * @author Wenqing Xue (813044)
+ *
  * @author Weizhi Xu (752454)
+ * @author Wenqing Xue (813044)
  * @author Zijie Shen (741404)
  * @author Zijun Chen (813190)
  */
@@ -66,7 +67,7 @@ public class ConnectionManager {
     }
 
     /**
-     * Boardcast message to all active connections
+     * Broadcast message to all active connections
      * Async method
      * @param msg json message string
      */
