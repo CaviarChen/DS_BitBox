@@ -82,7 +82,7 @@ public class IncomingConnectionHelper {
             Socket clientSocket = serverSocket.accept();
 
             try {
-                Connection conn = new Connection(clientSocket);
+                TCPConnection conn = new TCPConnection(clientSocket);
 
                 // if the incoming connection limit is exceed (roughly), then lower the priority
                 // since the connection needs to be rejected eventually
@@ -104,7 +104,7 @@ public class IncomingConnectionHelper {
     }
 
     // handle the handshake process (run in thread pool)
-    private void handleHandshake(Connection conn) {
+    private void handleHandshake(TCPConnection conn) {
 
         try {
 

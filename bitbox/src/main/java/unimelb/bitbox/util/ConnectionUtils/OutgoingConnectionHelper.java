@@ -84,7 +84,7 @@ public class OutgoingConnectionHelper {
                 // try to connect to the peer
                 try {
                     Socket clientSocket = new Socket(peer.getHost(), peer.getPort());
-                    Connection conn = new Connection(clientSocket, this);
+                    TCPConnection conn = new TCPConnection(clientSocket, this);
                     log.info(String.format("Start connecting to port: %d", peer.getPort()));
                     requestHandshake(conn);
                 } catch (IOException e) {
@@ -125,7 +125,7 @@ public class OutgoingConnectionHelper {
     }
 
     // request handshake to the peer
-    private void requestHandshake(Connection conn) {
+    private void requestHandshake(TCPConnection conn) {
         conn.send(handshakeRequestJson);
 
         String json;

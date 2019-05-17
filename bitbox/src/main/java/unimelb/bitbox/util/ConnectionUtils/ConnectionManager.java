@@ -29,7 +29,7 @@ public class ConnectionManager {
 
 
     private int incomingConnCounter = 0;
-    private ConcurrentHashMap<HostPort, Connection> connectionMap;
+    private ConcurrentHashMap<HostPort, TCPConnection> connectionMap;
 
 
     private ConnectionManager() {
@@ -43,9 +43,9 @@ public class ConnectionManager {
      * @param hostPort host&port of this connection
      * @return  0: ok, -1: exceed connection limit, -2: connection already exists
      */
-    public int addConnection(Connection conn, HostPort hostPort) {
+    public int addConnection(TCPConnection conn, HostPort hostPort) {
         synchronized (this) {
-            boolean isIncoming = conn.type == Connection.ConnectionType.INCOMING;
+            boolean isIncoming = conn.type == TCPConnection.ConnectionType.INCOMING;
             if (isIncoming) {
                 if (incomingConnCounter >= MAX_INCOMING_CONNECTIONS) {
                     return -1;
@@ -73,7 +73,7 @@ public class ConnectionManager {
      */
     public void broadcastMsgAsync(String msg) {
         // no need to lock
-        for (Connection conn : connectionMap.values()) {
+        for (TCPConnection conn : connectionMap.values()) {
             conn.sendAsync(msg);
         }
     }
@@ -93,10 +93,10 @@ public class ConnectionManager {
      * @param conn connection
      * @return true if success
      */
-    public boolean removeConnection(Connection conn) {
+    public boolean removeConnection(TCPConnection conn) {
         HostPort hostPort = conn.getHostPort();
         boolean res = connectionMap.remove(hostPort, conn);
-        if (res && conn.type == Connection.ConnectionType.INCOMING) {
+        if (res && conn.type == TCPConnection.ConnectionType.INCOMING) {
             synchronized (this) {
                 incomingConnCounter -= 1;
             }
@@ -118,7 +118,7 @@ public class ConnectionManager {
     public ArrayList<HostPort> getConnectedPeers() {
         ArrayList<HostPort> hostPorts = new ArrayList<>();
         // no need to lock
-        for (Connection conn : connectionMap.values()) {
+        for (TCPConnection conn : connectionMap.values()) {
             hostPorts.add(conn.getHostPort());
         }
         return hostPorts;

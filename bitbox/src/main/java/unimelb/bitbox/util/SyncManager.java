@@ -1,7 +1,7 @@
 package unimelb.bitbox.util;
 
 
-import unimelb.bitbox.util.ConnectionUtils.Connection;
+import unimelb.bitbox.util.ConnectionUtils.TCPConnection;
 import unimelb.bitbox.util.ConnectionUtils.ConnectionManager;
 import unimelb.bitbox.protocol.Protocol;
 import unimelb.bitbox.protocol.ProtocolFactory;
@@ -62,7 +62,7 @@ public class SyncManager {
      * Async method
      * @param conn the connection of the given peer
      */
-    public void syncWithOneAsync(Connection conn) {
+    public void syncWithOneAsync(TCPConnection conn) {
         log.info("Sync with: " + conn.getHostPort().toString());
 
         for (FileSystemEvent event : fileSystemManager.generateSyncEvents()) {
@@ -82,7 +82,7 @@ public class SyncManager {
     }
 
     // Send a given fileSystemEvent to a given peer
-    private void sendEventToOneAsync(FileSystemEvent fileSystemEvent, Connection conn) {
+    private void sendEventToOneAsync(FileSystemEvent fileSystemEvent, TCPConnection conn) {
         Protocol protocol = eventToProtocol(fileSystemEvent);
         conn.sendAsync(ProtocolFactory.marshalProtocol(protocol));
     }
