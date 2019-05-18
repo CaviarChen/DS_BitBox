@@ -246,7 +246,7 @@ public class FileLoaderWrapper {
         fileBytesRequest.fileDes = this.fileDes;
         fileBytesRequest.filePos = filePosition;
 
-        conn.send(ProtocolFactory.marshalProtocol(fileBytesRequest));
+        conn.sendAsync(fileBytesRequest);
     }
 
 

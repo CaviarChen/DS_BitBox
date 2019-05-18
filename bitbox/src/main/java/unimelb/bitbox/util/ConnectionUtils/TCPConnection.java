@@ -132,7 +132,7 @@ public class TCPConnection extends Connection {
         return msg;
     }
 
-    public void send(String msg) {
+    protected void send(String msg) {
         synchronized (bufferedWriter) {
             try {
                 bufferedWriter.write(msg + '\n');

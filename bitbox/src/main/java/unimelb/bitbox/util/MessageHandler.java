@@ -130,7 +130,7 @@ public class MessageHandler {
         if (!fileSystemManager.isSafePathName(fd.path)) {
             response.response.status = false;
             response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_INVALID_PATH;
-            conn.send(ProtocolFactory.marshalProtocol(response));
+            conn.sendAsync(response);
         }
 
         try {
@@ -143,7 +143,7 @@ public class MessageHandler {
                         response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_FILE_CREATE_SHORTCUT_USED;
                     } else {
                         response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_FILE_CREATE_LOADER_READY;
-                        conn.send(ProtocolFactory.marshalProtocol(response));
+                        conn.sendAsync(response);
                         fileLoaderWrapper = new FileLoaderWrapper(fd, fileSystemManager, conn);
                         fileLoaderWrapperMap.put(fd.path, fileLoaderWrapper);
                         return;
@@ -157,7 +157,7 @@ public class MessageHandler {
                 if (fileLoaderWrapper.checkMd5(fd.md5)) {
                     response.response.status = true;
                     response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_FILE_CREATE_LOADER_COLLABORATING;
-                    conn.send(ProtocolFactory.marshalProtocol(response));
+                    conn.sendAsync(response);
                     fileLoaderWrapper.addNewConnection(conn);
                     return;
                 } else {
@@ -169,7 +169,7 @@ public class MessageHandler {
             response.response.status = false;
             response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_FILE_CREATE_FAIL_PREFIX + e.getMessage();
         }
-        conn.send(ProtocolFactory.marshalProtocol(response));
+        conn.sendAsync(response);
     }
 
     // handle FileDeleteRequest
@@ -199,7 +199,7 @@ public class MessageHandler {
             response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_INVALID_PATH;
         }
 
-        conn.send(ProtocolFactory.marshalProtocol(response));
+        conn.sendAsync(response);
     }
 
     // handle FileModifyRequest
@@ -211,7 +211,7 @@ public class MessageHandler {
         if (!fileSystemManager.isSafePathName(fd.path)) {
             response.response.status = false;
             response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_INVALID_PATH;
-            conn.send(ProtocolFactory.marshalProtocol(response));
+            conn.sendAsync(response);
             return;
         }
 
@@ -225,7 +225,7 @@ public class MessageHandler {
                         response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_FILE_MODIFY_SHORTCUT_USED;
                     } else {
                         response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_FILE_MODIFY_LOADER_READY;
-                        conn.send(ProtocolFactory.marshalProtocol(response));
+                        conn.sendAsync(response);
                         fileLoaderWrapper = new FileLoaderWrapper(fd, fileSystemManager, conn);
                         fileLoaderWrapperMap.put(fd.path, fileLoaderWrapper);
                         return;
@@ -239,7 +239,7 @@ public class MessageHandler {
                 if (fileLoaderWrapper.checkMd5(fd.md5)) {
                     response.response.status = true;
                     response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_FILE_MODIFY_LOADER_COLLABORATING;
-                    conn.send(ProtocolFactory.marshalProtocol(response));
+                    conn.sendAsync(response);
                     fileLoaderWrapper.addNewConnection(conn);
                     return;
                 } else {
@@ -251,7 +251,7 @@ public class MessageHandler {
             response.response.status = false;
             response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_FILE_DELETE_FAIL_PREFIX + e.getMessage();
         }
-        conn.send(ProtocolFactory.marshalProtocol(response));
+        conn.sendAsync(response);
     }
 
     // handle FileBytesRequest
@@ -265,7 +265,7 @@ public class MessageHandler {
         if (!fileSystemManager.isSafePathName(fileBytesRequest.fileDes.path)) {
             response.response.status = false;
             response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_INVALID_PATH;
-            conn.send(ProtocolFactory.marshalProtocol(response));
+            conn.sendAsync(response);
             return;
         }
 
@@ -286,13 +286,13 @@ public class MessageHandler {
             response.fileContent.content = Base64.getEncoder().encodeToString(byteBuffer.array());
             response.response.status = true;
             response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_FILE_READ_SUCCESS;
-            conn.send(ProtocolFactory.marshalProtocol(response));
+            conn.sendAsync(response);
             return;
         }
 
         response.response.status = false;
         response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_FILE_READ_FAIL;
-        conn.send(ProtocolFactory.marshalProtocol(response));
+        conn.sendAsync(response);
     }
 
 
@@ -334,7 +334,7 @@ public class MessageHandler {
             response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_INVALID_PATH;
         }
 
-        conn.send(ProtocolFactory.marshalProtocol(response));
+        conn.sendAsync(response);
     }
 
 
@@ -361,7 +361,7 @@ public class MessageHandler {
             response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_INVALID_PATH;
         }
 
-        conn.send(ProtocolFactory.marshalProtocol(response));
+        conn.sendAsync(response);
     }
 
 }
