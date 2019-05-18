@@ -35,6 +35,25 @@ public abstract class ProtocolField implements IProtocol {
         public void marshalToJson(Document doc) {
             doc.append(PROTOCOL_FIELD_PATH_NAME, this.path);
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == this) {
+                return true;
+            }
+            if (!(o instanceof Path )) {
+                return false;
+            }
+            Path  p = (Path ) o;
+            return p.path.equals(((Path) o).path);
+        }
+
+
+        // for hashmap
+        @Override
+        public int hashCode() {
+            return Objects.hash(path);
+        }
     }
 
 
@@ -63,6 +82,29 @@ public abstract class ProtocolField implements IProtocol {
             subDoc.append(PROTOCOL_FIELD_LAST_MODIFIED, this.lastModified);
             subDoc.append(PROTOCOL_FIELD_FILE_SIZE, this.fileSize);
             doc.append(PROTOCOL_FIELD_FILE_DES, subDoc);
+        }
+
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == this) {
+                return true;
+            }
+            if (!(o instanceof Path )) {
+                return false;
+            }
+            FileDes  p = (FileDes ) o;
+            return p.md5.equals(((FileDes) o).md5) &&
+                    p.lastModified == ((FileDes) o).lastModified &&
+                    p.fileSize == ((FileDes) o).fileSize;
+
+        }
+
+
+        // for hashmap
+        @Override
+        public int hashCode() {
+            return Objects.hash(md5,lastModified,fileSize);
         }
     }
 
