@@ -100,7 +100,10 @@ public class UDPConnection extends Connection {
     }
 
     @Override
-    public void abortWithInvalidProtocol(String msg) {
-
+    public void abortWithInvalidProtocol(String additionalMsg) {
+        Protocol.InvalidProtocol invalidProtocol = new Protocol.InvalidProtocol();
+        invalidProtocol.msg = additionalMsg;
+        sendAsync(invalidProtocol);
+        close();
     }
 }

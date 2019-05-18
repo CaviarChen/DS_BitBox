@@ -27,7 +27,7 @@ public abstract class Connection {
 
     public abstract void close();
 
-    public abstract void abortWithInvalidProtocol(String msg);
+    public abstract void abortWithInvalidProtocol(String additionalMsg);
 
     // get a string that represents this connection
     protected String currentHostPort() {
