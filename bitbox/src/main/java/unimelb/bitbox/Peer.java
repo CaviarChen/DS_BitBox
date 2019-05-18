@@ -1,13 +1,12 @@
 package unimelb.bitbox;
 
 
-import unimelb.bitbox.util.ConnectionUtils.IncomingConnectionHelper;
-import unimelb.bitbox.util.ConnectionUtils.OutgoingConnectionHelper;
-import unimelb.bitbox.util.Configuration;
+import unimelb.bitbox.util.*;
+import unimelb.bitbox.util.ConnectionUtils.Helper.IncomingConnectionHelper;
+import unimelb.bitbox.util.ConnectionUtils.Helper.OutgoingConnectionHelper;
+import unimelb.bitbox.util.ConnectionUtils.Helper.TCPIncomingConnectionHelper;
+import unimelb.bitbox.util.ConnectionUtils.Helper.TCPOutgoingConnectionHelper;
 import unimelb.bitbox.util.FileSystem.FileSystemManager;
-import unimelb.bitbox.util.MessageHandler;
-import unimelb.bitbox.util.Scheduler;
-import unimelb.bitbox.util.SyncManager;
 
 import java.util.logging.Logger;
 
@@ -22,8 +21,8 @@ import java.util.logging.Logger;
  */
 public class Peer {
     private static Logger log = Logger.getLogger(Peer.class.getName());
-    private static IncomingConnectionHelper incomingConnectionManager;
-    private static OutgoingConnectionHelper outgoingConnectionHelper;
+    private static TCPIncomingConnectionHelper incomingConnectionManager;
+    private static TCPOutgoingConnectionHelper outgoingConnectionHelper;
     private static Scheduler scheduler;
 
     /**
@@ -32,6 +31,7 @@ public class Peer {
      * @throws Exception
      */
     public static void main(String[] args) throws Exception {
+
         System.setProperty("java.util.logging.SimpleFormatter.format",
                 "[%1$tc] %2$s %4$s: %5$s%n");
         log.info("BitBox Peer starting...");
@@ -49,9 +49,9 @@ public class Peer {
 
         int port = Integer.parseInt(Configuration.getConfigurationValue(Constants.CONFIG_FIELD_PORT));
         String advertisedName = Configuration.getConfigurationValue(Constants.CONFIG_FIELD_AD_NAME);
-        incomingConnectionManager = new IncomingConnectionHelper(advertisedName, port);
+        incomingConnectionManager = new TCPIncomingConnectionHelper(advertisedName, port);
         incomingConnectionManager.start();
-        outgoingConnectionHelper = new OutgoingConnectionHelper(advertisedName, port);
+        outgoingConnectionHelper = new TCPOutgoingConnectionHelper(advertisedName, port);
         outgoingConnectionHelper.execute();
     }
 }

@@ -1,4 +1,4 @@
-package unimelb.bitbox.util.ConnectionUtils;
+package unimelb.bitbox.util.ConnectionUtils.Helper;
 
 
 import unimelb.bitbox.Constants;
@@ -6,6 +6,8 @@ import unimelb.bitbox.protocol.InvalidProtocolException;
 import unimelb.bitbox.protocol.Protocol;
 import unimelb.bitbox.protocol.ProtocolFactory;
 import unimelb.bitbox.protocol.ProtocolType;
+import unimelb.bitbox.util.ConnectionUtils.Connection.TCPConnection;
+import unimelb.bitbox.util.ConnectionUtils.ConnectionManager;
 import unimelb.bitbox.util.HostPort;
 import unimelb.bitbox.util.ThreadPool.Priority;
 import unimelb.bitbox.util.ThreadPool.PriorityTask;
@@ -26,8 +28,8 @@ import java.util.logging.Logger;
  * @author Zijie Shen (741404)
  * @author Zijun Chen (813190)
  */
-public class IncomingConnectionHelper {
-    private static Logger log = Logger.getLogger(IncomingConnectionHelper.class.getName());
+public class TCPIncomingConnectionHelper extends IncomingConnectionHelper{
+    private static Logger log = Logger.getLogger(TCPIncomingConnectionHelper.class.getName());
 
     private static final int HANDSHAKE_TIMEOUT = 10000;
     private static final long PEERS_CACHE_TIMEOUT = 10000;
@@ -45,7 +47,7 @@ public class IncomingConnectionHelper {
      * @param advertisedName from config
      * @param port listening port from config
      */
-    public IncomingConnectionHelper(String advertisedName, int port) {
+    public TCPIncomingConnectionHelper(String advertisedName, int port) {
 
         Protocol.HandshakeResponse handshakeResponse = new Protocol.HandshakeResponse();
         handshakeResponse.peer.host = advertisedName;

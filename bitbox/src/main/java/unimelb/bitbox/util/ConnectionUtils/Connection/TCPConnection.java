@@ -1,8 +1,10 @@
-package unimelb.bitbox.util.ConnectionUtils;
+package unimelb.bitbox.util.ConnectionUtils.Connection;
 
 
 import unimelb.bitbox.protocol.Protocol;
 import unimelb.bitbox.protocol.ProtocolFactory;
+import unimelb.bitbox.util.ConnectionUtils.ConnectionManager;
+import unimelb.bitbox.util.ConnectionUtils.Helper.TCPOutgoingConnectionHelper;
 import unimelb.bitbox.util.HostPort;
 import unimelb.bitbox.util.MessageHandler;
 import unimelb.bitbox.util.SyncManager;
@@ -53,7 +55,7 @@ public class TCPConnection extends Connection {
     private boolean active;
     private boolean isClosed = false;
     private HostPort hostPort;
-    private OutgoingConnectionHelper outgoingConnectionHelper = null;
+    private TCPOutgoingConnectionHelper outgoingConnectionHelper = null;
 
     // main constructor
     private TCPConnection(ConnectionType type, Socket socket) throws IOException {
@@ -81,7 +83,7 @@ public class TCPConnection extends Connection {
      * @param outgoingConnectionHelper the helper which established the given connection
      * @throws IOException
      */
-    public TCPConnection(Socket socket, OutgoingConnectionHelper outgoingConnectionHelper) throws IOException {
+    public TCPConnection(Socket socket, TCPOutgoingConnectionHelper outgoingConnectionHelper) throws IOException {
         this(ConnectionType.OUTGOING, socket);
         this.outgoingConnectionHelper = outgoingConnectionHelper;
     }

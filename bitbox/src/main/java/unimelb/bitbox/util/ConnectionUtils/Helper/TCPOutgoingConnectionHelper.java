@@ -1,4 +1,4 @@
-package unimelb.bitbox.util.ConnectionUtils;
+package unimelb.bitbox.util.ConnectionUtils.Helper;
 
 
 import unimelb.bitbox.Constants;
@@ -7,6 +7,8 @@ import unimelb.bitbox.protocol.Protocol;
 import unimelb.bitbox.protocol.ProtocolFactory;
 import unimelb.bitbox.protocol.ProtocolType;
 import unimelb.bitbox.util.Configuration;
+import unimelb.bitbox.util.ConnectionUtils.Connection.TCPConnection;
+import unimelb.bitbox.util.ConnectionUtils.ConnectionManager;
 import unimelb.bitbox.util.HostPort;
 
 import java.io.IOException;
@@ -28,9 +30,9 @@ import static java.lang.Thread.sleep;
  * @author Zijie Shen (741404)
  * @author Zijun Chen (813190)
  */
-public class OutgoingConnectionHelper {
+public class TCPOutgoingConnectionHelper extends OutgoingConnectionHelper{
 
-    private static Logger log = Logger.getLogger(OutgoingConnectionHelper.class.getName());
+    private static Logger log = Logger.getLogger(TCPOutgoingConnectionHelper.class.getName());
 
     private static final int PENALTY_TIME = 60000;
     private static final int CHECK_INTERVAL = 10000;
@@ -45,7 +47,7 @@ public class OutgoingConnectionHelper {
      * @param advertisedName from config
      * @param port from config
      */
-    public OutgoingConnectionHelper(String advertisedName, int port) {
+    public TCPOutgoingConnectionHelper(String advertisedName, int port) {
 
         Protocol.HandshakeRequest handshakeRequest = new Protocol.HandshakeRequest();
         handshakeRequest.peer.host = advertisedName;
