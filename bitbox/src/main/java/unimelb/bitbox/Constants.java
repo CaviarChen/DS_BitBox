@@ -25,6 +25,10 @@ public class Constants {
     public static final String CONFIG_FIELD_AD_NAME = "advertisedName";
     public static final String CONFIG_FIELD_BLOCKSIZE = "blockSize";
     public static final String CONFIG_FIELD_PATH = "path";
+    public static final String CONFIG_FIELD_AUTHORIZED_KEYS = "authorized_keys";
+
+    // Security
+    public static final String SECURITY_PRIVATE_KEY_FILENAME = "bitboxclient_rsa";
 
     // Protocol fields
     public static final String PROTOCOL_FIELD_CMD = "command";

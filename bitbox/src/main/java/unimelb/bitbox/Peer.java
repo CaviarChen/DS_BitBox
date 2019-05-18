@@ -1,13 +1,10 @@
 package unimelb.bitbox;
 
 
+import unimelb.bitbox.util.*;
 import unimelb.bitbox.util.ConnectionUtils.IncomingConnectionHelper;
 import unimelb.bitbox.util.ConnectionUtils.OutgoingConnectionHelper;
-import unimelb.bitbox.util.Configuration;
 import unimelb.bitbox.util.FileSystem.FileSystemManager;
-import unimelb.bitbox.util.MessageHandler;
-import unimelb.bitbox.util.Scheduler;
-import unimelb.bitbox.util.SyncManager;
 
 import java.util.logging.Logger;
 
@@ -43,6 +40,7 @@ public class Peer {
         SyncManager.getInstance().init(fileSystemManager);
 
         MessageHandler.init(fileSystemManager);
+        SecManager.getInstance().init(SecManager.Mode.ClientMode);
 
         scheduler = new Scheduler();
         scheduler.start();
