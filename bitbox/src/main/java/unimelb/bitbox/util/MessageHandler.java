@@ -1,7 +1,7 @@
 package unimelb.bitbox.util;
 
 
-import unimelb.bitbox.util.ConnectionUtils.TCPConnection;
+import unimelb.bitbox.util.ConnectionUtils.Connection;
 import unimelb.bitbox.Constants;
 import unimelb.bitbox.protocol.*;
 import unimelb.bitbox.util.FileSystem.FileLoaderWrapper;
@@ -44,7 +44,7 @@ public class MessageHandler {
      * @param message the given message string
      * @param conn corresponding connection
      */
-    public static void handleMessage(String message, TCPConnection conn) {
+    public static void handleMessage(String message, Connection conn) {
 
         try {
             Protocol protocol = ProtocolFactory.parseProtocol(message);
@@ -121,7 +121,7 @@ public class MessageHandler {
     }
 
     // handle FileCreateRequest
-    private static void handleSpecificProtocol(Protocol.FileCreateRequest fileCreateRequest, TCPConnection conn) {
+    private static void handleSpecificProtocol(Protocol.FileCreateRequest fileCreateRequest, Connection conn) {
 
         ProtocolField.FileDes fd = fileCreateRequest.fileDes;
         Protocol.FileCreateResponse response = new Protocol.FileCreateResponse();
@@ -173,7 +173,7 @@ public class MessageHandler {
     }
 
     // handle FileDeleteRequest
-    private static void handleSpecificProtocol(Protocol.FileDeleteRequest fileDeleteRequest, TCPConnection conn) {
+    private static void handleSpecificProtocol(Protocol.FileDeleteRequest fileDeleteRequest, Connection conn) {
 
         Protocol.FileDeleteResponse response = new Protocol.FileDeleteResponse();
         response.fileDes = fileDeleteRequest.fileDes;
@@ -203,7 +203,7 @@ public class MessageHandler {
     }
 
     // handle FileModifyRequest
-    private static void handleSpecificProtocol(Protocol.FileModifyRequest fileModifyRequest, TCPConnection conn) {
+    private static void handleSpecificProtocol(Protocol.FileModifyRequest fileModifyRequest, Connection conn) {
         ProtocolField.FileDes fd = fileModifyRequest.fileDes;
         Protocol.FileCreateResponse response = new Protocol.FileCreateResponse();
         response.fileDes = fd;
@@ -255,7 +255,7 @@ public class MessageHandler {
     }
 
     // handle FileBytesRequest
-    private static void handleSpecificProtocol(Protocol.FileBytesRequest fileBytesRequest, TCPConnection conn) {
+    private static void handleSpecificProtocol(Protocol.FileBytesRequest fileBytesRequest, Connection conn) {
         Protocol.FileBytesResponse response = new Protocol.FileBytesResponse();
         response.fileDes = fileBytesRequest.fileDes;
         response.fileContent.len = fileBytesRequest.filePos.len;
@@ -297,7 +297,7 @@ public class MessageHandler {
 
 
     // handle FileBytesResponse
-    private static void handleSpecificProtocol(Protocol.FileBytesResponse fileBytesResponse, TCPConnection conn) {
+    private static void handleSpecificProtocol(Protocol.FileBytesResponse fileBytesResponse, Connection conn) {
 
         String filePath = fileBytesResponse.fileDes.path;
 
@@ -312,7 +312,7 @@ public class MessageHandler {
 
 
     // handle DirectoryCreateRequest
-    private static void handleSpecificProtocol(Protocol.DirectoryCreateRequest directoryCreateRequest, TCPConnection conn) {
+    private static void handleSpecificProtocol(Protocol.DirectoryCreateRequest directoryCreateRequest, Connection conn) {
 
         Protocol.DirectoryCreateResponse response = new Protocol.DirectoryCreateResponse();
         response.dirPath = directoryCreateRequest.dirPath;
@@ -339,7 +339,7 @@ public class MessageHandler {
 
 
     // handle DirectoryDeleteRequest
-    private static void handleSpecificProtocol(Protocol.DirectoryDeleteRequest directoryDeleteRequest, TCPConnection conn) {
+    private static void handleSpecificProtocol(Protocol.DirectoryDeleteRequest directoryDeleteRequest, Connection conn) {
 
         Protocol.DirectoryDeleteResponse response = new Protocol.DirectoryDeleteResponse();
         response.dirPath = directoryDeleteRequest.dirPath;

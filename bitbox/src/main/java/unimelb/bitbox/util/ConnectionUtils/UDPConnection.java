@@ -39,6 +39,7 @@ public class UDPConnection extends Connection {
 
 
     public UDPConnection(DatagramSocket serverSocket, HostPort hostPort, InetAddress hostAddress, int actualPort) throws CException {
+        super(ConnectionType.INCOMING);
         this.serverSocket = serverSocket;
         this.hostPort = hostPort;
         // allow the advertisedName be fake
@@ -96,5 +97,10 @@ public class UDPConnection extends Connection {
         public CException(String message) {
             super(message);
         }
+    }
+
+    @Override
+    public void abortWithInvalidProtocol(String msg) {
+
     }
 }

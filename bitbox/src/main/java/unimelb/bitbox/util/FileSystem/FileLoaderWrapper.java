@@ -6,7 +6,7 @@ import unimelb.bitbox.protocol.Protocol;
 import unimelb.bitbox.protocol.ProtocolFactory;
 import unimelb.bitbox.protocol.ProtocolField;
 import unimelb.bitbox.util.Configuration;
-import unimelb.bitbox.util.ConnectionUtils.TCPConnection;
+import unimelb.bitbox.util.ConnectionUtils.Connection;
 import unimelb.bitbox.util.MessageHandler;
 
 import java.io.IOException;
@@ -28,7 +28,7 @@ import java.util.logging.Logger;
  * @author Zijun Chen (813190)
  */
 public class FileLoaderWrapper {
-    private static Logger log = Logger.getLogger(TCPConnection.class.getName());
+    private static Logger log = Logger.getLogger(Connection.class.getName());
 
     private static final long BLOCK_SIZE =
             Long.parseLong(Configuration.getConfigurationValue(Constants.CONFIG_FIELD_BLOCKSIZE));
@@ -37,7 +37,7 @@ public class FileLoaderWrapper {
 
     // messages that are pending to be sent
     private final LinkedList<ProtocolField.FilePosition> pending = new LinkedList<>();
-    private final HashMap<TCPConnection, ConnectionInfo> connectionInfoMap = new HashMap<>();
+    private final HashMap<Connection, ConnectionInfo> connectionInfoMap = new HashMap<>();
 
     private ProtocolField.FileDes fileDes;
     private FileSystemManager fileSystemManager;
@@ -50,7 +50,7 @@ public class FileLoaderWrapper {
      * @param fileSystemManager the file system manager
      * @param conn              the connection that requests to send the file
      */
-    public FileLoaderWrapper(ProtocolField.FileDes fileDes, FileSystemManager fileSystemManager, TCPConnection conn) {
+    public FileLoaderWrapper(ProtocolField.FileDes fileDes, FileSystemManager fileSystemManager, Connection conn) {
 
         this.fileDes = fileDes;
         this.fileSystemManager = fileSystemManager;
@@ -92,7 +92,7 @@ public class FileLoaderWrapper {
      *
      * @param conn the connection wants to transmit the file
      */
-    public void addNewConnection(TCPConnection conn) {
+    public void addNewConnection(Connection conn) {
 
         synchronized (this) {
             if (connectionInfoMap.containsKey(conn)) return;
@@ -110,7 +110,7 @@ public class FileLoaderWrapper {
      * @param fileBytesResponse the file byte response we received
      * @param conn              the connection that is transmitting the file
      */
-    public void received(Protocol.FileBytesResponse fileBytesResponse, TCPConnection conn) {
+    public void received(Protocol.FileBytesResponse fileBytesResponse, Connection conn) {
         String filePath = fileBytesResponse.fileDes.path;
 
         // discard the response when MD5 is not equal to the file requested to be sent
@@ -177,10 +177,10 @@ public class FileLoaderWrapper {
         // not accurate since this will be triggered roughly every syncInterval and with low priority
         synchronized (this) {
 
-            Iterator<Map.Entry<TCPConnection, ConnectionInfo>> it = connectionInfoMap.entrySet().iterator();
+            Iterator<Map.Entry<Connection, ConnectionInfo>> it = connectionInfoMap.entrySet().iterator();
 
             while (it.hasNext()) {
-                Map.Entry<TCPConnection, ConnectionInfo> entry = it.next();
+                Map.Entry<Connection, ConnectionInfo> entry = it.next();
                 // time out, remove this connection and add everything back to pending list
                 if (System.currentTimeMillis() - entry.getValue().lastActiveTime > TIMEOUT_IN_MILLIS) {
                     pending.addAll(entry.getValue().waiting);
@@ -214,7 +214,7 @@ public class FileLoaderWrapper {
 
 
     // send pending messages up to the limit
-    private void send(int limit, TCPConnection conn) {
+    private void send(int limit, Connection conn) {
         ArrayList<ProtocolField.FilePosition> posList = new ArrayList<>();
 
         synchronized (this) {
@@ -240,7 +240,7 @@ public class FileLoaderWrapper {
 
 
     // send the file byte request to the connection
-    private void SendFileByteRequest(ProtocolField.FilePosition filePosition, TCPConnection conn) {
+    private void SendFileByteRequest(ProtocolField.FilePosition filePosition, Connection conn) {
         Protocol.FileBytesRequest fileBytesRequest = new Protocol.FileBytesRequest();
 
         fileBytesRequest.fileDes = this.fileDes;

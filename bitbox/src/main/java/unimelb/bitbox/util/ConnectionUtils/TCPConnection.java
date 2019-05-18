@@ -29,17 +29,7 @@ import java.util.logging.Logger;
  */
 public class TCPConnection extends Connection {
 
-    /**
-     * enum for connection types
-     */
-    public enum ConnectionType {
-        INCOMING,
-        OUTGOING
-    }
-
     private static Logger log = Logger.getLogger(TCPConnection.class.getName());
-
-    public final ConnectionType type;
 
     private final Socket socket;
     private final BufferedReader bufferedReader;
@@ -54,7 +44,7 @@ public class TCPConnection extends Connection {
 
     // main constructor
     private TCPConnection(ConnectionType type, Socket socket) throws IOException {
-        this.type = type;
+        super(type);
         this.socket = socket;
         bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8));
@@ -166,6 +156,7 @@ public class TCPConnection extends Connection {
      * send InvalidProtocol and close this connection
      * @param additionalMsg additional message in the InvalidProtocol
      */
+    @Override
     public void abortWithInvalidProtocol(String additionalMsg) {
         Protocol.InvalidProtocol invalidProtocol = new Protocol.InvalidProtocol();
         invalidProtocol.msg = additionalMsg;
@@ -226,14 +217,6 @@ public class TCPConnection extends Connection {
             thread = new Thread(this::work);
             thread.start();
         }
-    }
-
-
-    /**
-     * @return hostPort
-     */
-    public HostPort getHostPort() {
-        return hostPort;
     }
 
     /**
