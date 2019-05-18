@@ -3,6 +3,7 @@ package unimelb.bitbox.util.ConnectionUtils;
 
 import unimelb.bitbox.protocol.Protocol;
 import unimelb.bitbox.protocol.ProtocolFactory;
+import unimelb.bitbox.util.ConnectionManager;
 import unimelb.bitbox.util.HostPort;
 import unimelb.bitbox.util.MessageHandler;
 import unimelb.bitbox.util.SyncManager;

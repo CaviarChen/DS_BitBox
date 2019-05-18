@@ -1,9 +1,8 @@
-package unimelb.bitbox.util.ConnectionUtils;
+package unimelb.bitbox.util;
 
 
 import unimelb.bitbox.protocol.Protocol;
-import unimelb.bitbox.util.Configuration;
-import unimelb.bitbox.util.HostPort;
+import unimelb.bitbox.util.ConnectionUtils.TCPConnection;
 
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;

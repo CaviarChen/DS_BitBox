@@ -6,6 +6,7 @@ import unimelb.bitbox.protocol.InvalidProtocolException;
 import unimelb.bitbox.protocol.Protocol;
 import unimelb.bitbox.protocol.ProtocolFactory;
 import unimelb.bitbox.protocol.ProtocolType;
+import unimelb.bitbox.util.ConnectionManager;
 import unimelb.bitbox.util.HostPort;
 import unimelb.bitbox.util.ThreadPool.Priority;
 import unimelb.bitbox.util.ThreadPool.PriorityTask;

@@ -2,7 +2,6 @@ package unimelb.bitbox.util;
 
 
 import unimelb.bitbox.util.ConnectionUtils.TCPConnection;
-import unimelb.bitbox.util.ConnectionUtils.ConnectionManager;
 import unimelb.bitbox.protocol.Protocol;
 import unimelb.bitbox.protocol.ProtocolField;
 import unimelb.bitbox.util.FileSystem.FileSystemManager;
