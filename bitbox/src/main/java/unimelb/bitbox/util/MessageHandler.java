@@ -27,6 +27,8 @@ import java.util.logging.Logger;
  */
 public class MessageHandler {
 
+    private static final int CLEANUP_INTERVAL_IN_SEC = 45;
+
     private static FileSystemManager fileSystemManager = null;
     private static Logger log = Logger.getLogger(MessageHandler.class.getName());
     private static ConcurrentHashMap<String, FileLoaderWrapper> fileLoaderWrapperMap = new ConcurrentHashMap<>();
@@ -41,7 +43,7 @@ public class MessageHandler {
         fileSystemManager = fsm;
 
         // register FileLoaderWrapper clean-up task
-        Scheduler.getInstance().addTask(Integer.parseInt(Configuration.getConfigurationValue("syncInterval")),
+        Scheduler.getInstance().addTask(CLEANUP_INTERVAL_IN_SEC,
                 new PriorityTask(
                         "clean up FileLoaderWrapper",
                         Priority.LOW,
