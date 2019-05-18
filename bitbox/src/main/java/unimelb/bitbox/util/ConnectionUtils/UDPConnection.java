@@ -14,8 +14,6 @@ import java.util.logging.Logger;
 
 public class UDPConnection extends Connection {
 
-//    private static final int listenPort = Integer.parseInt(Configuration.getConfigurationValue("udpPort"));
-
     private static final ConcurrentHashMap<HostPort, UDPConnection> udpConnectionMap = new ConcurrentHashMap<>();
     private static Logger log = Logger.getLogger(UDPConnection.class.getName());
 
@@ -23,6 +21,7 @@ public class UDPConnection extends Connection {
     private final InetAddress hostAddress;
 
     private boolean isClosed = false;
+    private boolean isActive = false;
 
 
 
@@ -70,6 +69,11 @@ public class UDPConnection extends Connection {
         }
     }
 
+    public void active() {
+        if (!isActive) {
+            isActive = true;
+        }
+    }
 
 
     private void receive(String msg) {

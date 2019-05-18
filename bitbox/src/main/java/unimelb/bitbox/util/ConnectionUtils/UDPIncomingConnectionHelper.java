@@ -6,6 +6,7 @@ import unimelb.bitbox.protocol.Protocol;
 import unimelb.bitbox.protocol.ProtocolFactory;
 import unimelb.bitbox.protocol.ProtocolType;
 import unimelb.bitbox.util.ConnectionManager;
+import unimelb.bitbox.util.HostPort;
 import unimelb.bitbox.util.ThreadPool.Priority;
 import unimelb.bitbox.util.ThreadPool.PriorityTask;
 import unimelb.bitbox.util.ThreadPool.PriorityThreadPool;
@@ -24,6 +25,7 @@ public class UDPIncomingConnectionHelper extends IncomingConnectionHelper {
     private final int port;
 
     public UDPIncomingConnectionHelper(String advertisedName, int port) {
+        super(advertisedName, port);
         this.port = port;
     }
 
@@ -60,7 +62,26 @@ public class UDPIncomingConnectionHelper extends IncomingConnectionHelper {
             Protocol protocol = ProtocolFactory.parseProtocol(msg);
             if (ProtocolType.typeOfProtocol(protocol) == ProtocolType.HANDSHAKE_REQUEST) {
                 Protocol.HandshakeRequest handshakeRequest = (Protocol.HandshakeRequest) protocol;
-                UDPConnection connection = new UDPConnection(serverSocket, handshakeRequest.peer, hostAddress, actualPort);
+                UDPConnection conn = new UDPConnection(serverSocket, handshakeRequest.peer, hostAddress, actualPort);
+
+                int res = ConnectionManager.getInstance().addConnection(conn, handshakeRequest.peer);
+                if (res == 0) {
+                    // success
+                    replyMsg = handshakeResponseJsonCache;
+                    conn.active();
+
+                } else {
+                    Protocol.ConnectionRefused connectionRefused = new Protocol.ConnectionRefused();
+                    connectionRefused.peers = getCachedPeers();
+                    if (res == -1) {
+                        // over limit
+                        connectionRefused.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_CONNECTION_REFUSED_LIMIT_REACHED;
+                    } else if (res == -2) {
+                        // already connected
+                        connectionRefused.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_CONNECTION_REFUSED_ALREADY_EXIST;
+                    }
+                    replyMsg = ProtocolFactory.marshalProtocol(connectionRefused);
+                }
             } else {
                 throw new InvalidProtocolException("Expected HandshakeRequest but got: " + ((protocol == null) ? "null" : protocol.getClass().getName()), null);
             }
@@ -69,24 +90,6 @@ public class UDPIncomingConnectionHelper extends IncomingConnectionHelper {
             Protocol.InvalidProtocol invalidProtocol = new Protocol.InvalidProtocol();
             invalidProtocol.msg = e.getMessage();
             replyMsg = ProtocolFactory.marshalProtocol(invalidProtocol);
-
-//            int res = ConnectionManager.getInstance().addConnection(conn, hostPort);
-//            if (res == 0) {
-//                // success
-//                conn.send(handshakeResponseJson);
-//                conn.active(hostPort);
-//                return;
-//            }
-//
-//            Protocol.ConnectionRefused connectionRefused = new Protocol.ConnectionRefused();
-//            connectionRefused.peers = getCachedPeers();
-//            if (res == -1) {
-//                // over limit
-//                connectionRefused.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_CONNECTION_REFUSED_LIMIT_REACHED;
-//            } else if (res == -2) {
-//                // already connected
-//                connectionRefused.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_CONNECTION_REFUSED_ALREADY_EXIST;
-//            }
         }
 
         // send reply

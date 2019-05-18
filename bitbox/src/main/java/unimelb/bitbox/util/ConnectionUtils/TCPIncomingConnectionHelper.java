@@ -15,7 +15,6 @@ import unimelb.bitbox.util.ThreadPool.PriorityThreadPool;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
-import java.util.ArrayList;
 import java.util.logging.Logger;
 
 
@@ -31,13 +30,7 @@ public class TCPIncomingConnectionHelper extends IncomingConnectionHelper{
     private static Logger log = Logger.getLogger(TCPIncomingConnectionHelper.class.getName());
 
     private static final int HANDSHAKE_TIMEOUT = 10000;
-    private static final long PEERS_CACHE_TIMEOUT = 10000;
 
-    private Thread thread = null;
-    private String handshakeResponseJson;
-    private ArrayList<HostPort> connectedPeersCache;
-    private long connectedPeersCacheTime = 0;
-    private final Object connectedPeersCacheLock = new Object();
 
     private int port;
 
@@ -47,12 +40,7 @@ public class TCPIncomingConnectionHelper extends IncomingConnectionHelper{
      * @param port listening port from config
      */
     public TCPIncomingConnectionHelper(String advertisedName, int port) {
-
-        Protocol.HandshakeResponse handshakeResponse = new Protocol.HandshakeResponse();
-        handshakeResponse.peer.host = advertisedName;
-        handshakeResponse.peer.port = port;
-        handshakeResponseJson = ProtocolFactory.marshalProtocol(handshakeResponse);
-
+        super(advertisedName, port);
         this.port = port;
     }
 
@@ -107,7 +95,7 @@ public class TCPIncomingConnectionHelper extends IncomingConnectionHelper{
                 int res = ConnectionManager.getInstance().addConnection(conn, hostPort);
                 if (res == 0) {
                     // success
-                    conn.send(handshakeResponseJson);
+                    conn.send(handshakeResponseJsonCache);
                     conn.active(hostPort);
                     return;
                 }
@@ -134,17 +122,6 @@ public class TCPIncomingConnectionHelper extends IncomingConnectionHelper{
             conn.abortWithInvalidProtocol(e.getMessage());
         }
 
-    }
-
-    // get & cache the connected peer since we don't want refuse a connection be costly
-    private ArrayList<HostPort> getCachedPeers() {
-        synchronized (connectedPeersCacheLock) {
-            if (System.currentTimeMillis() - connectedPeersCacheTime > PEERS_CACHE_TIMEOUT) {
-                connectedPeersCache = ConnectionManager.getInstance().getConnectedPeers();
-                connectedPeersCacheTime = System.currentTimeMillis();
-            }
-            return connectedPeersCache;
-        }
     }
 
 }
