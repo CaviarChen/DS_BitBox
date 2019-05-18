@@ -6,6 +6,8 @@ import unimelb.bitbox.Constants;
 import unimelb.bitbox.protocol.*;
 import unimelb.bitbox.util.FileSystem.FileLoaderWrapper;
 import unimelb.bitbox.util.FileSystem.FileSystemManager;
+import unimelb.bitbox.util.ThreadPool.Priority;
+import unimelb.bitbox.util.ThreadPool.PriorityTask;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -37,6 +39,14 @@ public class MessageHandler {
      */
     public static void init(FileSystemManager fsm) {
         fileSystemManager = fsm;
+
+        // register FileLoaderWrapper clean-up task
+        Scheduler.getInstance().addTask(Integer.parseInt(Configuration.getConfigurationValue("syncInterval")),
+                new PriorityTask(
+                        "clean up FileLoaderWrapper",
+                        Priority.LOW,
+                        MessageHandler::cleanUpFileLoaderWrapper
+                ));
     }
 
     /**

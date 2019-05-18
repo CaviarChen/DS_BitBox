@@ -6,6 +6,8 @@ import unimelb.bitbox.protocol.Protocol;
 import unimelb.bitbox.protocol.ProtocolField;
 import unimelb.bitbox.util.FileSystem.FileSystemManager;
 import unimelb.bitbox.util.FileSystem.FileSystemManager.FileSystemEvent;
+import unimelb.bitbox.util.ThreadPool.Priority;
+import unimelb.bitbox.util.ThreadPool.PriorityTask;
 
 import java.util.logging.Logger;
 
@@ -41,6 +43,13 @@ public class SyncManager {
      */
     public void init(FileSystemManager fileSystemManager) {
         this.fileSystemManager = fileSystemManager;
+        // register periodic sync
+        Scheduler.getInstance().addTask(Integer.parseInt(Configuration.getConfigurationValue("syncInterval")),
+                new PriorityTask(
+                        "periodic synchronization",
+                        Priority.NORMAL,
+                        () -> SyncManager.getInstance().syncWithAllAsync()
+                ));
     }
 
 

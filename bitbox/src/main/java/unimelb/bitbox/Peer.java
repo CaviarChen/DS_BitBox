@@ -1,11 +1,13 @@
 package unimelb.bitbox;
 
 
+import unimelb.bitbox.protocol.IRequest;
 import unimelb.bitbox.util.*;
-import unimelb.bitbox.util.ConnectionUtils.TCPIncomingConnectionHelper;
-import unimelb.bitbox.util.ConnectionUtils.TCPOutgoingConnectionHelper;
+import unimelb.bitbox.util.ConnectionUtils.*;
 import unimelb.bitbox.util.FileSystem.FileSystemManager;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 
 
@@ -19,9 +21,8 @@ import java.util.logging.Logger;
  */
 public class Peer {
     private static Logger log = Logger.getLogger(Peer.class.getName());
-    private static TCPIncomingConnectionHelper incomingConnectionManager;
+    private static IncomingConnectionHelper incomingConnectionManager;
     private static TCPOutgoingConnectionHelper outgoingConnectionHelper;
-    private static Scheduler scheduler;
 
     /**
      * Entry point
@@ -29,6 +30,11 @@ public class Peer {
      * @throws Exception
      */
     public static void main(String[] args) throws Exception {
+
+//        int port = Integer.parseInt(Configuration.getConfigurationValue("udpPort"));
+//        String advertisedName = Configuration.getConfigurationValue(Constants.CONFIG_FIELD_AD_NAME);
+//        incomingConnectionManager = new UDPIncomingConnectionHelper(advertisedName, port);
+//        incomingConnectionManager.start();
 
         System.setProperty("java.util.logging.SimpleFormatter.format",
                 "[%1$tc] %2$s %4$s: %5$s%n");
@@ -42,8 +48,6 @@ public class Peer {
 
         MessageHandler.init(fileSystemManager);
 
-        scheduler = new Scheduler();
-        scheduler.start();
 
         int port = Integer.parseInt(Configuration.getConfigurationValue(Constants.CONFIG_FIELD_PORT));
         String advertisedName = Configuration.getConfigurationValue(Constants.CONFIG_FIELD_AD_NAME);
