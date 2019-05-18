@@ -1,8 +1,8 @@
 package unimelb.bitbox.util.ConnectionUtils;
 
 
+import unimelb.bitbox.protocol.Protocol;
 import unimelb.bitbox.util.Configuration;
-import unimelb.bitbox.util.ConnectionUtils.Connection.TCPConnection;
 import unimelb.bitbox.util.HostPort;
 
 import java.util.ArrayList;
@@ -67,15 +67,10 @@ public class ConnectionManager {
         }
     }
 
-    /**
-     * Broadcast message to all active connections
-     * Async method
-     * @param msg json message string
-     */
-    public void broadcastMsgAsync(String msg) {
+    public void broadcastMsgAsync(Protocol protocol) {
         // no need to lock
         for (TCPConnection conn : connectionMap.values()) {
-            conn.sendAsync(msg);
+            conn.sendAsync(protocol);
         }
     }
 

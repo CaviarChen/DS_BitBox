@@ -2,10 +2,8 @@ package unimelb.bitbox;
 
 
 import unimelb.bitbox.util.*;
-import unimelb.bitbox.util.ConnectionUtils.Helper.IncomingConnectionHelper;
-import unimelb.bitbox.util.ConnectionUtils.Helper.OutgoingConnectionHelper;
-import unimelb.bitbox.util.ConnectionUtils.Helper.TCPIncomingConnectionHelper;
-import unimelb.bitbox.util.ConnectionUtils.Helper.TCPOutgoingConnectionHelper;
+import unimelb.bitbox.util.ConnectionUtils.TCPIncomingConnectionHelper;
+import unimelb.bitbox.util.ConnectionUtils.TCPOutgoingConnectionHelper;
 import unimelb.bitbox.util.FileSystem.FileSystemManager;
 
 import java.util.logging.Logger;

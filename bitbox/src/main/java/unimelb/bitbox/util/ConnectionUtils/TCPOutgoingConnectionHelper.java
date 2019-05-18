@@ -1,4 +1,4 @@
-package unimelb.bitbox.util.ConnectionUtils.Helper;
+package unimelb.bitbox.util.ConnectionUtils;
 
 
 import unimelb.bitbox.Constants;
@@ -7,8 +7,6 @@ import unimelb.bitbox.protocol.Protocol;
 import unimelb.bitbox.protocol.ProtocolFactory;
 import unimelb.bitbox.protocol.ProtocolType;
 import unimelb.bitbox.util.Configuration;
-import unimelb.bitbox.util.ConnectionUtils.Connection.TCPConnection;
-import unimelb.bitbox.util.ConnectionUtils.ConnectionManager;
 import unimelb.bitbox.util.HostPort;
 
 import java.io.IOException;

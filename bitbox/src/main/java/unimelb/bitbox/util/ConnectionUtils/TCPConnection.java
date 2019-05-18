@@ -1,10 +1,8 @@
-package unimelb.bitbox.util.ConnectionUtils.Connection;
+package unimelb.bitbox.util.ConnectionUtils;
 
 
 import unimelb.bitbox.protocol.Protocol;
 import unimelb.bitbox.protocol.ProtocolFactory;
-import unimelb.bitbox.util.ConnectionUtils.ConnectionManager;
-import unimelb.bitbox.util.ConnectionUtils.Helper.TCPOutgoingConnectionHelper;
 import unimelb.bitbox.util.HostPort;
 import unimelb.bitbox.util.MessageHandler;
 import unimelb.bitbox.util.SyncManager;
@@ -133,11 +131,6 @@ public class TCPConnection extends Connection {
         return msg;
     }
 
-    /**
-     * send a json string (without \n) to the peer
-     * blocking method
-     * @param msg the json message string
-     */
     public void send(String msg) {
         synchronized (bufferedWriter) {
             try {
@@ -152,11 +145,10 @@ public class TCPConnection extends Connection {
         }
     }
 
-    /**
-     * Async version of the send
-     * @param msg the json message string
-     */
-    public void sendAsync(String msg) {
+
+    @Override
+    public void sendAsync(Protocol protocol) {
+        String msg = ProtocolFactory.marshalProtocol(protocol);
         boolean isEmpty;
         synchronized (sendingQueue) {
             isEmpty = sendingQueue.isEmpty();

@@ -1,10 +1,9 @@
 package unimelb.bitbox.util;
 
 
-import unimelb.bitbox.util.ConnectionUtils.Connection.TCPConnection;
+import unimelb.bitbox.util.ConnectionUtils.TCPConnection;
 import unimelb.bitbox.util.ConnectionUtils.ConnectionManager;
 import unimelb.bitbox.protocol.Protocol;
-import unimelb.bitbox.protocol.ProtocolFactory;
 import unimelb.bitbox.protocol.ProtocolField;
 import unimelb.bitbox.util.FileSystem.FileSystemManager;
 import unimelb.bitbox.util.FileSystem.FileSystemManager.FileSystemEvent;
@@ -78,13 +77,13 @@ public class SyncManager {
      */
     public void sendEventToAllAsync(FileSystemEvent fileSystemEvent) {
         Protocol protocol = eventToProtocol(fileSystemEvent);
-        ConnectionManager.getInstance().broadcastMsgAsync(ProtocolFactory.marshalProtocol(protocol));
+        ConnectionManager.getInstance().broadcastMsgAsync(protocol);
     }
 
     // Send a given fileSystemEvent to a given peer
     private void sendEventToOneAsync(FileSystemEvent fileSystemEvent, TCPConnection conn) {
         Protocol protocol = eventToProtocol(fileSystemEvent);
-        conn.sendAsync(ProtocolFactory.marshalProtocol(protocol));
+        conn.sendAsync(protocol);
     }
 
     // generate a message using the given fileSystemEvent

@@ -1,4 +1,4 @@
-package unimelb.bitbox.util.ConnectionUtils.Helper;
+package unimelb.bitbox.util.ConnectionUtils;
 
 public abstract class IncomingConnectionHelper {
 }

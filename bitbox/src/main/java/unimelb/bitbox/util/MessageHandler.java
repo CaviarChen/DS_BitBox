@@ -1,7 +1,7 @@
 package unimelb.bitbox.util;
 
 
-import unimelb.bitbox.util.ConnectionUtils.Connection.TCPConnection;
+import unimelb.bitbox.util.ConnectionUtils.TCPConnection;
 import unimelb.bitbox.Constants;
 import unimelb.bitbox.protocol.*;
 import unimelb.bitbox.util.FileSystem.FileLoaderWrapper;
