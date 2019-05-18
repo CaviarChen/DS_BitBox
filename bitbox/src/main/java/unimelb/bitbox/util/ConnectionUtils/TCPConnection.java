@@ -37,10 +37,7 @@ public class TCPConnection extends Connection {
         OUTGOING
     }
 
-
     private static Logger log = Logger.getLogger(TCPConnection.class.getName());
-    private static final int MAX_LOG_LEN = 250;
-
 
     public final ConnectionType type;
 
@@ -53,7 +50,6 @@ public class TCPConnection extends Connection {
 
     private boolean active;
     private boolean isClosed = false;
-    private HostPort hostPort;
     private TCPOutgoingConnectionHelper outgoingConnectionHelper = null;
 
     // main constructor
@@ -181,6 +177,7 @@ public class TCPConnection extends Connection {
     /**
      * close this connection
      */
+    @Override
     public void close() {
 
         synchronized (socket) {
@@ -246,10 +243,6 @@ public class TCPConnection extends Connection {
         return active;
     }
 
-    // get a string that represents this connection
-    private String currentHostPort() {
-        return (hostPort == null) ? "[Unknown]" : "[" + hostPort.toString() + "]";
-    }
 
     // function for async sending
     private void asyncSendingThread() {

@@ -56,26 +56,8 @@ public class TCPIncomingConnectionHelper extends IncomingConnectionHelper{
         this.port = port;
     }
 
-    /**
-     * start working thread
-     */
-    public void start() {
-        if (thread != null) throw new RuntimeException("Already started");
-
-        thread = new Thread(() -> {
-            try {
-                execute(port);
-            } catch (Exception e) {
-                log.severe(e.toString());
-            }
-
-        });
-        thread.start();
-    }
-
-
     // main work thread
-    private void execute(int port) throws Exception {
+    protected void execute() throws Exception {
         ServerSocket serverSocket = new ServerSocket(port);
         log.info(String.format("Start listening to port: %d", port));
 
