@@ -6,7 +6,6 @@ import unimelb.bitbox.protocol.Protocol;
 import unimelb.bitbox.protocol.ProtocolFactory;
 import unimelb.bitbox.protocol.ProtocolType;
 import unimelb.bitbox.util.ConnectionManager;
-import unimelb.bitbox.util.HostPort;
 import unimelb.bitbox.util.ThreadPool.Priority;
 import unimelb.bitbox.util.ThreadPool.PriorityTask;
 import unimelb.bitbox.util.ThreadPool.PriorityThreadPool;
@@ -58,13 +57,14 @@ public class UDPIncomingConnectionHelper extends IncomingConnectionHelper {
 
     private void handleHandshake(DatagramSocket serverSocket, String msg, InetAddress hostAddress, int actualPort) {
         String replyMsg = "";
+        int res = -1;
         try {
             Protocol protocol = ProtocolFactory.parseProtocol(msg);
             if (ProtocolType.typeOfProtocol(protocol) == ProtocolType.HANDSHAKE_REQUEST) {
                 Protocol.HandshakeRequest handshakeRequest = (Protocol.HandshakeRequest) protocol;
                 UDPConnection conn = new UDPConnection(serverSocket, handshakeRequest.peer, hostAddress, actualPort);
 
-                int res = ConnectionManager.getInstance().addConnection(conn, handshakeRequest.peer);
+                res = ConnectionManager.getInstance().addConnection(conn, handshakeRequest.peer);
                 if (res == 0) {
                     // success
                     replyMsg = handshakeResponseJsonCache;
@@ -93,6 +93,9 @@ public class UDPIncomingConnectionHelper extends IncomingConnectionHelper {
         }
 
         // send reply
+        log.info("Handshake Finished Result: " + res +
+                " reply: " + replyMsg.substring(0, Math.min(UDPConnection.MAX_LOG_LEN, replyMsg.length())));
+
         byte[] buffer = replyMsg.getBytes(StandardCharsets.UTF_8);
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length, hostAddress, actualPort);
         try {
