@@ -1,6 +1,8 @@
 package unimelb.bitbox.util.ConnectionUtils;
 
 
+import unimelb.bitbox.protocol.IRequest;
+import unimelb.bitbox.protocol.IResponse;
 import unimelb.bitbox.protocol.Protocol;
 import unimelb.bitbox.protocol.ProtocolFactory;
 import unimelb.bitbox.util.ConnectionManager;
@@ -162,6 +164,11 @@ public class TCPConnection extends Connection {
         invalidProtocol.msg = additionalMsg;
         send(ProtocolFactory.marshalProtocol(invalidProtocol));
         close();
+    }
+
+    @Override
+    public void markRequestAsDone(IResponse response) {
+        // do nothing, no retry for TCP
     }
 
 

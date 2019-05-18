@@ -1,7 +1,10 @@
 package unimelb.bitbox.util.ConnectionUtils;
 
+import unimelb.bitbox.protocol.IRequest;
+import unimelb.bitbox.protocol.IResponse;
 import unimelb.bitbox.protocol.Protocol;
 import unimelb.bitbox.protocol.ProtocolFactory;
+import unimelb.bitbox.util.ConnectionManager;
 import unimelb.bitbox.util.HostPort;
 
 import java.io.IOException;
@@ -9,6 +12,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
+import java.util.LinkedHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
@@ -19,6 +23,10 @@ public class UDPConnection extends Connection {
 
     private final DatagramSocket serverSocket;
     private final InetAddress hostAddress;
+
+    // use linkedHashMap to get LRU-liked order, so the oldest request should be in front
+    // default is accessOrder = false
+    private final LinkedHashMap<IRequest, WaitingInfo> waitingList = new LinkedHashMap<>();
 
     private boolean isClosed = false;
     private boolean isActive = false;
@@ -58,7 +66,28 @@ public class UDPConnection extends Connection {
 
     @Override
     public void sendAsync(Protocol protocol) {
-        // TODO: add retry mechanism
+        // add to waiting list if the protocol requires retry
+        if (protocol instanceof IRequest) {
+            IRequest request = (IRequest) protocol;
+            synchronized (waitingList) {
+                WaitingInfo waitingInfo = waitingList.remove(request);
+                if (waitingInfo == null) {
+                    // new request, create new waiting info
+                    waitingInfo = new WaitingInfo();
+                } else {
+                    // still waiting for the same old request, reset the timestamp but keep the retryCount
+                    waitingInfo.timestamp = System.currentTimeMillis();
+                }
+
+                // put in the back
+                waitingList.put(request, waitingInfo);
+            }
+        }
+        sendDatagram(protocol);
+    }
+
+
+    private void sendDatagram(Protocol protocol) {
         String msg = ProtocolFactory.marshalProtocol(protocol);
         byte[] buffer = msg.getBytes(StandardCharsets.UTF_8);
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length, hostAddress, hostPort.port);
@@ -93,14 +122,11 @@ public class UDPConnection extends Connection {
 
         log.info(currentHostPort() + " Connection Closed");
 
-
-
-    }
-
-    public static class CException extends Exception {
-        public CException(String message) {
-            super(message);
+        udpConnectionMap.remove(new HostPort(this.hostAddress.getHostAddress(), hostPort.port), this);
+        if (isActive) {
+            ConnectionManager.getInstance().removeConnection(this);
         }
+
     }
 
     @Override
@@ -110,4 +136,39 @@ public class UDPConnection extends Connection {
         sendAsync(invalidProtocol);
         close();
     }
+
+    @Override
+    public void markRequestAsDone(IResponse response) {
+        IRequest request = ProtocolFactory.identifyRes(response);
+        synchronized (waitingList) {
+            waitingList.remove(request);
+        }
+    }
+
+    protected static class CException extends Exception {
+        protected CException(String message) {
+            super(message);
+        }
+    }
+
+    protected static class WaitingInfo {
+        // TODO: get from config
+        private static final int MAX_RETRY = 3;
+
+        int retryCount;
+        long timestamp;
+
+        protected WaitingInfo() {
+            retryCount = 0;
+            timestamp = System.currentTimeMillis();
+        }
+
+        protected boolean doRetry() {
+            if (retryCount >= MAX_RETRY) return false;
+            retryCount += 1;
+            timestamp = System.currentTimeMillis();
+            return true;
+        }
+    }
+
 }

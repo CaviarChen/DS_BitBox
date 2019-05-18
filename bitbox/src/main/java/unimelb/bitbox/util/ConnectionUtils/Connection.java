@@ -1,5 +1,6 @@
 package unimelb.bitbox.util.ConnectionUtils;
 
+import unimelb.bitbox.protocol.IResponse;
 import unimelb.bitbox.protocol.Protocol;
 import unimelb.bitbox.util.HostPort;
 
@@ -37,4 +38,6 @@ public abstract class Connection {
     public HostPort getHostPort() {
         return hostPort;
     }
+
+    public abstract void markRequestAsDone(IResponse response);
 }

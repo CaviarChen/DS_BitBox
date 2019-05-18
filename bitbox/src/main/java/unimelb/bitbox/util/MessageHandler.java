@@ -49,6 +49,10 @@ public class MessageHandler {
         try {
             Protocol protocol = ProtocolFactory.parseProtocol(message);
 
+            if (protocol instanceof IResponse) {
+                conn.markRequestAsDone((IResponse) protocol);
+            }
+
             ProtocolType protocolType = ProtocolType.typeOfProtocol(protocol);
             switch (protocolType) {
                 case INVALID_PROTOCOL:
