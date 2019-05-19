@@ -29,7 +29,7 @@ import java.util.logging.Logger;
  * @author Zijie Shen (741404)
  * @author Zijun Chen (813190)
  */
-public class TCPConnection extends Connection {
+class TCPConnection extends Connection {
 
     private static Logger log = Logger.getLogger(TCPConnection.class.getName());
 

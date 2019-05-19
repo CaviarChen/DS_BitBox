@@ -7,6 +7,7 @@ import unimelb.bitbox.protocol.ProtocolFactory;
 import unimelb.bitbox.util.Configuration;
 import unimelb.bitbox.util.ConnectionManager;
 import unimelb.bitbox.util.HostPort;
+import unimelb.bitbox.util.SyncManager;
 import unimelb.bitbox.util.ThreadPool.Priority;
 import unimelb.bitbox.util.ThreadPool.PriorityTask;
 import unimelb.bitbox.util.ThreadPool.PriorityThreadPool;
@@ -25,6 +26,7 @@ public class UDPConnection extends Connection {
 
     private static final long UDP_TIMEOUT_MS = Long.parseLong(Configuration.getConfigurationValue("udpTimeout"));
     private static final ConcurrentHashMap<HostPort, UDPConnection> udpConnectionMap = new ConcurrentHashMap<>();
+    private static final int INCOMING_CONNECTION_FIRST_SYNC_WAIT_TIME = 1000;
     private static Logger log = Logger.getLogger(UDPConnection.class.getName());
 
     private final DatagramSocket serverSocket;
@@ -133,10 +135,20 @@ public class UDPConnection extends Connection {
 
     public void active() {
         synchronized (this) {
-            if (!isActive) {
-                isActive = true;
+            if (isActive) {
+                return;
             }
+            isActive = true;
         }
+
+        // trigger first sync
+        PriorityThreadPool.getInstance().submitTask(new PriorityTask(
+                "UDP connection first sync",
+                Priority.NORMAL,
+                this::firstSync
+        ));
+
+
     }
 
     private void retryTimeoutRequest() {
@@ -201,6 +213,17 @@ public class UDPConnection extends Connection {
             ConnectionManager.getInstance().removeConnection(this);
         }
 
+    }
+
+    private void firstSync() {
+        if (this.type == ConnectionType.INCOMING) {
+            // for incoming connection, wait a while before the first sync
+            // to reduce the chance that sync message received before handshake response
+            try {
+                Thread.sleep(INCOMING_CONNECTION_FIRST_SYNC_WAIT_TIME);
+            } catch (Exception ignored) { }
+        }
+        SyncManager.getInstance().syncWithOneAsync(this);
     }
 
     @Override
