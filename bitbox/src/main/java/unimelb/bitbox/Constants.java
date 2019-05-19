@@ -47,7 +47,8 @@ public class Constants {
     public static final String PROTOCOL_FIELD_LENGTH = "length";
     public static final String PROTOCOL_FIELD_CONTENT = "content";
     public static final String PROTOCOL_FIELD_IDENTITY = "identity";
-    public static final String PROTOCOL_FIELD_KEY = "key";
+    public static final String PROTOCOL_FIELD_KEY = "AES128";
+    public static final String PROTOCOL_FIELD_PAYLOAD = "payload";
 
 
     // Protocol types
@@ -76,6 +77,7 @@ public class Constants {
     public static final String PROTOCOL_TYPE_CONNECT_PEER_REQUEST = "CONNECT_PEER_REQUEST";
     public static final String PROTOCOL_TYPE_CONNECT_PEER_RESPONSE = "CONNECT_PEER_RESPONSE";
 
+
     // Protocol response messages
     public static final String PROTOCOL_RESPONSE_MESSAGE_INVALID_PATH = "invalid path";
     public static final String PROTOCOL_RESPONSE_MESSAGE_FILE_CREATE_SHORTCUT_USED = "file created successfully using shortcut";
@@ -101,4 +103,9 @@ public class Constants {
     public static final String PROTOCOL_RESPONSE_MESSAGE_DIR_DELETE_FAIL = "failed to create directory";
     public static final String PROTOCOL_RESPONSE_MESSAGE_CONNECTION_REFUSED_LIMIT_REACHED = "Incoming connection limit reached";
     public static final String PROTOCOL_RESPONSE_MESSAGE_CONNECTION_REFUSED_ALREADY_EXIST = "Connection with the same hostname and port already exists";
+    public static final String PROTOCOL_RESPONSE_MESSAGE_PUBLIC_KEY_FOUND = "public key found";
+    public static final String PROTOCOL_RESPONSE_MESSAGE_PUBLIC_KEY_NOT_FOUND = "public key not found";
+    public static final String PROTOCOL_RESPONSE_MESSAGE_DISCONNECT_PEER = "disconnected from peer";
+    public static final String PROTOCOL_RESPONSE_MESSAGE_CONNECT_PEER = "connected to peer";
+
 }
