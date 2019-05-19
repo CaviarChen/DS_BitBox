@@ -1,12 +1,10 @@
 package unimelb.bitbox.util.ConnectionUtils;
 
 
-import unimelb.bitbox.Constants;
 import unimelb.bitbox.protocol.InvalidProtocolException;
 import unimelb.bitbox.protocol.Protocol;
 import unimelb.bitbox.protocol.ProtocolFactory;
 import unimelb.bitbox.protocol.ProtocolType;
-import unimelb.bitbox.util.Configuration;
 import unimelb.bitbox.util.ConnectionManager;
 import unimelb.bitbox.util.HostPort;
 
@@ -14,8 +12,6 @@ import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.PriorityQueue;
 import java.util.logging.Logger;
 
 import static java.lang.Thread.sleep;
@@ -33,42 +29,21 @@ public class TCPOutgoingConnectionHelper extends OutgoingConnectionHelper{
 
     private static Logger log = Logger.getLogger(TCPOutgoingConnectionHelper.class.getName());
 
-    private static final int PENALTY_TIME = 60000;
-    private static final int CHECK_INTERVAL = 10000;
-    private static final int HANDSHAKE_TIMEOUT = 10000;
-
-    private String handshakeRequestJson;
-    private final PriorityQueue<PeerInfo> queue;
-
-
     /**
      * Constructor
      * @param advertisedName from config
      * @param port from config
      */
     public TCPOutgoingConnectionHelper(String advertisedName, int port) {
+        super(advertisedName, port);
 
-        Protocol.HandshakeRequest handshakeRequest = new Protocol.HandshakeRequest();
-        handshakeRequest.peer.host = advertisedName;
-        handshakeRequest.peer.port = port;
-        handshakeRequestJson = ProtocolFactory.marshalProtocol(handshakeRequest);
-
-        queue = new PriorityQueue<>(Comparator.comparingLong(PeerInfo::getTime));
-
-        String[] peers = Configuration.getConfigurationValue(Constants.CONFIG_FIELD_PEERS).split(Constants.CONFIG_PEERS_SEPARATOR);
-
-        // add all init peers to the queue
-        for (String peer : peers) {
-            if (!peer.isEmpty()) {
-                addPeerInfo(new HostPort(peer));
-            }
-        }
     }
 
 
     /**
      * start working (blocking)
      */
+    @Override
     public void execute() {
 
         while (true) {
@@ -89,7 +64,7 @@ public class TCPOutgoingConnectionHelper extends OutgoingConnectionHelper{
                     log.info(String.format("Start connecting to port: %d", peer.getPort()));
                     requestHandshake(conn);
                 } catch (IOException e) {
-                    log.warning(peer.hostPort.toString() + " " + e.toString());
+                    log.warning(peer.getHostPort().toString() + " " + e.toString());
                     peer.setPenaltyTime();
                     addPeerInfo(peer);
                 }
@@ -100,28 +75,6 @@ public class TCPOutgoingConnectionHelper extends OutgoingConnectionHelper{
                 } catch (InterruptedException ignored) {
                 }
             }
-        }
-    }
-
-    /**
-     * add a host&port to the queue for connecting
-     * @param hostPort
-     */
-    public void addPeerInfo(HostPort hostPort) {
-        log.info("New target: " + hostPort.toString());
-        synchronized (queue) {
-            queue.add(new PeerInfo(hostPort));
-        }
-    }
-
-
-    /**
-     * add back a peerInfo to the queue for connecting
-     * @param peerInfo
-     */
-    public void addPeerInfo(PeerInfo peerInfo) {
-        synchronized (queue) {
-            queue.add(peerInfo);
         }
     }
 
@@ -174,51 +127,6 @@ public class TCPOutgoingConnectionHelper extends OutgoingConnectionHelper{
                 break;
             default:
                 conn.abortWithInvalidProtocol("Unexpected protocol: " + protocol.getClass().getName());
-        }
-    }
-
-    /**
-     * internal class for a peer that waiting to be connected and it's retry info
-     */
-    private class PeerInfo {
-
-        private HostPort hostPort;
-        private long time;
-        private int penaltyMin;
-
-
-        PeerInfo(HostPort hostPort) {
-            this.hostPort = hostPort;
-            this.time = System.currentTimeMillis();
-            this.penaltyMin = 1;
-        }
-
-        int getPort() {
-            return hostPort.port;
-        }
-
-
-        long getTime() {
-            return time;
-        }
-
-
-        void setTime(long time) {
-            this.time = time;
-        }
-
-
-        void setPenaltyTime() {
-            this.penaltyMin *= 2;
-            if (penaltyMin > 60) {
-                penaltyMin = 60;
-            }
-            setTime(System.currentTimeMillis() + penaltyMin * PENALTY_TIME);
-        }
-
-
-        String getHost() {
-            return hostPort.host;
         }
     }
 }
