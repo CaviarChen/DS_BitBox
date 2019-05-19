@@ -1,11 +1,14 @@
 package unimelb.bitbox.util.ConnectionUtils;
 
 
+import unimelb.bitbox.protocol.*;
+import unimelb.bitbox.util.ConnectionManager;
 import unimelb.bitbox.util.HostPort;
 
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.util.ArrayList;
 import java.util.logging.Logger;
 
 import static java.lang.Thread.sleep;
@@ -39,7 +42,7 @@ public class UDPOutgoingConnectionHelper extends OutgoingConnectionHelper {
                     DatagramSocket serverSocket = null;
 
                     UDPConnection conn = new UDPConnection(serverSocket, peer.getHostPort(),
-                            InetAddress.getByName(peer.getHostPort().host), peer.getPort());
+                            InetAddress.getByName(peer.getHostPort().host), this);
 
                     log.info(String.format("Start connecting to port: %d", peer.getPort()));
                     conn.sendAsync(handshakeRequest);
@@ -61,29 +64,43 @@ public class UDPOutgoingConnectionHelper extends OutgoingConnectionHelper {
 
     protected void handleHandshake(UDPConnection conn, String msg) {
 
+        Protocol protocol;
+        ProtocolType protocolType;
 
-    }
+        try {
+            protocol = ProtocolFactory.parseProtocol(msg);
+            protocolType = ProtocolType.typeOfProtocol(protocol);
+        } catch (InvalidProtocolException e) {
+            conn.abortWithInvalidProtocol(e.getMessage());
+            return;
+        }
 
-    /**
-     * add a host&port to the queue for connecting
-     * @param hostPort
-     */
-    public void addPeerInfo(HostPort hostPort) {
-        log.info("New target: " + hostPort.toString());
-        synchronized (queue) {
-            queue.add(new PeerInfo(hostPort));
+        switch (protocolType) {
+            case HANDSHAKE_RESPONSE:
+                Protocol.HandshakeResponse handshakeResponse = (Protocol.HandshakeResponse) protocol;
+                HostPort hostPort = handshakeResponse.peer;
+
+                int res = ConnectionManager.getInstance().addConnection(conn, hostPort);
+                if (res == 0) {
+                    conn.active();
+                } else {
+                    // already exists
+                    conn.abortWithInvalidProtocol("HostPort is already existed");
+                }
+                break;
+            case CONNECTION_REFUSED:
+                Protocol.ConnectionRefused connectionRefused = (Protocol.ConnectionRefused) protocol;
+                ArrayList<HostPort> hostPorts = connectionRefused.peers;
+                for (HostPort hp : hostPorts) {
+                    addPeerInfo(new PeerInfo(hp));
+                }
+                conn.close();
+                break;
+            case INVALID_PROTOCOL:
+                conn.close();
+                break;
+            default:
+                conn.abortWithInvalidProtocol("Unexpected protocol: " + protocol.getClass().getName());
         }
     }
-
-
-    /**
-     * add back a peerInfo to the queue for connecting
-     * @param peerInfo
-     */
-    public void addPeerInfo(PeerInfo peerInfo) {
-        synchronized (queue) {
-            queue.add(peerInfo);
-        }
-    }
-
 }
