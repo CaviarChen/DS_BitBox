@@ -62,8 +62,6 @@ public abstract class Protocol implements IProtocol {
 
     public static class ConnectionRefused extends Protocol {
         public String msg;
-        // maybe we can replace this with ProtocolField.Peers to eliminate duplicate codes
-        // existed in ConnectPeerRequest class
         public ArrayList<HostPort> peers = new ArrayList<>(); // list of peers
 
 
@@ -172,52 +170,6 @@ public abstract class Protocol implements IProtocol {
 
     public static class DirectoryDeleteResponse extends DirectoryCreateResponse {
     }
-
-    public static class AuthRequest extends Protocol  {
-        public ProtocolField.AuthIdentity authIdentity = new ProtocolField.AuthIdentity();
-    }
-
-    public static class AuthResponse extends Protocol {
-        public ProtocolField.Response response = new ProtocolField.Response();
-        public ProtocolField.AuthKey authKey = new ProtocolField.AuthKey();
-    }
-
-    public static class ListPeersRequest extends Protocol  {
-    }
-
-    public static class ListPeersResponse extends Protocol  {
-        public ProtocolField.Peers peers = new ProtocolField.Peers();
-    }
-
-    public static class ConnectPeerRequest extends Protocol {
-        public HostPort hostPort = new HostPort();
-
-        @Override
-        public void unmarshalFromJson(Document doc) {
-            super.unmarshalFromJson(doc);
-            this.hostPort = new HostPort(doc.getString(PROTOCOL_FIELD_HOST),
-                                         doc.getInteger(PROTOCOL_FIELD_PORT));
-        }
-
-
-        @Override
-        public void marshalToJson(Document doc) {
-            super.marshalToJson(doc);
-            doc.append(PROTOCOL_FIELD_HOST, hostPort.host);
-            doc.append(PROTOCOL_FIELD_PORT, hostPort.port);
-        }
-    }
-
-    public static class ConnectPeerResponse extends ConnectPeerRequest {
-        public ProtocolField.Response response = new ProtocolField.Response();
-    }
-
-    public static class DisconnectPeerRequest extends ConnectPeerRequest {
-    }
-
-    public static class DisconnectPeerResponse extends ConnectPeerResponse {
-    }
-
 
     // get all public ProtocolField properties of current instance
     private ArrayList<ProtocolField> getAllProtocolFields() {

@@ -28,15 +28,7 @@ public enum ProtocolType {
     DIRECTORY_CREATE_REQUEST(Constants.PROTOCOL_TYPE_DIRECTORY_CREATE_REQUEST, Protocol.DirectoryCreateRequest.class),
     DIRECTORY_CREATE_RESPONSE(Constants.PROTOCOL_TYPE_DIRECTORY_CREATE_RESPONSE, Protocol.DirectoryCreateResponse.class),
     DIRECTORY_DELETE_REQUEST(Constants.PROTOCOL_TYPE_DIRECTORY_DELETE_REQUEST, Protocol.DirectoryDeleteRequest.class),
-    DIRECTORY_DELETE_RESPONSE(Constants.PROTOCOL_TYPE_DIRECTORY_DELETE_RESPONSE, Protocol.DirectoryDeleteResponse.class),
-    AUTH_REQUEST(Constants.PROTOCOL_TYPE_AUTH_REQUEST, Protocol.AuthRequest.class),
-    AUTH_RESPONSE(Constants.PROTOCOL_TYPE_AUTH_RESPONSE, Protocol.AuthResponse.class),
-    LIST_PEERS_REQUEST(Constants.PROTOCOL_TYPE_LIST_PEERS_REQUEST, Protocol.ListPeersRequest.class),
-    LIST_PEERS_RESPONSE(Constants.PROTOCOL_TYPE_LIST_PEERS_RESPONSE, Protocol.ListPeersResponse.class),
-    CONNECT_PEER_REQUEST(Constants.PROTOCOL_TYPE_CONNECT_PEER_REQUEST, Protocol.ConnectPeerRequest.class),
-    CONNECT_PEER_RESPONSE(Constants.PROTOCOL_TYPE_CONNECT_PEER_RESPONSE, Protocol.ConnectPeerResponse.class),
-    DISCONNECT_PEER_REQUEST(Constants.PROTOCOL_TYPE_DISCONNECT_PEER_REQUEST, Protocol.DisconnectPeerRequest.class),
-    DISCONNECT_PEER_RESPONSE(Constants.PROTOCOL_TYPE_DISCONNECT_PEER_RESPONSE, Protocol.DisconnectPeerResponse.class);
+    DIRECTORY_DELETE_RESPONSE(Constants.PROTOCOL_TYPE_DIRECTORY_DELETE_RESPONSE, Protocol.DirectoryDeleteResponse.class);
 
 
     private final String key;

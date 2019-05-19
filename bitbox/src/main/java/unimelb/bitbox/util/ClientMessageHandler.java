@@ -1,58 +1,41 @@
 package unimelb.bitbox.util;
 
 import unimelb.bitbox.Constants;
-import unimelb.bitbox.protocol.InvalidProtocolException;
-import unimelb.bitbox.protocol.Protocol;
-import unimelb.bitbox.protocol.ProtocolFactory;
-import unimelb.bitbox.protocol.ProtocolType;
+import unimelb.bitbox.protocol.*;
 import unimelb.bitbox.util.ConnectionUtils.Connection;
 
 public class ClientMessageHandler {
 
-    // this might not be needed
-    private static  SecManager secManager = null;
-
-    // this might not be needed
-    public static void init(SecManager sm) {
-        secManager = sm;
-    }
-
-
     public static void handleMessage(String message, Connection conn) {
 
         try {
-            // unchecked
-            if (Document.parse(message).getString(Constants.PROTOCOL_FIELD_PAYLOAD).isEmpty()) {
-                Protocol protocol = ProtocolFactory.parseProtocol(message);
-                ProtocolType protocolType = ProtocolType.typeOfProtocol(protocol);
-                switch (protocolType) {
-                    case AUTH_REQUEST:
-                        handleSpecificProtocol((Protocol.AuthRequest) protocol, conn);
-                        break;
-
-                    case AUTH_RESPONSE:
-                        break;
-
-                    default:
-                        throw new InvalidProtocolException("Unexpected command: " + protocol.getClass().getName(), null);
-
-                }
+            Document doc = Document.parse(message);
+            String cmd = Document.parse(message).getString(Constants.PROTOCOL_FIELD_CMD);
+            // maybe there is a better way to identify if this is a auth request or not
+            if (cmd.equals(Constants.PROTOCOL_TYPE_AUTH_REQUEST)) {
+                ClientProtocol protocol = ClientProtocolFactory.parseProtocol(message);
+                handleSpecificProtocol((ClientProtocol.AuthRequest)protocol, conn);
             } else {
-                Protocol protocol = ProtocolFactory.parseProtocol(
-                        SecManager.decryptPayload(Document.parse(message).getString(Constants.PROTOCOL_FIELD_PAYLOAD))
+                // if we can find a payload field
+                // note that payload: [identity,{json object}]
+                String decryptedMessage = SecManager.decryptPayload(
+                        Document.parse(message).getString(Constants.PROTOCOL_FIELD_PAYLOAD));
+                String[] messageArray = decryptedMessage.split(",");
+                String jsonProtocol = messageArray[1].substring(0, messageArray[1].length()-1);
+                ClientProtocol protocol = ClientProtocolFactory.parseProtocol(
+                        Document.parse(jsonProtocol).getString(Constants.PROTOCOL_FIELD_PAYLOAD)
                 );
-                ProtocolType protocolType = ProtocolType.typeOfProtocol(protocol);
+                ClientProtocolType protocolType = ClientProtocolType.typeOfProtocol(protocol);
                 switch (protocolType) {
                     case LIST_PEERS_REQUEST:
-                        handleSpecificProtocol((Protocol.ListPeersRequest) protocol, conn);
+                        handleSpecificProtocol((ClientProtocol.ListPeersRequest) protocol, conn);
                         break;
                     case CONNECT_PEER_REQUEST:
-                        handleSpecificProtocol((Protocol.ConnectPeerRequest) protocol, conn);
+                        handleSpecificProtocol((ClientProtocol.ConnectPeerRequest) protocol, conn);
                         break;
                     case DISCONNECT_PEER_REQUEST:
-                        handleSpecificProtocol((Protocol.DisconnectPeerRequest) protocol, conn);
+                        handleSpecificProtocol((ClientProtocol.DisconnectPeerRequest) protocol, conn);
                         break;
-
                     case LIST_PEERS_RESPONSE:
                     case CONNECT_PEER_RESPONSE:
                     case DISCONNECT_PEER_RESPONSE:
@@ -72,43 +55,60 @@ public class ClientMessageHandler {
 
     }
 
-    private static void handleSpecificProtocol(Protocol.AuthRequest protocol, Connection conn) {
-        Protocol.AuthResponse response = new Protocol.AuthResponse();
+    private static void handleSpecificProtocol(ClientProtocol.AuthRequest protocol, Connection conn) {
+        ClientProtocol.AuthResponse response = new ClientProtocol.AuthResponse();
         String identity = protocol.authIdentity.identity;
 
         try {
-            response.authKey.key = secManager.encryptAESWithRSA(identity);
+            response.authKey.key = SecManager.getInstance().encryptAESWithRSA(identity);
             response.response.status = true;
             response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_PUBLIC_KEY_FOUND;
-            conn.send(ProtocolFactory.marshalProtocol(response));
+            conn.send(ClientProtocolFactory.marshalProtocol(response));
 
         } catch (Exception e) {
             response.response.status = false;
             response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_PUBLIC_KEY_NOT_FOUND;
-            conn.send(ProtocolFactory.marshalProtocol(response));
+            conn.send(ClientProtocolFactory.marshalProtocol(response));
         }
     }
 
-    private static void handleSpecificProtocol(Protocol.DisconnectPeerRequest protocol, Connection conn) {
-        Protocol.DisconnectPeerResponse response = new Protocol.DisconnectPeerResponse();
-        response.hostPort.host = protocol.hostPort.host;
-        response.hostPort.port = protocol.hostPort.port;
-        response.response.status = true;
-        response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_DISCONNECT_PEER;
-        conn.send(ProtocolFactory.marshalProtocol(response));
+    private static void handleSpecificProtocol(ClientProtocol.DisconnectPeerRequest protocol, Connection conn) {
+
+        try {
+            ClientProtocol.DisconnectPeerResponse response = new ClientProtocol.DisconnectPeerResponse();
+            Document doc = new Document();
+            response.hostPort.host = protocol.hostPort.host;
+            response.hostPort.port = protocol.hostPort.port;
+            response.response.status = true;
+            response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_DISCONNECT_PEER;
+            doc.append(Constants.PROTOCOL_FIELD_CMD,
+                    SecManager.encryptJSON(ClientProtocolFactory.marshalProtocol(response)));
+            conn.send(doc.toString());
+        } catch (Exception e) {
+            conn.abortWithInvalidProtocol(e.getMessage());
+        }
     }
 
-    private static void handleSpecificProtocol(Protocol.ConnectPeerRequest protocol, Connection conn) {
-        Protocol.ConnectPeerResponse response = new Protocol.ConnectPeerResponse();
-        response.hostPort.host = protocol.hostPort.host;
-        response.hostPort.port = protocol.hostPort.port;
-        response.response.status = true;
-        response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_CONNECT_PEER;
-        conn.send(ProtocolFactory.marshalProtocol(response));
+    private static void handleSpecificProtocol(ClientProtocol.ConnectPeerRequest protocol, Connection conn) {
+
+        try {
+            ClientProtocol.ConnectPeerResponse response = new ClientProtocol.ConnectPeerResponse();
+            Document doc = new Document();
+            response.hostPort.host = protocol.hostPort.host;
+            response.hostPort.port = protocol.hostPort.port;
+            response.response.status = true;
+            response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_CONNECT_PEER;
+            doc.append(Constants.PROTOCOL_FIELD_CMD,
+                    SecManager.encryptJSON(ClientProtocolFactory.marshalProtocol(response)));
+            conn.send(doc.toString());
+        } catch (Exception e) {
+            conn.abortWithInvalidProtocol(e.getMessage());
+        }
     }
 
-    private static void handleSpecificProtocol(Protocol.ListPeersRequest protocol, Connection conn) {
-        Protocol.ListPeersResponse response = new Protocol.ListPeersResponse();
-
+    private static void handleSpecificProtocol(ClientProtocol.ListPeersRequest protocol, Connection conn) {
+        ClientProtocol.ListPeersResponse response = new ClientProtocol.ListPeersResponse();
+        Document doc = new Document();
+        //Todo: list the currently connected/known peers
     }
 }
