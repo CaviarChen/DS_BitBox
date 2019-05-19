@@ -42,7 +42,7 @@ public class UDPOutgoingConnectionHelper extends OutgoingConnectionHelper {
                             InetAddress.getByName(peer.getHostPort().host), peer.getPort());
 
                     log.info(String.format("Start connecting to port: %d", peer.getPort()));
-                    requestHandshake(conn);
+                    conn.sendAsync(handshakeRequest);
 
                 } catch (IOException e) {
                     log.warning(peer.getHostPort().toString() + " " + e.toString());
@@ -59,8 +59,8 @@ public class UDPOutgoingConnectionHelper extends OutgoingConnectionHelper {
         }
     }
 
-    private void requestHandshake(UDPConnection conn) {
-        conn.sendAsync(handshakeRequest);
+    protected void handleHandshake(UDPConnection conn, String msg) {
+
 
     }
 

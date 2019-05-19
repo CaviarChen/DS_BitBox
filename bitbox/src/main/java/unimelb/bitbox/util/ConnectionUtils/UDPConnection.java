@@ -7,6 +7,9 @@ import unimelb.bitbox.protocol.ProtocolFactory;
 import unimelb.bitbox.util.Configuration;
 import unimelb.bitbox.util.ConnectionManager;
 import unimelb.bitbox.util.HostPort;
+import unimelb.bitbox.util.ThreadPool.Priority;
+import unimelb.bitbox.util.ThreadPool.PriorityTask;
+import unimelb.bitbox.util.ThreadPool.PriorityThreadPool;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -34,6 +37,8 @@ public class UDPConnection extends Connection {
     private boolean isClosed = false;
     private boolean isActive = false;
 
+    private UDPOutgoingConnectionHelper outgoingConnectionHelper;
+
 
 
     protected static boolean distributeMessage(DatagramPacket packet) {
@@ -43,7 +48,12 @@ public class UDPConnection extends Connection {
             return false;
         }
         String msg = new String(packet.getData(), 0, packet.getLength(), StandardCharsets.UTF_8);
-        connection.receive(msg);
+        PriorityThreadPool.getInstance().submitTask(new PriorityTask(
+                "handle UDP request",
+                Priority.NORMAL,
+                () -> connection.receive(msg)
+        ));
+
         return true;
     }
 
@@ -53,7 +63,7 @@ public class UDPConnection extends Connection {
         }
     }
 
-
+    // for incoming
     public UDPConnection(DatagramSocket serverSocket, HostPort hostPort, InetAddress hostAddress, int actualPort) throws CException {
         super(ConnectionType.INCOMING);
         this.serverSocket = serverSocket;
@@ -67,7 +77,20 @@ public class UDPConnection extends Connection {
         }
 
         // register self
-        // TODO: check duplicates
+        if (udpConnectionMap.putIfAbsent(new HostPort(this.hostAddress.getHostAddress(), hostPort.port), this) != null) {
+            throw new CException("Connection already exists");
+        }
+    }
+
+    // for outgoing
+    public UDPConnection(DatagramSocket serverSocket, HostPort hostPort, InetAddress hostAddress, UDPOutgoingConnectionHelper outgoingConnectionHelper) throws CException {
+        super(ConnectionType.OUTGOING);
+        this.serverSocket = serverSocket;
+        this.hostPort = hostPort;
+        this.outgoingConnectionHelper = outgoingConnectionHelper;
+        this.hostAddress = hostAddress;
+
+        // register self
         if (udpConnectionMap.putIfAbsent(new HostPort(this.hostAddress.getHostAddress(), hostPort.port), this) != null) {
             throw new CException("Connection already exists");
         }
@@ -109,8 +132,10 @@ public class UDPConnection extends Connection {
     }
 
     public void active() {
-        if (!isActive) {
-            isActive = true;
+        synchronized (this) {
+            if (!isActive) {
+                isActive = true;
+            }
         }
     }
 
@@ -146,6 +171,15 @@ public class UDPConnection extends Connection {
 
 
     private void receive(String msg) {
+        synchronized (this) {
+            if (!isActive) {
+                if (type == ConnectionType.OUTGOING) {
+                    outgoingConnectionHelper.handleHandshake(this, msg);
+                }
+                return;
+            }
+        }
+
         log.info(currentHostPort() + " Message Received: "
                 + msg.substring(0, Math.min(MAX_LOG_LEN, msg.length())));
     }
