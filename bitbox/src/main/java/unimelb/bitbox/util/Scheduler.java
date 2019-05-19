@@ -24,11 +24,11 @@ public class Scheduler {
     }
 
     // schedule a task and execute using the main priorityThreadPool
-    public synchronized void addTask(int timeIntervalInSec, PriorityTask priorityTask) {
-        log.info("New task added: " + priorityTask.getName() + " Interval: " + timeIntervalInSec);
+    public synchronized void addTask(int timeInterval, TimeUnit timeUnit, PriorityTask priorityTask) {
+        log.info("New task added: " + priorityTask.getName() +
+                " Interval: " + timeInterval + timeUnit.toString());
 
-        service.schedule(() -> PriorityThreadPool.getInstance().submitTask(priorityTask),
-                timeIntervalInSec, TimeUnit.SECONDS);
+        service.schedule(() -> PriorityThreadPool.getInstance().submitTask(priorityTask), timeInterval, timeUnit);
 
     }
 }

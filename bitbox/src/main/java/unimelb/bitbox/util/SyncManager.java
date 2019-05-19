@@ -9,6 +9,7 @@ import unimelb.bitbox.util.FileSystem.FileSystemManager.FileSystemEvent;
 import unimelb.bitbox.util.ThreadPool.Priority;
 import unimelb.bitbox.util.ThreadPool.PriorityTask;
 
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 
@@ -45,6 +46,7 @@ public class SyncManager {
         this.fileSystemManager = fileSystemManager;
         // register periodic sync
         Scheduler.getInstance().addTask(Integer.parseInt(Configuration.getConfigurationValue("syncInterval")),
+                TimeUnit.SECONDS,
                 new PriorityTask(
                         "periodic synchronization",
                         Priority.NORMAL,

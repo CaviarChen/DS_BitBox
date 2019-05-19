@@ -15,6 +15,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 /**
@@ -27,7 +28,7 @@ import java.util.logging.Logger;
  */
 public class MessageHandler {
 
-    private static final int CLEANUP_INTERVAL_IN_SEC = 45;
+    private static final int CLEANUP_INTERVAL_IN_SEC = 10;
 
     private static FileSystemManager fileSystemManager = null;
     private static Logger log = Logger.getLogger(MessageHandler.class.getName());
@@ -43,7 +44,7 @@ public class MessageHandler {
         fileSystemManager = fsm;
 
         // register FileLoaderWrapper clean-up task
-        Scheduler.getInstance().addTask(CLEANUP_INTERVAL_IN_SEC,
+        Scheduler.getInstance().addTask(CLEANUP_INTERVAL_IN_SEC, TimeUnit.SECONDS,
                 new PriorityTask(
                         "clean up FileLoaderWrapper",
                         Priority.LOW,

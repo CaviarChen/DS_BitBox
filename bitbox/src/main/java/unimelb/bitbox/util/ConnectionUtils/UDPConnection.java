@@ -4,6 +4,7 @@ import unimelb.bitbox.protocol.IRequest;
 import unimelb.bitbox.protocol.IResponse;
 import unimelb.bitbox.protocol.Protocol;
 import unimelb.bitbox.protocol.ProtocolFactory;
+import unimelb.bitbox.util.Configuration;
 import unimelb.bitbox.util.ConnectionManager;
 import unimelb.bitbox.util.HostPort;
 
@@ -13,11 +14,13 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 public class UDPConnection extends Connection {
 
+    private static final long UDP_TIMEOUT_MS = Long.parseLong(Configuration.getConfigurationValue("udpTimeout"));
     private static final ConcurrentHashMap<HostPort, UDPConnection> udpConnectionMap = new ConcurrentHashMap<>();
     private static Logger log = Logger.getLogger(UDPConnection.class.getName());
 
@@ -44,6 +47,12 @@ public class UDPConnection extends Connection {
         return true;
     }
 
+    protected static void checkTimeoutRequest() {
+        for (UDPConnection conn : udpConnectionMap.values()) {
+            conn.retryTimeoutRequest();
+        }
+    }
+
 
     public UDPConnection(DatagramSocket serverSocket, HostPort hostPort, InetAddress hostAddress, int actualPort) throws CException {
         super(ConnectionType.INCOMING);
@@ -51,6 +60,7 @@ public class UDPConnection extends Connection {
         this.hostPort = hostPort;
         // allow the advertisedName be fake
         // actual one should be InetAddress.getByName(hostPort.host)
+
         this.hostAddress = hostAddress;
         if (this.hostPort.port != actualPort) {
             throw new CException("Given port does not math with the actual port");
@@ -104,6 +114,36 @@ public class UDPConnection extends Connection {
         }
     }
 
+    private void retryTimeoutRequest() {
+        // note that every thing in waiting list is time ordered
+        synchronized (waitingList) {
+            while (!waitingList.isEmpty()) {
+                // get the first one
+                Map.Entry<IRequest, UDPConnection.WaitingInfo> entry = waitingList.entrySet().iterator().next();
+                if (entry.getValue().timestamp + UDP_TIMEOUT_MS > System.currentTimeMillis()) {
+                    // not timeout yet.
+                    return;
+                }
+
+                // timeout
+                IRequest request = entry.getKey();
+                WaitingInfo info = entry.getValue();
+                waitingList.remove(request);
+
+                if (!info.doRetry()) {
+                    // out of retry count, abort
+                    this.close();
+                    return;
+                }
+
+                this.sendDatagram((Protocol) request);
+
+                // move item to the end of waiting list
+                waitingList.put(request, info);
+            }
+        }
+    }
+
 
     private void receive(String msg) {
         log.info(currentHostPort() + " Message Received: "
@@ -152,8 +192,7 @@ public class UDPConnection extends Connection {
     }
 
     protected static class WaitingInfo {
-        // TODO: get from config
-        private static final int MAX_RETRY = 3;
+        private static final int MAX_RETRY = Integer.parseInt(Configuration.getConfigurationValue("udpRetries"));
 
         int retryCount;
         long timestamp;
