@@ -46,6 +46,9 @@ public class Constants {
     public static final String PROTOCOL_FIELD_POSITION = "position";
     public static final String PROTOCOL_FIELD_LENGTH = "length";
     public static final String PROTOCOL_FIELD_CONTENT = "content";
+    public static final String PROTOCOL_FIELD_IDENTITY = "identity";
+    public static final String PROTOCOL_FIELD_KEY = "key";
+
 
     // Protocol types
     public static final String PROTOCOL_TYPE_INVALID_PROTOCOL = "INVALID_PROTOCOL";
@@ -64,6 +67,14 @@ public class Constants {
     public static final String PROTOCOL_TYPE_DIRECTORY_CREATE_RESPONSE = "DIRECTORY_CREATE_RESPONSE";
     public static final String PROTOCOL_TYPE_DIRECTORY_DELETE_REQUEST = "DIRECTORY_DELETE_REQUEST";
     public static final String PROTOCOL_TYPE_DIRECTORY_DELETE_RESPONSE = "DIRECTORY_DELETE_RESPONSE";
+    public static final String PROTOCOL_TYPE_AUTH_REQUEST = "DIRECTORY_AUTH_REQUEST";
+    public static final String PROTOCOL_TYPE_AUTH_RESPONSE = "DIRECTORY_AUTH_RESPONSE";
+    public static final String PROTOCOL_TYPE_LIST_PEERS_REQUEST = "LIST_PEERS_REQUEST";
+    public static final String PROTOCOL_TYPE_LIST_PEERS_RESPONSE = "LIST_PEERS_RESPONSE";
+    public static final String PROTOCOL_TYPE_DISCONNECT_PEER_REQUEST = "DISCONNECT_PEER_REQUEST";
+    public static final String PROTOCOL_TYPE_DISCONNECT_PEER_RESPONSE = "DISCONNECT_PEER_RESPONSE";
+    public static final String PROTOCOL_TYPE_CONNECT_PEER_REQUEST = "CONNECT_PEER_REQUEST";
+    public static final String PROTOCOL_TYPE_CONNECT_PEER_RESPONSE = "CONNECT_PEER_RESPONSE";
 
     // Protocol response messages
     public static final String PROTOCOL_RESPONSE_MESSAGE_INVALID_PATH = "invalid path";
