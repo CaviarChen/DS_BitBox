@@ -8,7 +8,6 @@ import unimelb.bitbox.protocol.ProtocolFactory;
 import unimelb.bitbox.protocol.ProtocolType;
 import unimelb.bitbox.util.ConnectionManager;
 import unimelb.bitbox.util.HostPort;
-import unimelb.bitbox.util.Scheduler;
 import unimelb.bitbox.util.ThreadPool.Priority;
 import unimelb.bitbox.util.ThreadPool.PriorityTask;
 import unimelb.bitbox.util.ThreadPool.PriorityThreadPool;
@@ -16,7 +15,6 @@ import unimelb.bitbox.util.ThreadPool.PriorityThreadPool;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 
@@ -51,12 +49,6 @@ public class TCPIncomingConnectionHelper extends IncomingConnectionHelper{
         ServerSocket serverSocket = new ServerSocket(port);
         log.info(String.format("Start listening to port: %d", port));
 
-        // register UDP connection timeout check
-        Scheduler.getInstance().addTask(400, TimeUnit.MILLISECONDS,
-                new PriorityTask( "check timeout UDP request",
-                        Priority.LOW,
-                        UDPConnection::checkTimeoutRequest
-                ));
 
         while (!Thread.currentThread().isInterrupted()) {
             Socket clientSocket = serverSocket.accept();

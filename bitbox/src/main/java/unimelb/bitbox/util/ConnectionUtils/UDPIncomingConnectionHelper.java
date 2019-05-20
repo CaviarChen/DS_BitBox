@@ -6,6 +6,7 @@ import unimelb.bitbox.protocol.Protocol;
 import unimelb.bitbox.protocol.ProtocolFactory;
 import unimelb.bitbox.protocol.ProtocolType;
 import unimelb.bitbox.util.ConnectionManager;
+import unimelb.bitbox.util.Scheduler;
 import unimelb.bitbox.util.ThreadPool.Priority;
 import unimelb.bitbox.util.ThreadPool.PriorityTask;
 import unimelb.bitbox.util.ThreadPool.PriorityThreadPool;
@@ -15,6 +16,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 public class UDPIncomingConnectionHelper extends IncomingConnectionHelper {
@@ -32,6 +34,15 @@ public class UDPIncomingConnectionHelper extends IncomingConnectionHelper {
     protected void execute() throws Exception {
         DatagramSocket serverSocket = new DatagramSocket(port);
         byte[] buffer = new byte[BUFFER_SIZE];
+
+        log.info(String.format("Start listening to port: %d", port));
+
+        // register UDP connection timeout check
+        Scheduler.getInstance().addTask(400, TimeUnit.MILLISECONDS,
+                new PriorityTask( "check timeout UDP request",
+                        Priority.LOW,
+                        UDPConnection::checkTimeoutRequest
+                ));
 
         while (!Thread.currentThread().isInterrupted()) {
             try {
