@@ -7,6 +7,7 @@ import unimelb.bitbox.util.HostPort;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 import static unimelb.bitbox.Constants.*;
@@ -113,18 +114,47 @@ public abstract class Protocol implements IProtocol {
     }
 
 
-    public static class FileCreateRequest extends Protocol {
+    public static class FileCreateRequest extends Protocol implements IRequest {
         public ProtocolField.FileDes fileDes = new ProtocolField.FileDes();
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == this) {
+                return true;
+            }
+            if (!(o instanceof FileCreateRequest)) {
+                return false;
+            }
+            FileCreateRequest p = (FileCreateRequest) o;
+            return p.fileDes.equals((((FileCreateRequest) o).fileDes));
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hashCode(fileDes);
+        }
     }
 
 
-    public static class FileCreateResponse extends Protocol {
+    public static class FileCreateResponse extends Protocol implements IResponse  {
         public ProtocolField.FileDes fileDes = new ProtocolField.FileDes();
         public ProtocolField.Response response = new ProtocolField.Response();
     }
 
 
     public static class FileDeleteRequest extends FileCreateRequest {
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == this) {
+                return true;
+            }
+            if (!(o instanceof FileDeleteRequest)) {
+                return false;
+            }
+            FileDeleteRequest p = (FileDeleteRequest) o;
+            return p.fileDes.equals((((FileDeleteRequest) o).fileDes));
+        }
     }
 
 
@@ -133,6 +163,18 @@ public abstract class Protocol implements IProtocol {
 
 
     public static class FileModifyRequest extends FileCreateRequest {
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == this) {
+                return true;
+            }
+            if (!(o instanceof FileModifyRequest)) {
+                return false;
+            }
+            FileModifyRequest p = (FileModifyRequest) o;
+            return p.fileDes.equals((((FileModifyRequest) o).fileDes));
+        }
     }
 
 
@@ -140,31 +182,78 @@ public abstract class Protocol implements IProtocol {
     }
 
 
-    public static class FileBytesRequest extends Protocol {
+    public static class FileBytesRequest extends Protocol implements IRequest  {
         public ProtocolField.FilePosition filePos = new ProtocolField.FilePosition();
         public ProtocolField.FileDes fileDes = new ProtocolField.FileDes();
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == this) {
+                return true;
+            }
+            if (!(o instanceof FileBytesRequest)) {
+                return false;
+            }
+            FileBytesRequest p = (FileBytesRequest) o;
+            return p.fileDes.equals((((FileBytesRequest) o).fileDes)) &&
+                    p.filePos.equals((((FileBytesRequest) o).filePos));
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(fileDes,filePos);
+        }
     }
 
 
-    public static class FileBytesResponse extends Protocol {
+    public static class FileBytesResponse extends Protocol implements IResponse  {
         public ProtocolField.FileDes fileDes = new ProtocolField.FileDes();
         public ProtocolField.FileContent fileContent = new ProtocolField.FileContent();
         public ProtocolField.Response response = new ProtocolField.Response();
     }
 
 
-    public static class DirectoryCreateRequest extends Protocol {
+    public static class DirectoryCreateRequest extends Protocol implements IRequest  {
         public ProtocolField.Path dirPath = new ProtocolField.Path();
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == this) {
+                return true;
+            }
+            if (!(o instanceof DirectoryCreateRequest)) {
+                return false;
+            }
+            DirectoryCreateRequest p = (DirectoryCreateRequest) o;
+            return p.dirPath.equals((((DirectoryCreateRequest) o).dirPath));
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(dirPath);
+        }
     }
 
 
-    public static class DirectoryCreateResponse extends Protocol {
+    public static class DirectoryCreateResponse extends Protocol implements IResponse  {
         public ProtocolField.Path dirPath = new ProtocolField.Path();
         public ProtocolField.Response response = new ProtocolField.Response();
     }
 
 
     public static class DirectoryDeleteRequest extends DirectoryCreateRequest {
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == this) {
+                return true;
+            }
+            if (!(o instanceof DirectoryDeleteRequest)) {
+                return false;
+            }
+            DirectoryDeleteRequest p = (DirectoryDeleteRequest) o;
+            return p.dirPath.equals((((DirectoryDeleteRequest) o).dirPath));
+        }
     }
 
 

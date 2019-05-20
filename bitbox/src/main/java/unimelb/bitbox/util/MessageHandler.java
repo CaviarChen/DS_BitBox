@@ -6,6 +6,8 @@ import unimelb.bitbox.Constants;
 import unimelb.bitbox.protocol.*;
 import unimelb.bitbox.util.FileSystem.FileLoaderWrapper;
 import unimelb.bitbox.util.FileSystem.FileSystemManager;
+import unimelb.bitbox.util.ThreadPool.Priority;
+import unimelb.bitbox.util.ThreadPool.PriorityTask;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -13,6 +15,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 /**
@@ -24,6 +27,8 @@ import java.util.logging.Logger;
  * @author Zijun Chen (813190)
  */
 public class MessageHandler {
+
+    private static final int CLEANUP_INTERVAL_IN_SEC = 10;
 
     private static FileSystemManager fileSystemManager = null;
     private static Logger log = Logger.getLogger(MessageHandler.class.getName());
@@ -37,6 +42,14 @@ public class MessageHandler {
      */
     public static void init(FileSystemManager fsm) {
         fileSystemManager = fsm;
+
+        // register FileLoaderWrapper clean-up task
+        Scheduler.getInstance().addTask(CLEANUP_INTERVAL_IN_SEC, TimeUnit.SECONDS,
+                new PriorityTask(
+                        "clean up FileLoaderWrapper",
+                        Priority.LOW,
+                        MessageHandler::cleanUpFileLoaderWrapper
+                ));
     }
 
     /**
@@ -49,11 +62,15 @@ public class MessageHandler {
         try {
             Protocol protocol = ProtocolFactory.parseProtocol(message);
 
+            if (protocol instanceof IResponse) {
+                conn.markRequestAsDone((IResponse) protocol);
+            }
+
             ProtocolType protocolType = ProtocolType.typeOfProtocol(protocol);
             switch (protocolType) {
                 case INVALID_PROTOCOL:
                     log.warning("received INVALID_PROTOCOL " + conn.getHostPort().toString());
-                    conn.close();
+                    conn.close(true);
                     break;
 
                 case FILE_CREATE_REQUEST:
@@ -130,7 +147,7 @@ public class MessageHandler {
         if (!fileSystemManager.isSafePathName(fd.path)) {
             response.response.status = false;
             response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_INVALID_PATH;
-            conn.send(ProtocolFactory.marshalProtocol(response));
+            conn.sendAsync(response);
         }
 
         try {
@@ -143,7 +160,7 @@ public class MessageHandler {
                         response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_FILE_CREATE_SHORTCUT_USED;
                     } else {
                         response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_FILE_CREATE_LOADER_READY;
-                        conn.send(ProtocolFactory.marshalProtocol(response));
+                        conn.sendAsync(response);
                         fileLoaderWrapper = new FileLoaderWrapper(fd, fileSystemManager, conn);
                         fileLoaderWrapperMap.put(fd.path, fileLoaderWrapper);
                         return;
@@ -157,7 +174,7 @@ public class MessageHandler {
                 if (fileLoaderWrapper.checkMd5(fd.md5)) {
                     response.response.status = true;
                     response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_FILE_CREATE_LOADER_COLLABORATING;
-                    conn.send(ProtocolFactory.marshalProtocol(response));
+                    conn.sendAsync(response);
                     fileLoaderWrapper.addNewConnection(conn);
                     return;
                 } else {
@@ -169,7 +186,7 @@ public class MessageHandler {
             response.response.status = false;
             response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_FILE_CREATE_FAIL_PREFIX + e.getMessage();
         }
-        conn.send(ProtocolFactory.marshalProtocol(response));
+        conn.sendAsync(response);
     }
 
     // handle FileDeleteRequest
@@ -199,7 +216,7 @@ public class MessageHandler {
             response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_INVALID_PATH;
         }
 
-        conn.send(ProtocolFactory.marshalProtocol(response));
+        conn.sendAsync(response);
     }
 
     // handle FileModifyRequest
@@ -211,7 +228,7 @@ public class MessageHandler {
         if (!fileSystemManager.isSafePathName(fd.path)) {
             response.response.status = false;
             response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_INVALID_PATH;
-            conn.send(ProtocolFactory.marshalProtocol(response));
+            conn.sendAsync(response);
             return;
         }
 
@@ -225,7 +242,7 @@ public class MessageHandler {
                         response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_FILE_MODIFY_SHORTCUT_USED;
                     } else {
                         response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_FILE_MODIFY_LOADER_READY;
-                        conn.send(ProtocolFactory.marshalProtocol(response));
+                        conn.sendAsync(response);
                         fileLoaderWrapper = new FileLoaderWrapper(fd, fileSystemManager, conn);
                         fileLoaderWrapperMap.put(fd.path, fileLoaderWrapper);
                         return;
@@ -239,7 +256,7 @@ public class MessageHandler {
                 if (fileLoaderWrapper.checkMd5(fd.md5)) {
                     response.response.status = true;
                     response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_FILE_MODIFY_LOADER_COLLABORATING;
-                    conn.send(ProtocolFactory.marshalProtocol(response));
+                    conn.sendAsync(response);
                     fileLoaderWrapper.addNewConnection(conn);
                     return;
                 } else {
@@ -251,7 +268,7 @@ public class MessageHandler {
             response.response.status = false;
             response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_FILE_DELETE_FAIL_PREFIX + e.getMessage();
         }
-        conn.send(ProtocolFactory.marshalProtocol(response));
+        conn.sendAsync(response);
     }
 
     // handle FileBytesRequest
@@ -265,7 +282,7 @@ public class MessageHandler {
         if (!fileSystemManager.isSafePathName(fileBytesRequest.fileDes.path)) {
             response.response.status = false;
             response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_INVALID_PATH;
-            conn.send(ProtocolFactory.marshalProtocol(response));
+            conn.sendAsync(response);
             return;
         }
 
@@ -286,13 +303,13 @@ public class MessageHandler {
             response.fileContent.content = Base64.getEncoder().encodeToString(byteBuffer.array());
             response.response.status = true;
             response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_FILE_READ_SUCCESS;
-            conn.send(ProtocolFactory.marshalProtocol(response));
+            conn.sendAsync(response);
             return;
         }
 
         response.response.status = false;
         response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_FILE_READ_FAIL;
-        conn.send(ProtocolFactory.marshalProtocol(response));
+        conn.sendAsync(response);
     }
 
 
@@ -334,7 +351,7 @@ public class MessageHandler {
             response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_INVALID_PATH;
         }
 
-        conn.send(ProtocolFactory.marshalProtocol(response));
+        conn.sendAsync(response);
     }
 
 
@@ -361,7 +378,7 @@ public class MessageHandler {
             response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_INVALID_PATH;
         }
 
-        conn.send(ProtocolFactory.marshalProtocol(response));
+        conn.sendAsync(response);
     }
 
 }

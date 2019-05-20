@@ -2,13 +2,14 @@ package unimelb.bitbox.util;
 
 
 import unimelb.bitbox.util.ConnectionUtils.Connection;
-import unimelb.bitbox.util.ConnectionUtils.ConnectionManager;
 import unimelb.bitbox.protocol.Protocol;
-import unimelb.bitbox.protocol.ProtocolFactory;
 import unimelb.bitbox.protocol.ProtocolField;
 import unimelb.bitbox.util.FileSystem.FileSystemManager;
 import unimelb.bitbox.util.FileSystem.FileSystemManager.FileSystemEvent;
+import unimelb.bitbox.util.ThreadPool.Priority;
+import unimelb.bitbox.util.ThreadPool.PriorityTask;
 
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 
@@ -43,6 +44,14 @@ public class SyncManager {
      */
     public void init(FileSystemManager fileSystemManager) {
         this.fileSystemManager = fileSystemManager;
+        // register periodic sync
+        Scheduler.getInstance().addTask(Integer.parseInt(Configuration.getConfigurationValue("syncInterval")),
+                TimeUnit.SECONDS,
+                new PriorityTask(
+                        "periodic synchronization",
+                        Priority.NORMAL,
+                        () -> SyncManager.getInstance().syncWithAllAsync()
+                ));
     }
 
 
@@ -78,13 +87,13 @@ public class SyncManager {
      */
     public void sendEventToAllAsync(FileSystemEvent fileSystemEvent) {
         Protocol protocol = eventToProtocol(fileSystemEvent);
-        ConnectionManager.getInstance().broadcastMsgAsync(ProtocolFactory.marshalProtocol(protocol));
+        ConnectionManager.getInstance().broadcastMsgAsync(protocol);
     }
 
     // Send a given fileSystemEvent to a given peer
     private void sendEventToOneAsync(FileSystemEvent fileSystemEvent, Connection conn) {
         Protocol protocol = eventToProtocol(fileSystemEvent);
-        conn.sendAsync(ProtocolFactory.marshalProtocol(protocol));
+        conn.sendAsync(protocol);
     }
 
     // generate a message using the given fileSystemEvent

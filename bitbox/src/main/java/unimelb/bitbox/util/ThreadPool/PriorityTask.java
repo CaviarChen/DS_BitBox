@@ -43,6 +43,10 @@ public class PriorityTask implements Runnable, Comparable<PriorityTask> {
     }
 
 
+    public String getName() {
+        return name;
+    }
+
     /**
      * Set the priority of the task
      * @param priority the priority of the task wanted to be set

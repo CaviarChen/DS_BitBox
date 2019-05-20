@@ -1,9 +1,9 @@
 package unimelb.bitbox.protocol;
 
 
+import unimelb.bitbox.Constants;
 import unimelb.bitbox.util.Document;
 
-import static unimelb.bitbox.Constants.PROTOCOL_FIELD_CMD;
 
 
 /**
@@ -25,7 +25,7 @@ public class ProtocolFactory {
         try {
 
             Document doc = Document.parse(json);
-            String command = doc.getString(PROTOCOL_FIELD_CMD);
+            String command = doc.getString(Constants.PROTOCOL_FIELD_CMD);
 
 
             ProtocolType protocolType = ProtocolType.typeOfCommand(command);
@@ -49,9 +49,49 @@ public class ProtocolFactory {
      */
     public static String marshalProtocol(Protocol protocol) {
         Document doc = new Document();
-        doc.append(PROTOCOL_FIELD_CMD, ProtocolType.typeOfProtocol(protocol).getKey());
+        doc.append(Constants.PROTOCOL_FIELD_CMD, ProtocolType.typeOfProtocol(protocol).getKey());
         protocol.marshalToJson(doc);
         return doc.toJson();
+    }
+
+    public static IRequest identifyRes(IResponse protocol){
+        switch (ProtocolType.typeOfProtocol((Protocol) protocol)) {
+            case FILE_CREATE_RESPONSE:
+                Protocol.FileCreateResponse fileCreateResponse = (Protocol.FileCreateResponse) protocol;
+                Protocol.FileCreateRequest fileCreateRequest = new Protocol.FileCreateRequest();
+                fileCreateRequest.fileDes = fileCreateResponse.fileDes;
+                return fileCreateRequest;
+            case FILE_DELETE_RESPONSE:
+                Protocol.FileDeleteResponse fileDeleteResponse = (Protocol.FileDeleteResponse) protocol;
+                Protocol.FileDeleteRequest fileDeleteRequest = new Protocol.FileDeleteRequest();
+                fileDeleteRequest.fileDes = fileDeleteResponse.fileDes;
+                return fileDeleteRequest;
+            case FILE_MODIFY_RESPONSE:
+                Protocol.FileModifyResponse fileModifyResponse = (Protocol.FileModifyResponse) protocol;
+                Protocol.FileModifyRequest fileModifyRequest= new Protocol.FileModifyRequest();
+                fileModifyRequest.fileDes = fileModifyResponse.fileDes;
+                return fileModifyRequest;
+            case FILE_BYTES_RESPONSE:
+                Protocol.FileBytesResponse fileBytesResponse = (Protocol.FileBytesResponse) protocol;
+                Protocol.FileBytesRequest fileBytesRequest = new Protocol.FileBytesRequest();
+                ProtocolField.FilePosition filePosition = new ProtocolField.FilePosition();
+                filePosition.len = fileBytesResponse.fileContent.len;
+                filePosition.pos = fileBytesResponse.fileContent.pos;
+                fileBytesRequest.filePos = filePosition;
+                fileBytesRequest.fileDes = fileBytesResponse.fileDes;
+                return fileBytesRequest;
+            case DIRECTORY_CREATE_RESPONSE:
+                Protocol.DirectoryCreateResponse directoryCreateResponse = (Protocol.DirectoryCreateResponse) protocol;
+                Protocol.DirectoryCreateRequest directoryCreateRequest= new Protocol.DirectoryCreateRequest();
+                directoryCreateRequest.dirPath = directoryCreateResponse.dirPath;
+                return directoryCreateRequest;
+            case DIRECTORY_DELETE_RESPONSE:
+                Protocol.DirectoryDeleteResponse directoryDeleteResponse = (Protocol.DirectoryDeleteResponse) protocol;
+                Protocol.DirectoryDeleteRequest directoryDeleteRequest= new Protocol.DirectoryDeleteRequest();
+                directoryDeleteRequest.dirPath = directoryDeleteResponse.dirPath;
+                return directoryDeleteRequest;
+        }
+        return null;
     }
 }
 
