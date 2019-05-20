@@ -26,6 +26,11 @@ public abstract class Connection {
 
     public abstract void sendAsync(Protocol protocol);
 
+    // default is allow reconnect
+    public void close() {
+        this.close(true);
+    }
+
     public abstract void close(Boolean reconnect);
 
     public abstract void abortWithInvalidProtocol(String additionalMsg);

@@ -114,7 +114,7 @@ class TCPConnection extends Connection {
             if (e instanceof SocketTimeoutException) {
                 throw (SocketTimeoutException) e;
             }
-            close(true);
+            close();
             return null;
         }
         return msg;
@@ -129,7 +129,7 @@ class TCPConnection extends Connection {
                         + msg.substring(0, Math.min(MAX_LOG_LEN, msg.length())));
             } catch (IOException e) {
                 // log
-                close(true);
+                close();
             }
         }
     }
@@ -163,7 +163,7 @@ class TCPConnection extends Connection {
         Protocol.InvalidProtocol invalidProtocol = new Protocol.InvalidProtocol();
         invalidProtocol.msg = additionalMsg;
         send(ProtocolFactory.marshalProtocol(invalidProtocol));
-        close(true);
+        close();
     }
 
     @Override
@@ -176,7 +176,7 @@ class TCPConnection extends Connection {
      * close this connection
      */
     @Override
-    public void close(Boolean reconnect) {
+    public void close(Boolean allowReconnect) {
 
         synchronized (socket) {
             if (isClosed) {
@@ -206,8 +206,8 @@ class TCPConnection extends Connection {
 
             // if it is an outgoing connection, and reconnect is true
             // add back to queue for retry this hostPort later
-            if (type == ConnectionType.OUTGOING && reconnect) {
-                outgoingConnectionHelper.addPeerInfo(hostPort);
+            if (type == ConnectionType.OUTGOING && allowReconnect) {
+                outgoingConnectionHelper.scheduleConnectionTask(hostPort, OutgoingConnectionHelper.RECONNECT_INTERVAL);
             }
         }
     }
@@ -278,11 +278,11 @@ class TCPConnection extends Connection {
                 }
             }
 
-            this.close(true);
+            this.close();
 
         } catch (Exception e) {
             log.warning(currentHostPort() + ", Exception: " + e.toString() + "");
-            this.close(true);
+            this.close();
         }
     }
 
