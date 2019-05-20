@@ -94,10 +94,10 @@ public class UDPOutgoingConnectionHelper extends OutgoingConnectionHelper {
                 for (HostPort hp : hostPorts) {
                     addPeerInfo(new PeerInfo(hp));
                 }
-                conn.close();
+                conn.close(true);
                 break;
             case INVALID_PROTOCOL:
-                conn.close();
+                conn.close(true);
                 break;
             default:
                 conn.abortWithInvalidProtocol("Unexpected protocol: " + protocol.getClass().getName());

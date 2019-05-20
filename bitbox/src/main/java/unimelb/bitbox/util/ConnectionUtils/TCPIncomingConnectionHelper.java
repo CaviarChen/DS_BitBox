@@ -119,7 +119,7 @@ public class TCPIncomingConnectionHelper extends IncomingConnectionHelper{
                     connectionRefused.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_CONNECTION_REFUSED_ALREADY_EXIST;
                 }
                 conn.send(ProtocolFactory.marshalProtocol(connectionRefused));
-                conn.close();
+                conn.close(true);
                 return;
             }
 

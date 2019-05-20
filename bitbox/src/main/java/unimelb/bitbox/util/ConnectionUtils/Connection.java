@@ -26,7 +26,7 @@ public abstract class Connection {
 
     public abstract void sendAsync(Protocol protocol);
 
-    public abstract void close();
+    public abstract void close(Boolean reconnect);
 
     public abstract void abortWithInvalidProtocol(String additionalMsg);
 

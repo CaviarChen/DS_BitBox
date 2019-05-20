@@ -129,7 +129,7 @@ public class UDPConnection extends Connection {
         try {
             serverSocket.send(packet);
         } catch (IOException e) {
-            close();
+            close(true);
         }
     }
 
@@ -169,7 +169,7 @@ public class UDPConnection extends Connection {
 
                 if (!info.doRetry()) {
                     // out of retry count, abort
-                    this.close();
+                    this.close(true);
                     return;
                 }
 
@@ -197,7 +197,7 @@ public class UDPConnection extends Connection {
     }
 
     @Override
-    public void close() {
+    public void close(Boolean reconnect) {
         // TODO: implement
         synchronized (this) {
             if (isClosed) {
@@ -211,8 +211,13 @@ public class UDPConnection extends Connection {
         udpConnectionMap.remove(new HostPort(this.hostAddress.getHostAddress(), hostPort.port), this);
         if (isActive) {
             ConnectionManager.getInstance().removeConnection(this);
-        }
 
+            // if it is an outgoing connection, and reconnect is true
+            // add back to queue for retry this hostPort later
+            if (type == ConnectionType.OUTGOING && reconnect) {
+                outgoingConnectionHelper.addPeerInfo(hostPort);
+            }
+        }
     }
 
     private void firstSync() {
@@ -231,7 +236,7 @@ public class UDPConnection extends Connection {
         Protocol.InvalidProtocol invalidProtocol = new Protocol.InvalidProtocol();
         invalidProtocol.msg = additionalMsg;
         sendAsync(invalidProtocol);
-        close();
+        close(true);
     }
 
     @Override
