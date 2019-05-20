@@ -2,7 +2,9 @@ package unimelb.bitbox.protocol;
 
 
 import unimelb.bitbox.util.Document;
+import unimelb.bitbox.util.HostPort;
 
+import java.util.ArrayList;
 import java.util.Objects;
 
 import static unimelb.bitbox.Constants.*;
@@ -184,6 +186,60 @@ public abstract class ProtocolField implements IProtocol {
         public void marshalToJson(Document doc) {
             super.marshalToJson(doc);
             doc.append(PROTOCOL_FIELD_CONTENT, this.content);
+        }
+    }
+
+    public static class AuthIdentity extends ProtocolField{
+        public String identity;
+
+
+        @Override
+        public void unmarshalFromJson(Document doc) {
+            this.identity = doc.getString(PROTOCOL_FIELD_IDENTITY);
+        }
+
+
+        @Override
+        public void marshalToJson(Document doc) {
+            doc.append(PROTOCOL_FIELD_IDENTITY, this.identity);
+        }
+    }
+
+    public static class AuthKey extends ProtocolField {
+        public String key;
+
+
+        @Override
+        public void unmarshalFromJson(Document doc) {
+            this.key = doc.getString(PROTOCOL_FIELD_KEY);
+        }
+
+
+        @Override
+        public void marshalToJson(Document doc) {
+            doc.append(PROTOCOL_FIELD_KEY, this.key);
+        }
+    }
+
+    public static class Peers extends ProtocolField {
+        public ArrayList<HostPort> peers = new ArrayList<>(); // list of peers
+
+
+        @Override
+        public void unmarshalFromJson(Document doc) {
+            for (Document subdoc : (ArrayList<Document>) doc.get(PROTOCOL_FIELD_PEER)) {
+                peers.add(new HostPort(subdoc));
+            }
+        }
+
+
+        @Override
+        public void marshalToJson(Document doc) {
+            ArrayList<Document> peerDocs = new ArrayList<>();
+            for (HostPort hostPort : peers) {
+                peerDocs.add(hostPort.toDoc());
+            }
+            doc.append(PROTOCOL_FIELD_PEER, peerDocs);
         }
     }
 

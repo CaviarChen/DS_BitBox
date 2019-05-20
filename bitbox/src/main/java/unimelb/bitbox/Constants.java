@@ -46,6 +46,10 @@ public class Constants {
     public static final String PROTOCOL_FIELD_POSITION = "position";
     public static final String PROTOCOL_FIELD_LENGTH = "length";
     public static final String PROTOCOL_FIELD_CONTENT = "content";
+    public static final String PROTOCOL_FIELD_IDENTITY = "identity";
+    public static final String PROTOCOL_FIELD_KEY = "AES128";
+    public static final String PROTOCOL_FIELD_PAYLOAD = "payload";
+
 
     // Protocol types
     public static final String PROTOCOL_TYPE_INVALID_PROTOCOL = "INVALID_PROTOCOL";
@@ -64,6 +68,15 @@ public class Constants {
     public static final String PROTOCOL_TYPE_DIRECTORY_CREATE_RESPONSE = "DIRECTORY_CREATE_RESPONSE";
     public static final String PROTOCOL_TYPE_DIRECTORY_DELETE_REQUEST = "DIRECTORY_DELETE_REQUEST";
     public static final String PROTOCOL_TYPE_DIRECTORY_DELETE_RESPONSE = "DIRECTORY_DELETE_RESPONSE";
+    public static final String PROTOCOL_TYPE_AUTH_REQUEST = "DIRECTORY_AUTH_REQUEST";
+    public static final String PROTOCOL_TYPE_AUTH_RESPONSE = "DIRECTORY_AUTH_RESPONSE";
+    public static final String PROTOCOL_TYPE_LIST_PEERS_REQUEST = "LIST_PEERS_REQUEST";
+    public static final String PROTOCOL_TYPE_LIST_PEERS_RESPONSE = "LIST_PEERS_RESPONSE";
+    public static final String PROTOCOL_TYPE_DISCONNECT_PEER_REQUEST = "DISCONNECT_PEER_REQUEST";
+    public static final String PROTOCOL_TYPE_DISCONNECT_PEER_RESPONSE = "DISCONNECT_PEER_RESPONSE";
+    public static final String PROTOCOL_TYPE_CONNECT_PEER_REQUEST = "CONNECT_PEER_REQUEST";
+    public static final String PROTOCOL_TYPE_CONNECT_PEER_RESPONSE = "CONNECT_PEER_RESPONSE";
+
 
     // Protocol response messages
     public static final String PROTOCOL_RESPONSE_MESSAGE_INVALID_PATH = "invalid path";
@@ -90,4 +103,9 @@ public class Constants {
     public static final String PROTOCOL_RESPONSE_MESSAGE_DIR_DELETE_FAIL = "failed to create directory";
     public static final String PROTOCOL_RESPONSE_MESSAGE_CONNECTION_REFUSED_LIMIT_REACHED = "Incoming connection limit reached";
     public static final String PROTOCOL_RESPONSE_MESSAGE_CONNECTION_REFUSED_ALREADY_EXIST = "Connection with the same hostname and port already exists";
+    public static final String PROTOCOL_RESPONSE_MESSAGE_PUBLIC_KEY_FOUND = "public key found";
+    public static final String PROTOCOL_RESPONSE_MESSAGE_PUBLIC_KEY_NOT_FOUND = "public key not found";
+    public static final String PROTOCOL_RESPONSE_MESSAGE_DISCONNECT_PEER = "disconnected from peer";
+    public static final String PROTOCOL_RESPONSE_MESSAGE_CONNECT_PEER = "connected to peer";
+
 }

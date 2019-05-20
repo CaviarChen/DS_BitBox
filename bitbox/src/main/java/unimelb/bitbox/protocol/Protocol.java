@@ -260,7 +260,6 @@ public abstract class Protocol implements IProtocol {
     public static class DirectoryDeleteResponse extends DirectoryCreateResponse {
     }
 
-
     // get all public ProtocolField properties of current instance
     private ArrayList<ProtocolField> getAllProtocolFields() {
         ArrayList<ProtocolField> protocolFields = new ArrayList<>();
