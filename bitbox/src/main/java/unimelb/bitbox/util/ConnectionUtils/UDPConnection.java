@@ -169,7 +169,7 @@ public class UDPConnection extends Connection {
 
                 if (!info.doRetry()) {
                     // out of retry count, abort
-                    this.close(true);
+                    this.close(false);
                     return;
                 }
 
