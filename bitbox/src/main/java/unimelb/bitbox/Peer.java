@@ -49,7 +49,7 @@ public class Peer {
         SyncManager.getInstance().init(fileSystemManager);
 
         MessageHandler.init(fileSystemManager);
-        SecManager.getInstance().init(SecManager.Mode.ClientMode);
+        SecManager.getInstance().init(SecManager.Mode.ServerMode);
 
 
         int port = Integer.parseInt(Configuration.getConfigurationValue(Constants.CONFIG_FIELD_PORT));
