@@ -60,7 +60,7 @@ public class SecManager {
      */
     public static String encryptJSON(String json) throws Exception {
         if (aesKey == null) {
-            throw new IllegalArgumentException("No AES key obtained");
+            throw new IllegalStateException("No AES key obtained");
         }
 
         return encryptWithAesKey(aesKey, json);
@@ -75,7 +75,7 @@ public class SecManager {
      */
     public static String decryptPayload(String payload) throws Exception {
         if (aesKey == null) {
-            throw new IllegalArgumentException("No AES key obtained");
+            throw new IllegalStateException("No AES key obtained");
         }
 
         return decryptWithAesKey(aesKey, payload);
