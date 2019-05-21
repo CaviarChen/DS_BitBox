@@ -34,7 +34,7 @@ public class SecManager {
     private static PrivateKey privateKey;
     private static String privateIdentity;
     private static HashMap<String, PublicKey> publicKeyHashMap;
-    private static HashMap<String, AESKey> aesKeyHashMap;
+    private static AESKey aesKey;
 
 
     public static SecManager getInstance() {
@@ -52,70 +52,34 @@ public class SecManager {
 
 
     /**
-     * Encrypt the JSON string with AES-128 and then encode with base64 on Client Side
+     * Encrypt the JSON string with AES-128 and then encode with base64
      *
      * @param json the JSON wanted to be encoded
      * @return the encrypted string
      * @throws Exception encryption failed
      */
     public static String encryptJSON(String json) throws Exception {
-        if (!aesKeyHashMap.containsKey(privateIdentity)) {
+        if (aesKey == null) {
             throw new IllegalArgumentException("No AES key obtained");
         }
 
-        return encryptWithAesKey(aesKeyHashMap.get(privateIdentity), json);
+        return encryptWithAesKey(aesKey, json);
     }
 
-
     /**
-     * Encrypt the JSON string with AES-128 and then encode with base64 on Server Side
-     *
-     * @param identity the identity of the keypair
-     * @param json     the JSON wanted to be encoded
-     * @return the encrypted string
-     * @throws Exception encryption failed
-     */
-    public static String encryptJSON(String identity, String json) throws Exception {
-        if (!aesKeyHashMap.containsKey(identity)) {
-            throw new IllegalArgumentException("No AES key match with this identity");
-        }
-
-        return encryptWithAesKey(aesKeyHashMap.get(identity), json);
-    }
-
-
-    /**
-     * Decrypt the base64 encoded and AES-128 encrypted string on Client Side
+     * Decrypt the base64 encoded and AES-128 encrypted string
      *
      * @param payload the payload of the protocol message
      * @return the decrypted message in JSON format
      * @throws Exception decryption failed
      */
     public static String decryptPayload(String payload) throws Exception {
-        if (!aesKeyHashMap.containsKey(privateIdentity)) {
+        if (aesKey == null) {
             throw new IllegalArgumentException("No AES key obtained");
         }
 
-        return decryptWithAesKey(aesKeyHashMap.get(privateIdentity), payload);
+        return decryptWithAesKey(aesKey, payload);
     }
-
-
-    /**
-     * Decrypt the base64 encoded and AES-128 encrypted string on Server Side
-     *
-     * @param identity the identity of the keypair
-     * @param payload  the payload of the protocol message
-     * @return the decrypted message in JSON format
-     * @throws Exception decryption failed
-     */
-    public static String decryptPayload(String identity, String payload) throws Exception {
-        if (!aesKeyHashMap.containsKey(identity)) {
-            throw new IllegalArgumentException("No AES key match with this identity");
-        }
-
-        return decryptWithAesKey(aesKeyHashMap.get(identity), payload);
-    }
-
 
     /**
      * Initialize the SecManager, read necessary data into the calss
@@ -137,7 +101,7 @@ public class SecManager {
         Security.addProvider(new BouncyCastleProvider());
 
         publicKeyHashMap = new HashMap<>();
-        aesKeyHashMap = new HashMap<>();
+        aesKey = null;
         instance = new SecManager();
     }
 
@@ -145,12 +109,11 @@ public class SecManager {
     /**
      * generate a AES-128 secret key with secure random padding
      *
-     * @param identity the identity of the keypair
      * @throws Exception generate AES key failed
      */
-    public void generateAES(String identity) throws Exception {
+    public void generateAES() throws Exception {
         // if already exist, replace it
-        aesKeyHashMap.put(identity, new AESKey());
+        aesKey = new AESKey();
     }
 
 
@@ -162,14 +125,8 @@ public class SecManager {
      * @throws Exception encryption failed
      */
     public String encryptAESWithRSA(String identity) throws Exception {
-        if (!aesKeyHashMap.containsKey(identity)) {
-            generateAES(identity);
-        }
-
-        AESKey aesKey = aesKeyHashMap.get(identity);
         if (aesKey == null) {
-            // unlikely to happen
-            throw new Exception("Cannot get AES Key from map");
+            generateAES();
         }
 
         PublicKey publicKey = publicKeyHashMap.get(identity);
@@ -197,19 +154,26 @@ public class SecManager {
 
         Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
         cipher.init(Cipher.DECRYPT_MODE, privateKey);
-        byte[] aesKey = cipher.doFinal(cipherText);
+        byte[] aesKeyBytes = cipher.doFinal(cipherText);
 
-        aesKeyHashMap.put(privateIdentity, new AESKey(new SecretKeySpec(aesKey, "AES")));
+        aesKey = new AESKey(new SecretKeySpec(aesKeyBytes, "AES"));
     }
 
 
     /**
      * Remove the AES key from the SecManager
-     *
-     * @param identity the identity of the key wanted to be removed
      */
-    public void removeAES(String identity) {
-        aesKeyHashMap.remove(identity);
+    public void removeAES() {
+        aesKey = null;
+    }
+
+
+    /**
+     * Get the Identity parsed from Private key file
+     * @return Identity
+     */
+    public String getPrivateIdentity() {
+        return privateIdentity;
     }
 
 
