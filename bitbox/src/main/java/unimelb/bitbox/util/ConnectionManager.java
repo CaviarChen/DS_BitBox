@@ -1,6 +1,8 @@
 package unimelb.bitbox.util;
 
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
+import javafx.util.Pair;
 import unimelb.bitbox.protocol.Protocol;
 import unimelb.bitbox.util.ConnectionUtils.Connection;
 
@@ -97,6 +99,16 @@ public class ConnectionManager {
             }
         }
         return res;
+    }
+
+    public Pair<Boolean, String> disconnectFrom(HostPort hostPort) {
+        Connection conn = connectionMap.get(hostPort);
+        if (conn == null) {
+            return new Pair<>(false, "No such connection.");
+        }
+        // disable reconnection
+        conn.close(false);
+        return new Pair<>(true, "Disconnected");
     }
 
     /**

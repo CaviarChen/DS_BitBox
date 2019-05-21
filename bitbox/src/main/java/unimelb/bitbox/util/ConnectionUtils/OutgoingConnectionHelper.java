@@ -4,6 +4,7 @@ import javafx.util.Pair;
 import unimelb.bitbox.Constants;
 import unimelb.bitbox.protocol.Protocol;
 import unimelb.bitbox.util.Configuration;
+import unimelb.bitbox.util.ConnectionManager;
 import unimelb.bitbox.util.HostPort;
 
 import java.util.Comparator;
@@ -73,6 +74,11 @@ public abstract class OutgoingConnectionHelper {
     protected abstract long getRetryInterval();
 
     public Pair<Boolean, String> connectTo(HostPort hostPort) {
+
+        if (ConnectionManager.getInstance().checkExist(hostPort)) {
+            return new Pair<>(false, "An active connection with the target peer already exists.");
+        }
+
         int retryCount = 0;
         while (true) {
             Pair<Boolean, String> res = tryConnectTo(hostPort);
