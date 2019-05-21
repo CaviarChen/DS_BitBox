@@ -25,6 +25,16 @@ public class UDPOutgoingConnectionHelper extends OutgoingConnectionHelper {
         this.port = port;
     }
 
+    @Override
+    protected int getRetryCount() {
+        return UDPConnection.MAX_RETRY;
+    }
+
+    @Override
+    protected long getRetryInterval() {
+        return UDPConnection.UDP_TIMEOUT_MS;
+    }
+
 //    @Override
 //    protected void execute() throws Exception {
 //
@@ -63,8 +73,9 @@ public class UDPOutgoingConnectionHelper extends OutgoingConnectionHelper {
 //        }
 //    }
 
+
     @Override
-    public Pair<Boolean, String> connectTo(HostPort hostPort) {
+    protected Pair<Boolean, String> tryConnectTo(HostPort hostPort) {
         return null;
     }
 

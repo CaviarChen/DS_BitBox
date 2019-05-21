@@ -59,17 +59,6 @@ public abstract class OutgoingConnectionHelper {
 
             if (peer != null) {
                     connectTo(peer.hostPort);
-//                // try to connect to the peer
-//                try {
-//                    Socket clientSocket = new Socket(peer.getHost(), peer.getPort());
-//                    TCPConnection conn = new TCPConnection(clientSocket, this);
-//                    log.info(String.format("Start connecting to port: %d", peer.getPort()));
-//                    requestHandshake(conn);
-//                } catch (IOException e) {
-//                    log.warning(peer.getHostPort().toString() + " " + e.toString());
-//                    peer.setPenaltyTime();
-//                    addPeerInfo(peer);
-//                }
             } else {
                 // sleep 10 seconds if there is no job
                 try {
@@ -80,7 +69,36 @@ public abstract class OutgoingConnectionHelper {
         }
     }
 
-    public abstract Pair<Boolean, String> connectTo(HostPort hostPort);
+    protected abstract int getRetryCount();
+    protected abstract long getRetryInterval();
+
+    public Pair<Boolean, String> connectTo(HostPort hostPort) {
+        int retryCount = 0;
+        while (true) {
+            Pair<Boolean, String> res = tryConnectTo(hostPort);
+
+            log.info("Connection result: " + res.toString());
+
+            if (res.getKey() != null) {
+                return res;
+            } else {
+                retryCount += 1;
+                if (retryCount >= getRetryCount()) {
+                    // stop retry
+                    return new Pair<>(false, res.getValue());
+                }
+
+                try {
+                    Thread.sleep(getRetryInterval());
+                } catch (Exception ignored) {}
+            }
+
+        }
+    }
+
+    // Boolean: true -> success, false -> fail and shouldn't retry, null -> fail and allow retry
+    // String: message
+    protected abstract Pair<Boolean, String> tryConnectTo(HostPort hostPort);
 
 
     public void scheduleConnectionTask(HostPort hostPort, long executionDelayTime) {

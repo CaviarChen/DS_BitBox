@@ -24,7 +24,9 @@ import java.util.logging.Logger;
 
 public class UDPConnection extends Connection {
 
-    private static final long UDP_TIMEOUT_MS = Long.parseLong(Configuration.getConfigurationValue("udpTimeout"));
+    protected static final long UDP_TIMEOUT_MS = Long.parseLong(Configuration.getConfigurationValue("udpTimeout"));
+    protected static final int MAX_RETRY = Integer.parseInt(Configuration.getConfigurationValue("udpRetries"));
+
     private static final ConcurrentHashMap<HostPort, UDPConnection> udpConnectionMap = new ConcurrentHashMap<>();
     private static final int INCOMING_CONNECTION_FIRST_SYNC_WAIT_TIME = 1000;
     private static Logger log = Logger.getLogger(UDPConnection.class.getName());
@@ -147,8 +149,6 @@ public class UDPConnection extends Connection {
                 Priority.NORMAL,
                 this::firstSync
         ));
-
-
     }
 
     private void retryTimeoutRequest() {
@@ -198,7 +198,6 @@ public class UDPConnection extends Connection {
 
     @Override
     public void close(Boolean allowReconnect) {
-        // TODO: implement
         synchronized (this) {
             if (isClosed) {
                 return;
@@ -212,7 +211,7 @@ public class UDPConnection extends Connection {
         if (isActive) {
             ConnectionManager.getInstance().removeConnection(this);
 
-            // if it is an outgoing connection, and reconnect is true
+            // if it is an outgoing connection, and allowReconnect is true
             // add back to queue for retry this hostPort later
             if (type == ConnectionType.OUTGOING && allowReconnect) {
                 outgoingConnectionHelper.scheduleConnectionTask(hostPort, OutgoingConnectionHelper.RECONNECT_INTERVAL);
@@ -254,7 +253,6 @@ public class UDPConnection extends Connection {
     }
 
     protected static class WaitingInfo {
-        private static final int MAX_RETRY = Integer.parseInt(Configuration.getConfigurationValue("udpRetries"));
 
         int retryCount;
         long timestamp;

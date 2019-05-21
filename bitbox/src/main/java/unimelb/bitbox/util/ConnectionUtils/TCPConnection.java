@@ -204,14 +204,13 @@ class TCPConnection extends Connection {
             // unregister from ConnectionManager
             ConnectionManager.getInstance().removeConnection(this);
 
-            // if it is an outgoing connection, and reconnect is true
+            // if it is an outgoing connection, and allowReconnect is true
             // add back to queue for retry this hostPort later
             if (type == ConnectionType.OUTGOING && allowReconnect) {
                 outgoingConnectionHelper.scheduleConnectionTask(hostPort, OutgoingConnectionHelper.RECONNECT_INTERVAL);
             }
         }
     }
-
 
     /**
      * active connection will create its own thread for waiting for request
