@@ -1,7 +1,6 @@
-package unimelb.bitbox.util.ConnectionUtils;
+package unimelb.bitbox.util.ConnectionUtils.Peer;
 
 
-import unimelb.bitbox.protocol.IRequest;
 import unimelb.bitbox.protocol.IResponse;
 import unimelb.bitbox.protocol.Protocol;
 import unimelb.bitbox.protocol.ProtocolFactory;

@@ -1,53 +1,33 @@
-package unimelb.bitbox.util.ConnectionUtils;
+package unimelb.bitbox.util.ConnectionUtils.Peer;
 
 
-import unimelb.bitbox.protocol.InvalidProtocolException;
-import unimelb.bitbox.protocol.Protocol;
-import unimelb.bitbox.protocol.ProtocolFactory;
-import unimelb.bitbox.protocol.ProtocolType;
+import unimelb.bitbox.protocol.*;
 import unimelb.bitbox.util.ConnectionManager;
 import unimelb.bitbox.util.HostPort;
 
 import java.io.IOException;
-import java.net.Socket;
-import java.net.SocketTimeoutException;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 
 import static java.lang.Thread.sleep;
 
+public class UDPOutgoingConnectionHelper extends OutgoingConnectionHelper {
 
-/**
- * OutgoingConnectionHelper deal with all outgoing connections
- *
- * @author Weizhi Xu (752454)
- * @author Wenqing Xue (813044)
- * @author Zijie Shen (741404)
- * @author Zijun Chen (813190)
- */
-public class TCPOutgoingConnectionHelper extends OutgoingConnectionHelper{
+    private final int port;
 
-    private static Logger log = Logger.getLogger(TCPOutgoingConnectionHelper.class.getName());
+    private static Logger log = Logger.getLogger(UDPOutgoingConnectionHelper.class.getName());
 
-    /**
-     * Constructor
-     * @param advertisedName from config
-     * @param port from config
-     */
-    public TCPOutgoingConnectionHelper(String advertisedName, int port) {
+    public UDPOutgoingConnectionHelper(String advertisedName, int port) {
         super(advertisedName, port);
-
+        this.port = port;
     }
 
-
-    /**
-     * start working (blocking)
-     */
     @Override
-    public void execute() {
+    protected void execute() throws Exception {
 
         while (true) {
-
             PeerInfo peer = null;
 
             synchronized (queue) {
@@ -57,12 +37,16 @@ public class TCPOutgoingConnectionHelper extends OutgoingConnectionHelper{
             }
 
             if (peer != null) {
-                // try to connect to the peer
+                // try to connect ot the peer
                 try {
-                    Socket clientSocket = new Socket(peer.getHost(), peer.getPort());
-                    TCPConnection conn = new TCPConnection(clientSocket, this);
+                    DatagramSocket serverSocket = null;
+
+                    UDPConnection conn = new UDPConnection(serverSocket, peer.getHostPort(),
+                            InetAddress.getByName(peer.getHostPort().host), this);
+
                     log.info(String.format("Start connecting to port: %d", peer.getPort()));
-                    requestHandshake(conn);
+                    conn.sendAsync(handshakeRequest);
+
                 } catch (IOException e) {
                     log.warning(peer.getHostPort().toString() + " " + e.toString());
                     peer.setPenaltyTime();
@@ -78,22 +62,13 @@ public class TCPOutgoingConnectionHelper extends OutgoingConnectionHelper{
         }
     }
 
-    // request handshake to the peer
-    private void requestHandshake(TCPConnection conn) {
-        conn.send(handshakeRequestJson);
-
-        String json;
-        try {
-            json = conn.waitForOneMessage(HANDSHAKE_TIMEOUT);
-        } catch (SocketTimeoutException e) {
-            conn.abortWithInvalidProtocol("Handshake response timeout");
-            return;
-        }
+    protected void handleHandshake(UDPConnection conn, String msg) {
 
         Protocol protocol;
         ProtocolType protocolType;
+
         try {
-            protocol = ProtocolFactory.parseProtocol(json);
+            protocol = ProtocolFactory.parseProtocol(msg);
             protocolType = ProtocolType.typeOfProtocol(protocol);
         } catch (InvalidProtocolException e) {
             conn.abortWithInvalidProtocol(e.getMessage());
@@ -107,8 +82,7 @@ public class TCPOutgoingConnectionHelper extends OutgoingConnectionHelper{
 
                 int res = ConnectionManager.getInstance().addConnection(conn, hostPort);
                 if (res == 0) {
-                    conn.active(hostPort);
-                    return;
+                    conn.active();
                 } else {
                     // already exists
                     conn.abortWithInvalidProtocol("HostPort is already existed");

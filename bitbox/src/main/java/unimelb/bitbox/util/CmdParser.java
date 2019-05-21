@@ -14,8 +14,8 @@ public class CmdParser {
 
     private String[] args;
 
-    @Option(required = true, name = "-c", usage = "Set the command [list_peers, connect_peer, disconnect_peer]")
-    private String command;
+    @Option(required = true, name = "-c", usage = "Set the cmd [list_peers, connect_peer, disconnect_peer]")
+    private String cmd;
 
     @Option(name = "-s", usage = "Set the server's Host and IP")
     private String server;
@@ -39,12 +39,23 @@ public class CmdParser {
         }
     }
 
+    public String getCmd() {
+        return cmd;
+    }
+
+    public String getServer() {
+        return server;
+    }
+
+    public String getPeer() {
+        return peer;
+    }
 
     @Override
     public String toString() {
         StringBuffer stringBuffer = new StringBuffer();
         stringBuffer.append("CmdParser:");
-        stringBuffer.append("\n\tcommand: " + command);
+        stringBuffer.append("\n\tcmd: " + cmd);
         stringBuffer.append("\n\tserver: " + server);
         stringBuffer.append("\n\tpeer: " + peer);
         stringBuffer.append("\n");

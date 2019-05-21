@@ -3,10 +3,9 @@ package unimelb.bitbox.util.FileSystem;
 
 import unimelb.bitbox.Constants;
 import unimelb.bitbox.protocol.Protocol;
-import unimelb.bitbox.protocol.ProtocolFactory;
 import unimelb.bitbox.protocol.ProtocolField;
 import unimelb.bitbox.util.Configuration;
-import unimelb.bitbox.util.ConnectionUtils.Connection;
+import unimelb.bitbox.util.ConnectionUtils.Peer.Connection;
 import unimelb.bitbox.util.MessageHandler;
 
 import java.io.IOException;

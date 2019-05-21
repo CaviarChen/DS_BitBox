@@ -2,7 +2,7 @@ package unimelb.bitbox.util;
 
 import unimelb.bitbox.Constants;
 import unimelb.bitbox.protocol.*;
-import unimelb.bitbox.util.ConnectionUtils.Connection;
+import unimelb.bitbox.util.ConnectionUtils.Peer.Connection;
 
 public class ClientMessageHandler {
 
@@ -63,12 +63,12 @@ public class ClientMessageHandler {
             response.authKey.key = SecManager.getInstance().encryptAESWithRSA(identity);
             response.response.status = true;
             response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_PUBLIC_KEY_FOUND;
-            conn.send(ClientProtocolFactory.marshalProtocol(response));
+            //conn.send(ClientProtocolFactory.marshalProtocol(response));
 
         } catch (Exception e) {
             response.response.status = false;
             response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_PUBLIC_KEY_NOT_FOUND;
-            conn.send(ClientProtocolFactory.marshalProtocol(response));
+            //conn.send(ClientProtocolFactory.marshalProtocol(response));
         }
     }
 
@@ -83,7 +83,7 @@ public class ClientMessageHandler {
             response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_DISCONNECT_PEER;
             doc.append(Constants.PROTOCOL_FIELD_CMD,
                     SecManager.encryptJSON(ClientProtocolFactory.marshalProtocol(response)));
-            conn.send(doc.toString());
+            //conn.send(doc.toString());
         } catch (Exception e) {
             conn.abortWithInvalidProtocol(e.getMessage());
         }
@@ -100,7 +100,7 @@ public class ClientMessageHandler {
             response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_CONNECT_PEER;
             doc.append(Constants.PROTOCOL_FIELD_CMD,
                     SecManager.encryptJSON(ClientProtocolFactory.marshalProtocol(response)));
-            conn.send(doc.toString());
+            //conn.send(doc.toString());
         } catch (Exception e) {
             conn.abortWithInvalidProtocol(e.getMessage());
         }

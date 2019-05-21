@@ -2,7 +2,7 @@ package unimelb.bitbox.util;
 
 
 import unimelb.bitbox.protocol.Protocol;
-import unimelb.bitbox.util.ConnectionUtils.Connection;
+import unimelb.bitbox.util.ConnectionUtils.Peer.Connection;
 
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;

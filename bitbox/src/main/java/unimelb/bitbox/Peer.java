@@ -2,14 +2,11 @@ package unimelb.bitbox;
 
 
 import unimelb.bitbox.util.*;
-import unimelb.bitbox.util.ConnectionUtils.IncomingConnectionHelper;
-import unimelb.bitbox.util.ConnectionUtils.OutgoingConnectionHelper;
-import unimelb.bitbox.util.ConnectionUtils.TCPIncomingConnectionHelper;
-import unimelb.bitbox.util.ConnectionUtils.TCPOutgoingConnectionHelper;
+import unimelb.bitbox.util.ConnectionUtils.Peer.IncomingConnectionHelper;
+import unimelb.bitbox.util.ConnectionUtils.Peer.TCPIncomingConnectionHelper;
+import unimelb.bitbox.util.ConnectionUtils.Peer.TCPOutgoingConnectionHelper;
 import unimelb.bitbox.util.FileSystem.FileSystemManager;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.logging.Logger;
 
 
