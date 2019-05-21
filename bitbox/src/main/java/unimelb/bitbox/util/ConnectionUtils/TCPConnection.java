@@ -171,6 +171,11 @@ class TCPConnection extends Connection {
         // do nothing, no retry for TCP
     }
 
+    @Override
+    public boolean allowInvalidMessage() {
+        return false;
+    }
+
 
     /**
      * close this connection

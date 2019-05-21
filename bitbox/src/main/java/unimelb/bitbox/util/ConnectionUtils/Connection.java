@@ -45,4 +45,6 @@ public abstract class Connection {
     }
 
     public abstract void markRequestAsDone(IResponse response);
+
+    public abstract boolean allowInvalidMessage();
 }

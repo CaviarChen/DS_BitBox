@@ -112,7 +112,11 @@ public class MessageHandler {
             }
 
         } catch (InvalidProtocolException e) {
-            conn.abortWithInvalidProtocol(e.getMessage());
+            if (conn.allowInvalidMessage()) {
+                log.info("Invalid message ignored due to connection type. " + e.getMessage());
+            } else {
+                conn.abortWithInvalidProtocol(e.getMessage());
+            }
         }
 
     }

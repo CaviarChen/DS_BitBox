@@ -1,13 +1,11 @@
 package unimelb.bitbox.util.ConnectionUtils;
 
+import javafx.util.Pair;
 import unimelb.bitbox.protocol.IRequest;
 import unimelb.bitbox.protocol.IResponse;
 import unimelb.bitbox.protocol.Protocol;
 import unimelb.bitbox.protocol.ProtocolFactory;
-import unimelb.bitbox.util.Configuration;
-import unimelb.bitbox.util.ConnectionManager;
-import unimelb.bitbox.util.HostPort;
-import unimelb.bitbox.util.SyncManager;
+import unimelb.bitbox.util.*;
 import unimelb.bitbox.util.ThreadPool.Priority;
 import unimelb.bitbox.util.ThreadPool.PriorityTask;
 import unimelb.bitbox.util.ThreadPool.PriorityThreadPool;
@@ -20,6 +18,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.locks.Lock;
 import java.util.logging.Logger;
 
 public class UDPConnection extends Connection {
@@ -42,6 +42,12 @@ public class UDPConnection extends Connection {
     private boolean isActive = false;
 
     private UDPOutgoingConnectionHelper outgoingConnectionHelper;
+
+
+    // for outgoing connection
+    // this semaphore will be released until the connection is active
+    protected final Semaphore activeSemaphore = new Semaphore(1);
+    protected Pair<Boolean, String> handshakeResult = null;
 
 
 
@@ -70,6 +76,9 @@ public class UDPConnection extends Connection {
     // for incoming
     public UDPConnection(DatagramSocket serverSocket, HostPort hostPort, InetAddress hostAddress, int actualPort) throws CException {
         super(ConnectionType.INCOMING);
+        try {
+            activeSemaphore.acquire();
+        } catch (InterruptedException ignored) { }
         this.serverSocket = serverSocket;
         this.hostPort = hostPort;
         // allow the advertisedName be fake
@@ -89,6 +98,9 @@ public class UDPConnection extends Connection {
     // for outgoing
     public UDPConnection(DatagramSocket serverSocket, HostPort hostPort, InetAddress hostAddress, UDPOutgoingConnectionHelper outgoingConnectionHelper) throws CException {
         super(ConnectionType.OUTGOING);
+        try {
+            activeSemaphore.acquire();
+        } catch (InterruptedException ignored) { }
         this.serverSocket = serverSocket;
         this.hostPort = hostPort;
         this.outgoingConnectionHelper = outgoingConnectionHelper;
@@ -141,6 +153,7 @@ public class UDPConnection extends Connection {
                 return;
             }
             isActive = true;
+            activeSemaphore.release();
         }
 
         // trigger first sync
@@ -186,7 +199,7 @@ public class UDPConnection extends Connection {
         synchronized (this) {
             if (!isActive) {
                 if (type == ConnectionType.OUTGOING) {
-                    outgoingConnectionHelper.handleHandshake(this, msg);
+                    handshakeResult = outgoingConnectionHelper.handleHandshake(this, msg);
                 }
                 return;
             }
@@ -194,6 +207,7 @@ public class UDPConnection extends Connection {
 
         log.info(currentHostPort() + " Message Received: "
                 + msg.substring(0, Math.min(MAX_LOG_LEN, msg.length())));
+        MessageHandler.handleMessage(msg, this);
     }
 
     @Override
@@ -203,18 +217,21 @@ public class UDPConnection extends Connection {
                 return;
             }
             isClosed = true;
-        }
 
-        log.info(currentHostPort() + " Connection Closed");
 
-        udpConnectionMap.remove(new HostPort(this.hostAddress.getHostAddress(), hostPort.port), this);
-        if (isActive) {
-            ConnectionManager.getInstance().removeConnection(this);
+            log.info(currentHostPort() + " Connection Closed");
 
-            // if it is an outgoing connection, and allowReconnect is true
-            // add back to queue for retry this hostPort later
-            if (type == ConnectionType.OUTGOING && allowReconnect) {
-                outgoingConnectionHelper.scheduleConnectionTask(hostPort, OutgoingConnectionHelper.RECONNECT_INTERVAL);
+            udpConnectionMap.remove(new HostPort(this.hostAddress.getHostAddress(), hostPort.port), this);
+            if (isActive) {
+                ConnectionManager.getInstance().removeConnection(this);
+
+                // if it is an outgoing connection, and allowReconnect is true
+                // add back to queue for retry this hostPort later
+                if (type == ConnectionType.OUTGOING && allowReconnect) {
+                    outgoingConnectionHelper.scheduleConnectionTask(hostPort, OutgoingConnectionHelper.RECONNECT_INTERVAL);
+                }
+            } else {
+                activeSemaphore.release();
             }
         }
     }
@@ -244,6 +261,11 @@ public class UDPConnection extends Connection {
         synchronized (waitingList) {
             waitingList.remove(request);
         }
+    }
+
+    @Override
+    public boolean allowInvalidMessage() {
+        return true;
     }
 
     protected static class CException extends Exception {
