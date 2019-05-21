@@ -268,6 +268,12 @@ public class UDPConnection extends Connection {
         return true;
     }
 
+    public boolean isActive() {
+        synchronized (this) {
+            return isActive;
+        }
+    }
+
     protected static class CException extends Exception {
         protected CException(String message) {
             super(message);

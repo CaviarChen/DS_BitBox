@@ -40,9 +40,9 @@ public class UDPOutgoingConnectionHelper extends OutgoingConnectionHelper {
     // String: message
     @Override
     protected Pair<Boolean, String> tryConnectTo(HostPort hostPort) {
-
+        UDPConnection conn = null;
         try {
-            UDPConnection conn = new UDPConnection(serverSocket, hostPort,
+            conn = new UDPConnection(serverSocket, hostPort,
                     InetAddress.getByName(hostPort.host), this);
             conn.sendAsync(handshakeRequest);
 
@@ -52,10 +52,16 @@ public class UDPOutgoingConnectionHelper extends OutgoingConnectionHelper {
             } catch (InterruptedException ignored) {
             }
 
-            return conn.handshakeResult;
+            if (conn.handshakeResult != null)
+                return conn.handshakeResult;
+            return new Pair<>(null, "Unable to establish connection: timeout");
 
         } catch (IOException | UDPConnection.CException e) {
             return new Pair<>(null, "Unable to establish connection: " + e.getMessage());
+        } finally {
+            if (conn != null && !conn.isActive()) {
+                conn.close();
+            }
         }
 
     }
