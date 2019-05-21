@@ -48,7 +48,7 @@ class TCPConnection extends Connection {
     private TCPConnection(ConnectionType type, Socket socket) throws IOException {
         super(type);
         this.socket = socket;
-        bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
         bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8));
         active = false;
         hostPort = null;
