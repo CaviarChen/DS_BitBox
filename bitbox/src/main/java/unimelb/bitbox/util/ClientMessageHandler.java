@@ -2,11 +2,12 @@ package unimelb.bitbox.util;
 
 import unimelb.bitbox.Constants;
 import unimelb.bitbox.protocol.*;
+import unimelb.bitbox.util.ConnectionUtils.ClientServer.ClientConnection;
 import unimelb.bitbox.util.ConnectionUtils.Peer.Connection;
 
 public class ClientMessageHandler {
 
-    public static void handleMessage(String message, Connection conn) {
+    public static void handleMessage(String message, ClientConnection conn) {
 
         try {
             Document doc = Document.parse(message);
@@ -47,15 +48,15 @@ public class ClientMessageHandler {
                 }
             }
         } catch (InvalidProtocolException e) {
-            conn.abortWithInvalidProtocol(e.getMessage());
+            //TODO: Handle
         } catch (Exception e) {
-            conn.abortWithInvalidProtocol(e.getMessage());
+            //TODO: Handle
         }
 
 
     }
 
-    private static void handleSpecificProtocol(ClientProtocol.AuthRequest protocol, Connection conn) {
+    private static void handleSpecificProtocol(ClientProtocol.AuthRequest protocol, ClientConnection conn) {
         ClientProtocol.AuthResponse response = new ClientProtocol.AuthResponse();
         String identity = protocol.authIdentity.identity;
 
@@ -72,7 +73,7 @@ public class ClientMessageHandler {
         }
     }
 
-    private static void handleSpecificProtocol(ClientProtocol.DisconnectPeerRequest protocol, Connection conn) {
+    private static void handleSpecificProtocol(ClientProtocol.DisconnectPeerRequest protocol, ClientConnection conn) {
 
         try {
             ClientProtocol.DisconnectPeerResponse response = new ClientProtocol.DisconnectPeerResponse();
@@ -85,11 +86,11 @@ public class ClientMessageHandler {
                     SecManager.encryptJSON(ClientProtocolFactory.marshalProtocol(response)));
             //conn.send(doc.toString());
         } catch (Exception e) {
-            conn.abortWithInvalidProtocol(e.getMessage());
+            //TODO: Handle
         }
     }
 
-    private static void handleSpecificProtocol(ClientProtocol.ConnectPeerRequest protocol, Connection conn) {
+    private static void handleSpecificProtocol(ClientProtocol.ConnectPeerRequest protocol, ClientConnection conn) {
 
         try {
             ClientProtocol.ConnectPeerResponse response = new ClientProtocol.ConnectPeerResponse();
@@ -102,11 +103,11 @@ public class ClientMessageHandler {
                     SecManager.encryptJSON(ClientProtocolFactory.marshalProtocol(response)));
             //conn.send(doc.toString());
         } catch (Exception e) {
-            conn.abortWithInvalidProtocol(e.getMessage());
+            //TODO: Handle
         }
     }
 
-    private static void handleSpecificProtocol(ClientProtocol.ListPeersRequest protocol, Connection conn) {
+    private static void handleSpecificProtocol(ClientProtocol.ListPeersRequest protocol, ClientConnection conn) {
         ClientProtocol.ListPeersResponse response = new ClientProtocol.ListPeersResponse();
         Document doc = new Document();
         //Todo: list the currently connected/known peers

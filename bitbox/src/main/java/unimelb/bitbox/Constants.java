@@ -26,6 +26,7 @@ public class Constants {
     public static final String CONFIG_FIELD_BLOCKSIZE = "blockSize";
     public static final String CONFIG_FIELD_PATH = "path";
     public static final String CONFIG_FIELD_AUTHORIZED_KEYS = "authorized_keys";
+    public static final String CONFIG_FIELD_CLIENT_PORT = "clientPort";
 
     // Security
     public static final String SECURITY_PRIVATE_KEY_FILENAME = "bitboxclient_rsa";
@@ -68,8 +69,8 @@ public class Constants {
     public static final String PROTOCOL_TYPE_DIRECTORY_CREATE_RESPONSE = "DIRECTORY_CREATE_RESPONSE";
     public static final String PROTOCOL_TYPE_DIRECTORY_DELETE_REQUEST = "DIRECTORY_DELETE_REQUEST";
     public static final String PROTOCOL_TYPE_DIRECTORY_DELETE_RESPONSE = "DIRECTORY_DELETE_RESPONSE";
-    public static final String PROTOCOL_TYPE_AUTH_REQUEST = "DIRECTORY_AUTH_REQUEST";
-    public static final String PROTOCOL_TYPE_AUTH_RESPONSE = "DIRECTORY_AUTH_RESPONSE";
+    public static final String PROTOCOL_TYPE_AUTH_REQUEST = "AUTH_REQUEST";
+    public static final String PROTOCOL_TYPE_AUTH_RESPONSE = "AUTH_RESPONSE";
     public static final String PROTOCOL_TYPE_LIST_PEERS_REQUEST = "LIST_PEERS_REQUEST";
     public static final String PROTOCOL_TYPE_LIST_PEERS_RESPONSE = "LIST_PEERS_RESPONSE";
     public static final String PROTOCOL_TYPE_DISCONNECT_PEER_REQUEST = "DISCONNECT_PEER_REQUEST";

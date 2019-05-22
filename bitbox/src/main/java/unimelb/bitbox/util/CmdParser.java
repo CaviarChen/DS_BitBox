@@ -14,6 +14,9 @@ public class CmdParser {
 
     private String[] args;
 
+    @Option(required = true, name = "-i", usage = "The identity of the client")
+    private String identity;
+
     @Option(required = true, name = "-c", usage = "Set the cmd [list_peers, connect_peer, disconnect_peer]")
     private String cmd;
 
@@ -50,6 +53,8 @@ public class CmdParser {
     public String getPeer() {
         return peer;
     }
+
+    public String getIdentity() { return identity; }
 
     @Override
     public String toString() {

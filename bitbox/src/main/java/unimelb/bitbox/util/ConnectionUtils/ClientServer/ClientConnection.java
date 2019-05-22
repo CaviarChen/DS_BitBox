@@ -1,9 +1,9 @@
 package unimelb.bitbox.util.ConnectionUtils.ClientServer;
 
 
-import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
 import unimelb.bitbox.protocol.ClientProtocol;
 import unimelb.bitbox.protocol.ClientProtocolFactory;
+import unimelb.bitbox.protocol.ClientProtocolType;
 import unimelb.bitbox.util.SecManager;
 
 import java.io.*;
@@ -12,14 +12,14 @@ import java.nio.charset.StandardCharsets;
 import java.util.logging.Logger;
 
 
-public class ClientServerConnection {
-    private static Logger log = Logger.getLogger(ClientServerConnection.class.getName());
+public class ClientConnection {
+    private static Logger log = Logger.getLogger(ClientConnection.class.getName());
 
     private Socket socket;
     private BufferedWriter bufferedWriter;
     private BufferedReader bufferedReader;
 
-    public ClientServerConnection(Socket socket) throws IOException {
+    public ClientConnection(Socket socket) throws IOException {
         this.socket = socket;
         bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream(),
                 StandardCharsets.UTF_8));
@@ -42,10 +42,10 @@ public class ClientServerConnection {
         try {
             bufferedWriter.write(msg + '\n');
             bufferedWriter.flush();
-            log.info(socket.toString() + " :: Message sent: " + msg.substring(0, 200));
+            log.info(socket.toString() + ":: Message sent: " + msg);
         } catch (IOException e) {
             close();
-            log.severe(socket.toString() + " :: Unable to send message " + e.toString());
+            log.severe(socket.toString() + ":: Unable to send message " + e.toString());
         }
     }
 
@@ -54,10 +54,23 @@ public class ClientServerConnection {
         String msg = "";
         try {
             msg = bufferedReader.readLine();
+            log.info(socket.toString() + ":: Message received: " + msg);
         } catch (IOException e) {
         }
 
         return msg;
+    }
+
+    public ClientProtocol getMsgProtocolType(ClientProtocolType clientProtocolType) throws Exception{
+        String msg = this.receive();
+
+        ClientProtocol protocol = ClientProtocolFactory.parseProtocol(msg);
+        ClientProtocolType protocolType = ClientProtocolType.typeOfProtocol(protocol);
+
+        if (protocolType.equals(clientProtocolType))
+            return protocol;
+
+        throw new Exception("Protocol Type not matched: " + "expected: " + clientProtocolType + "actual: " + protocolType);
     }
 
     public void close() {

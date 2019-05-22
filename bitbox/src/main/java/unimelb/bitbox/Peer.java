@@ -3,6 +3,7 @@ package unimelb.bitbox;
 
 import unimelb.bitbox.util.*;
 import unimelb.bitbox.util.ConnectionUtils.Peer.*;
+import unimelb.bitbox.util.ConnectionUtils.ClientServer.ServerConnectionHelper;
 import unimelb.bitbox.util.FileSystem.FileSystemManager;
 
 import java.util.logging.Logger;
@@ -20,6 +21,7 @@ public class Peer {
     private static Logger log = Logger.getLogger(Peer.class.getName());
     private static IncomingConnectionHelper incomingConnectionManager;
     private static OutgoingConnectionHelper outgoingConnectionHelper;
+    private static ServerConnectionHelper serverConnectionHelper;
 
     /**
      * Entry point
@@ -59,6 +61,8 @@ public class Peer {
                     ((UDPIncomingConnectionHelper)incomingConnectionManager).getServerSocket());
 
         }
+        serverConnectionHelper = new ServerConnectionHelper(outgoingConnectionHelper);
+        serverConnectionHelper.start();
         incomingConnectionManager.start();
         outgoingConnectionHelper.execute();
 

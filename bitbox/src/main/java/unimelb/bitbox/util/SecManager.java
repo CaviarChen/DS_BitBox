@@ -2,6 +2,7 @@ package unimelb.bitbox.util;
 
 
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openssl.PEMKeyPair;
 import org.bouncycastle.openssl.PEMParser;
@@ -14,22 +15,31 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.FileReader;
+import java.io.StringReader;
+import java.math.BigInteger;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
+import java.security.spec.RSAPublicKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 
 
 // https://stackoverflow.com/questions/44681737/get-a-privatekey-from-a-rsa-pem-file
 // https://artofcode.wordpress.com/2017/05/26/rsa-signatures-in-java-with-bouncy-castle/
 // https://www.javainterviewpoint.com/aes-encryption-and-decryption/
+// https://stackoverflow.com/questions/43978146/how-to-convert-ssh-rsa-public-key-to-pem-pkcs1-public-key-format-using-java-7
 public class SecManager {
 
     private static Logger log = Logger.getLogger(SecManager.class.getName());
+
+    private static final int INT_SIZE_BYTES = 4;
     private static SecManager instance = new SecManager();
     private static PrivateKey privateKey;
     private static String privateIdentity;
@@ -88,21 +98,22 @@ public class SecManager {
      * @throws Exception initialization failed
      */
     public void init(Mode m) throws Exception {
+        instance = new SecManager();
+
+        Security.addProvider(new BouncyCastleProvider());
+
+        publicKeyHashMap = new HashMap<>();
+        aesKey = null;
+
         switch (m) {
             case ClientMode:
-                readIdentityFromPrivateKey();
+                //readIdentityFromPrivateKey();
                 readPrivateKey();
                 break;
             case ServerMode:
                 readPublicKeyFromProperties();
                 break;
         }
-
-        Security.addProvider(new BouncyCastleProvider());
-
-        publicKeyHashMap = new HashMap<>();
-        aesKey = null;
-        instance = new SecManager();
     }
 
 
@@ -163,7 +174,7 @@ public class SecManager {
     /**
      * Remove the AES key from the SecManager
      */
-    public void removeAES() {
+    public static void removeAES() {
         aesKey = null;
     }
 
@@ -172,8 +183,12 @@ public class SecManager {
      * Get the Identity parsed from Private key file
      * @return Identity
      */
-    public String getPrivateIdentity() {
+    public static String getPrivateIdentity() {
         return privateIdentity;
+    }
+
+    public static void setPrivateIdentity(String identity) {
+        privateIdentity = identity;
     }
 
 
@@ -181,19 +196,26 @@ public class SecManager {
     }
 
 
-    private void readPublicKeyFromProperties() {
+    private void readPublicKeyFromProperties() throws Exception {
         String config = Configuration.getConfigurationValue(Constants.CONFIG_FIELD_AUTHORIZED_KEYS);
         String[] keys = config.split(",");
         for (String key : keys) {
-
-            // decode open-ssh format
             String[] parts = key.split(" ");
-            if (parts.length == 3 && !((parts[0].trim()).equals("ssh-rsa"))) {
+            if (parts.length >= 3) {
                 PublicKey publickey = getPublicKey(parts[1].trim());
                 String identity = parts[2].trim();
 
                 publicKeyHashMap.put(identity, publickey);
             }
+
+
+//            String[] parts = key.split(" ");
+//            if (parts.length == 3 && !((parts[0].trim()).equals("ssh-rsa"))) {
+//                PublicKey publickey = getPublicKey(parts[1].trim());
+//                String identity = parts[2].trim();
+//
+//                publicKeyHashMap.put(identity, publickey);
+//            }
         }
     }
 
@@ -212,8 +234,21 @@ public class SecManager {
 
     private void readIdentityFromPrivateKey() throws Exception {
         byte[] textBytes = Files.readAllBytes(Paths.get(Constants.SECURITY_PRIVATE_KEY_FILENAME));
-        String text = new String(decodeBase64(textBytes));
-        String[] parts = text.split(" ");
+        String text = new String(textBytes);
+
+        // remove BEGIN Header and END footer in private key file
+        text = text.trim();
+        String[] parts = text.split("\n");
+        text = "";
+        for (int i = 1; i < parts.length-1; i++) {
+            text += parts[i];
+        }
+
+        System.out.println(text);
+        text = new String(decodeBase64(text.getBytes()));
+        System.out.println(text);
+
+        parts = text.split(" ");
         if (parts.length < 3) {
             throw new Exception("Invalid private key from file " + Constants.SECURITY_PRIVATE_KEY_FILENAME);
         }
@@ -222,17 +257,52 @@ public class SecManager {
     }
 
 
-    private PublicKey getPublicKey(String key) {
-        try {
-            byte[] byteKey = Base64.getDecoder().decode(key.getBytes());
+    private PublicKey getPublicKey(String key) throws Exception {
+        // convert key to Java Public key
+        ByteBuffer byteBuffer = ByteBuffer.wrap(decodeBase64(key.getBytes()));
+        AtomicInteger pos = new AtomicInteger();
+        String algs = readString(byteBuffer, pos);
 
-            X509EncodedKeySpec X509publicKey = new X509EncodedKeySpec(byteKey);
-            return KeyFactory.getInstance("RSA").generatePublic(X509publicKey);
-        } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
-            log.severe(e.toString());
+        if (!algs.equals("ssh-rsa")) {
+            throw new Exception("Invalid public key format. Actual: " + algs);
         }
 
-        return null;
+        // read exponent part
+        BigInteger exp = readMpint(byteBuffer, pos);
+
+        // read modulus part
+        BigInteger mod = readMpint(byteBuffer, pos);
+
+        RSAPublicKeySpec rsaPublicKeySpec = new RSAPublicKeySpec(mod, exp);
+        PublicKey publicKey = KeyFactory.getInstance("RSA").generatePublic(rsaPublicKeySpec);
+
+        return publicKey;
+    }
+
+    private BigInteger readMpint(ByteBuffer buffer, AtomicInteger pos){
+        byte[] bytes = readBytes(buffer, pos);
+        if(bytes.length == 0){
+            return BigInteger.ZERO;
+        }
+        return new BigInteger(bytes);
+    }
+
+    private String readString(ByteBuffer buffer, AtomicInteger pos){
+        byte[] bytes = readBytes(buffer, pos);
+        if(bytes.length == 0){
+            return "";
+        }
+        return new String(bytes, StandardCharsets.US_ASCII);
+    }
+
+    private byte[] readBytes(ByteBuffer buffer, AtomicInteger pos){
+        int len = buffer.getInt(pos.get());
+        byte buff[] = new byte[len];
+        for(int i = 0; i < len; i++) {
+            buff[i] = buffer.get(i + pos.get() + INT_SIZE_BYTES);
+        }
+        pos.set(pos.get() + INT_SIZE_BYTES + len);
+        return buff;
     }
 
 

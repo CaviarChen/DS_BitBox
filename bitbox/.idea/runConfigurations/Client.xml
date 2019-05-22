@@ -1,0 +1,10 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Client" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="unimelb.bitbox.Client" />
+    <module name="bitbox" />
+    <option name="PROGRAM_PARAMETERS" value="-c list_peers -s localhost:8114 -i np@no.problem" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
