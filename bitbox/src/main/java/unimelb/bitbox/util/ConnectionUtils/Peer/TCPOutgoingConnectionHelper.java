@@ -1,6 +1,7 @@
 package unimelb.bitbox.util.ConnectionUtils.Peer;
 
 
+import javafx.util.Pair;
 import unimelb.bitbox.protocol.InvalidProtocolException;
 import unimelb.bitbox.protocol.Protocol;
 import unimelb.bitbox.protocol.ProtocolFactory;
@@ -14,7 +15,6 @@ import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 
-import static java.lang.Thread.sleep;
 
 
 /**
@@ -36,97 +36,84 @@ public class TCPOutgoingConnectionHelper extends OutgoingConnectionHelper{
      */
     public TCPOutgoingConnectionHelper(String advertisedName, int port) {
         super(advertisedName, port);
-
     }
 
-
-    /**
-     * start working (blocking)
-     */
     @Override
-    public void execute() {
+    protected int getRetryCount() {
+        return 2;
+    }
 
-        while (true) {
+    @Override
+    protected long getRetryInterval() {
+        return 1000;
+    }
 
-            PeerInfo peer = null;
 
-            synchronized (queue) {
-                if (queue.peek() != null && queue.peek().getTime() <= System.currentTimeMillis()) {
-                    peer = queue.poll();
-                }
+    // Boolean: true -> success, false -> fail and shouldn't retry, null -> fail and allow retry
+    // String: message
+    @Override
+    protected Pair<Boolean, String> tryConnectTo(HostPort hostPort) {
+        // try to connect to the peer
+        try {
+            log.info("Start connecting to peer: %d" + hostPort);
+
+            Socket clientSocket = new Socket(hostPort.host, hostPort.port);
+            TCPConnection conn = new TCPConnection(clientSocket, this);
+            conn.send(ProtocolFactory.marshalProtocol(handshakeRequest));
+
+            String json;
+            try {
+                json = conn.waitForOneMessage(HANDSHAKE_TIMEOUT);
+            } catch (SocketTimeoutException e) {
+                conn.abortWithInvalidProtocol("Handshake response timeout");
+                return new Pair<>(null, "Handshake response timeout");
             }
 
-            if (peer != null) {
-                // try to connect to the peer
-                try {
-                    Socket clientSocket = new Socket(peer.getHost(), peer.getPort());
-                    TCPConnection conn = new TCPConnection(clientSocket, this);
-                    log.info(String.format("Start connecting to port: %d", peer.getPort()));
-                    requestHandshake(conn);
-                } catch (IOException e) {
-                    log.warning(peer.getHostPort().toString() + " " + e.toString());
-                    peer.setPenaltyTime();
-                    addPeerInfo(peer);
-                }
-            } else {
-                // sleep 10 seconds if there is no job
-                try {
-                    sleep(CHECK_INTERVAL);
-                } catch (InterruptedException ignored) {
-                }
+            Protocol protocol;
+            ProtocolType protocolType;
+            try {
+                protocol = ProtocolFactory.parseProtocol(json);
+                protocolType = ProtocolType.typeOfProtocol(protocol);
+            } catch (InvalidProtocolException e) {
+                conn.abortWithInvalidProtocol(e.getMessage());
+                return new Pair<>(false, e.getMessage());
             }
+
+
+            switch (protocolType) {
+                case HANDSHAKE_RESPONSE:
+                    Protocol.HandshakeResponse handshakeResponse = (Protocol.HandshakeResponse) protocol;
+
+                    int res = ConnectionManager.getInstance().addConnection(conn, hostPort);
+                    if (res == 0) {
+                        conn.active(handshakeResponse.peer);
+                        return new Pair<>(true, "Connected");
+                    } else {
+                        // already exists
+                        conn.abortWithInvalidProtocol("A connection with the same HostPort is already existed");
+                        return new Pair<>(false, "A connection with the same HostPort is already existed");
+                    }
+                case CONNECTION_REFUSED:
+                    Protocol.ConnectionRefused connectionRefused = (Protocol.ConnectionRefused) protocol;
+                    ArrayList<HostPort> hostPorts = connectionRefused.peers;
+                    conn.close();
+                    for (HostPort hostPort1: hostPorts) {
+                        this.scheduleConnectionTask(hostPort1, 0);
+                    }
+                    return new Pair<>(false, "Connection refused: " + connectionRefused.msg);
+                case INVALID_PROTOCOL:
+                    Protocol.InvalidProtocol invalidProtocol = (Protocol.InvalidProtocol) protocol;
+                    conn.close();
+                    return new Pair<>(false, "Invalid protocol: " + invalidProtocol.msg);
+                default:
+                    conn.abortWithInvalidProtocol("Unexpected protocol: " + protocol.getClass().getName());
+                    return new Pair<>(false, "Unexpected protocol: " + protocol.getClass().getName());
+            }
+
+        } catch (IOException e) {
+            log.warning(hostPort.toString() + " " + e.toString());
+            return new Pair<>(null, "Unable to establish TCP connection");
         }
     }
 
-    // request handshake to the peer
-    private void requestHandshake(TCPConnection conn) {
-        conn.send(handshakeRequestJson);
-
-        String json;
-        try {
-            json = conn.waitForOneMessage(HANDSHAKE_TIMEOUT);
-        } catch (SocketTimeoutException e) {
-            conn.abortWithInvalidProtocol("Handshake response timeout");
-            return;
-        }
-
-        Protocol protocol;
-        ProtocolType protocolType;
-        try {
-            protocol = ProtocolFactory.parseProtocol(json);
-            protocolType = ProtocolType.typeOfProtocol(protocol);
-        } catch (InvalidProtocolException e) {
-            conn.abortWithInvalidProtocol(e.getMessage());
-            return;
-        }
-
-        switch (protocolType) {
-            case HANDSHAKE_RESPONSE:
-                Protocol.HandshakeResponse handshakeResponse = (Protocol.HandshakeResponse) protocol;
-                HostPort hostPort = handshakeResponse.peer;
-
-                int res = ConnectionManager.getInstance().addConnection(conn, hostPort);
-                if (res == 0) {
-                    conn.active(hostPort);
-                    return;
-                } else {
-                    // already exists
-                    conn.abortWithInvalidProtocol("HostPort is already existed");
-                }
-                break;
-            case CONNECTION_REFUSED:
-                Protocol.ConnectionRefused connectionRefused = (Protocol.ConnectionRefused) protocol;
-                ArrayList<HostPort> hostPorts = connectionRefused.peers;
-                for (HostPort hp : hostPorts) {
-                    addPeerInfo(new PeerInfo(hp));
-                }
-                conn.close(true);
-                break;
-            case INVALID_PROTOCOL:
-                conn.close(true);
-                break;
-            default:
-                conn.abortWithInvalidProtocol("Unexpected protocol: " + protocol.getClass().getName());
-        }
-    }
 }

@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
@@ -25,14 +26,20 @@ public class UDPIncomingConnectionHelper extends IncomingConnectionHelper {
 
     private final int port;
 
-    public UDPIncomingConnectionHelper(String advertisedName, int port) {
+    private final DatagramSocket serverSocket;
+
+    public UDPIncomingConnectionHelper(String advertisedName, int port) throws SocketException {
         super(advertisedName, port);
         this.port = port;
+        serverSocket = new DatagramSocket(port);
+    }
+
+    public DatagramSocket getServerSocket() {
+        return serverSocket;
     }
 
     @Override
     protected void execute() throws Exception {
-        DatagramSocket serverSocket = new DatagramSocket(port);
         byte[] buffer = new byte[BUFFER_SIZE];
 
         log.info(String.format("Start listening to port: %d", port));

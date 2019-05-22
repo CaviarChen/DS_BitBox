@@ -2,9 +2,7 @@ package unimelb.bitbox;
 
 
 import unimelb.bitbox.util.*;
-import unimelb.bitbox.util.ConnectionUtils.Peer.IncomingConnectionHelper;
-import unimelb.bitbox.util.ConnectionUtils.Peer.TCPIncomingConnectionHelper;
-import unimelb.bitbox.util.ConnectionUtils.Peer.TCPOutgoingConnectionHelper;
+import unimelb.bitbox.util.ConnectionUtils.Peer.*;
 import unimelb.bitbox.util.FileSystem.FileSystemManager;
 
 import java.util.logging.Logger;
@@ -21,7 +19,7 @@ import java.util.logging.Logger;
 public class Peer {
     private static Logger log = Logger.getLogger(Peer.class.getName());
     private static IncomingConnectionHelper incomingConnectionManager;
-    private static TCPOutgoingConnectionHelper outgoingConnectionHelper;
+    private static OutgoingConnectionHelper outgoingConnectionHelper;
 
     /**
      * Entry point
@@ -29,11 +27,6 @@ public class Peer {
      * @throws Exception
      */
     public static void main(String[] args) throws Exception {
-
-//        int port = Integer.parseInt(Configuration.getConfigurationValue("udpPort"));
-//        String advertisedName = Configuration.getConfigurationValue(Constants.CONFIG_FIELD_AD_NAME);
-//        incomingConnectionManager = new UDPIncomingConnectionHelper(advertisedName, port);
-//        incomingConnectionManager.start();
 
         System.setProperty("java.util.logging.SimpleFormatter.format",
                 "[%1$tc] %2$s %4$s: %5$s%n");
@@ -48,12 +41,26 @@ public class Peer {
         MessageHandler.init(fileSystemManager);
         SecManager.getInstance().init(SecManager.Mode.ServerMode);
 
-
-        int port = Integer.parseInt(Configuration.getConfigurationValue(Constants.CONFIG_FIELD_PORT));
         String advertisedName = Configuration.getConfigurationValue(Constants.CONFIG_FIELD_AD_NAME);
-        incomingConnectionManager = new TCPIncomingConnectionHelper(advertisedName, port);
+
+        if (Configuration.getConfigurationValue("mode").toLowerCase().equals("tcp")) {
+            log.info("Using TCP mode.");
+
+            int port = Integer.parseInt(Configuration.getConfigurationValue(Constants.CONFIG_FIELD_PORT));
+            incomingConnectionManager = new TCPIncomingConnectionHelper(advertisedName, port);
+            outgoingConnectionHelper = new TCPOutgoingConnectionHelper(advertisedName, port);
+
+        } else {
+            log.info("Using UDP mode.");
+
+            int port = Integer.parseInt(Configuration.getConfigurationValue("udpPort"));
+            incomingConnectionManager = new UDPIncomingConnectionHelper(advertisedName, port);
+            outgoingConnectionHelper = new UDPOutgoingConnectionHelper(advertisedName, port,
+                    ((UDPIncomingConnectionHelper)incomingConnectionManager).getServerSocket());
+
+        }
         incomingConnectionManager.start();
-        outgoingConnectionHelper = new TCPOutgoingConnectionHelper(advertisedName, port);
         outgoingConnectionHelper.execute();
+
     }
 }

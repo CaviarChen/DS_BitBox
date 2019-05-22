@@ -47,7 +47,7 @@ class TCPConnection extends Connection {
     private TCPConnection(ConnectionType type, Socket socket) throws IOException {
         super(type);
         this.socket = socket;
-        bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
         bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8));
         active = false;
         hostPort = null;
@@ -113,7 +113,7 @@ class TCPConnection extends Connection {
             if (e instanceof SocketTimeoutException) {
                 throw (SocketTimeoutException) e;
             }
-            close(true);
+            close();
             return null;
         }
         return msg;
@@ -128,7 +128,7 @@ class TCPConnection extends Connection {
                         + msg.substring(0, Math.min(MAX_LOG_LEN, msg.length())));
             } catch (IOException e) {
                 // log
-                close(true);
+                close();
             }
         }
     }
@@ -162,7 +162,7 @@ class TCPConnection extends Connection {
         Protocol.InvalidProtocol invalidProtocol = new Protocol.InvalidProtocol();
         invalidProtocol.msg = additionalMsg;
         send(ProtocolFactory.marshalProtocol(invalidProtocol));
-        close(true);
+        close();
     }
 
     @Override
@@ -170,12 +170,17 @@ class TCPConnection extends Connection {
         // do nothing, no retry for TCP
     }
 
+    @Override
+    public boolean allowInvalidMessage() {
+        return false;
+    }
+
 
     /**
      * close this connection
      */
     @Override
-    public void close(Boolean reconnect) {
+    public void close(Boolean allowReconnect) {
 
         synchronized (socket) {
             if (isClosed) {
@@ -203,14 +208,13 @@ class TCPConnection extends Connection {
             // unregister from ConnectionManager
             ConnectionManager.getInstance().removeConnection(this);
 
-            // if it is an outgoing connection, and reconnect is true
+            // if it is an outgoing connection, and allowReconnect is true
             // add back to queue for retry this hostPort later
-            if (type == ConnectionType.OUTGOING && reconnect) {
-                outgoingConnectionHelper.addPeerInfo(hostPort);
+            if (type == ConnectionType.OUTGOING && allowReconnect) {
+                outgoingConnectionHelper.scheduleConnectionTask(hostPort, OutgoingConnectionHelper.RECONNECT_INTERVAL);
             }
         }
     }
-
 
     /**
      * active connection will create its own thread for waiting for request
@@ -277,11 +281,11 @@ class TCPConnection extends Connection {
                 }
             }
 
-            this.close(true);
+            this.close();
 
         } catch (Exception e) {
             log.warning(currentHostPort() + ", Exception: " + e.toString() + "");
-            this.close(true);
+            this.close();
         }
     }
 

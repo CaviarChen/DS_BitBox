@@ -70,7 +70,7 @@ public class MessageHandler {
             switch (protocolType) {
                 case INVALID_PROTOCOL:
                     log.warning("received INVALID_PROTOCOL " + conn.getHostPort().toString());
-                    conn.close(true);
+                    conn.close();
                     break;
 
                 case FILE_CREATE_REQUEST:
@@ -112,7 +112,11 @@ public class MessageHandler {
             }
 
         } catch (InvalidProtocolException e) {
-            conn.abortWithInvalidProtocol(e.getMessage());
+            if (conn.allowInvalidMessage()) {
+                log.info("Invalid message ignored due to connection type. " + e.getMessage());
+            } else {
+                conn.abortWithInvalidProtocol(e.getMessage());
+            }
         }
 
     }
