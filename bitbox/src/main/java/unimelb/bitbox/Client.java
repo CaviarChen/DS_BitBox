@@ -27,6 +27,19 @@ public class Client {
         ClientConnection clientConn = new ClientConnection(clientSocket);
 
         ClientConnectionHelper clientConnectionHelper = new ClientConnectionHelper(clientConn);
-        clientConnectionHelper.handle();
+
+        clientConnectionHelper.handleAuth();
+
+        switch (cmdParser.getCmd()) {
+            case "list_peers":
+                clientConnectionHelper.handleListPeer();
+                break;
+            case "connect_peer":
+                clientConnectionHelper.handleConnectPeer(cmdParser.getPeer());
+                break;
+            case "disconnect_peer":
+                clientConnectionHelper.handleDisConnectPeer(cmdParser.getPeer());
+                break;
+        }
     }
 }
