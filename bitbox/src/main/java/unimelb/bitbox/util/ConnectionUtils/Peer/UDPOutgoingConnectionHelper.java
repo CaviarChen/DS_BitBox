@@ -112,8 +112,8 @@ public class UDPOutgoingConnectionHelper extends OutgoingConnectionHelper {
                 conn.close();
                 return;
             default:
+                // ignore this case for UDP since the order is not guaranteed
                 conn.handshakeResult = new Pair<>(null, "Unexpected protocol: " + protocol.getClass().getName());
-                conn.abortWithInvalidProtocol("Unexpected protocol: " + protocol.getClass().getName());
                 return;
         }
     }
