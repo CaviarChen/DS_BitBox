@@ -1,7 +1,6 @@
 package unimelb.bitbox.util.ConnectionUtils.ClientServer;
 
 
-import unimelb.bitbox.Client;
 import unimelb.bitbox.protocol.*;
 import unimelb.bitbox.util.HostPort;
 import unimelb.bitbox.util.SecManager;
@@ -27,7 +26,7 @@ public class ClientConnectionHelper {
         connectPeerRequest.hostPort = new HostPort(peer);
         clientConnection.send(connectPeerRequest);
 
-        ClientProtocol protocol = clientConnection.receviceProtocol();
+        ClientProtocol protocol = clientConnection.receiveProtocol();
         ClientProtocolFactory.validateProtocolType(protocol, ClientProtocolType.CONNECT_PEER_RESPONSE);
         ClientProtocol.ConnectPeerResponse connectPeerResponse = (ClientProtocol.ConnectPeerResponse) protocol;
 
@@ -44,7 +43,7 @@ public class ClientConnectionHelper {
         ClientProtocol.ListPeersRequest listPeersRequest = new ClientProtocol.ListPeersRequest();
         clientConnection.send(listPeersRequest);
 
-        ClientProtocol protocol = clientConnection.receviceProtocol();
+        ClientProtocol protocol = clientConnection.receiveProtocol();
         ClientProtocolFactory.validateProtocolType(protocol, ClientProtocolType.LIST_PEERS_RESPONSE);
         ClientProtocol.ListPeersResponse listPeersResponse = (ClientProtocol.ListPeersResponse) protocol;
 
@@ -61,7 +60,7 @@ public class ClientConnectionHelper {
         authReq.authIdentity.identity = identity;
         clientConnection.send(authReq);
 
-        ClientProtocol protocol = clientConnection.receviceProtocol();
+        ClientProtocol protocol = clientConnection.receiveProtocol();
         ClientProtocolFactory.validateProtocolType(protocol, ClientProtocolType.AUTH_RESPONSE);
         ClientProtocol.AuthResponse authResponse = (ClientProtocol.AuthResponse) protocol;
 
