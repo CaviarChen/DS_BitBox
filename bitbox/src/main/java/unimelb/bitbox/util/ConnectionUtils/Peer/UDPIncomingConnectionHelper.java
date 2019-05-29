@@ -22,7 +22,7 @@ import java.util.logging.Logger;
 
 public class UDPIncomingConnectionHelper extends IncomingConnectionHelper {
     private static Logger log = Logger.getLogger(UDPIncomingConnectionHelper.class.getName());
-    private static final int BUFFER_SIZE = 2048;
+    private static final int BUFFER_SIZE = 65536;
 
     private final int port;
 
