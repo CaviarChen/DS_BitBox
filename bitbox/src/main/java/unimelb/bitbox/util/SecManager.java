@@ -46,10 +46,10 @@ public class SecManager {
         return instance;
     }
 
-    private PrivateKey privateKey;
-    private String privateIdentity;
-    private HashMap<String, PublicKey> publicKeyHashMap;
-    private AESKey aesKey;
+    private static PrivateKey privateKey;
+    private static String privateIdentity;
+    private static HashMap<String, PublicKey> publicKeyHashMap;
+    private static AESKey aesKey;
 
 
     /**

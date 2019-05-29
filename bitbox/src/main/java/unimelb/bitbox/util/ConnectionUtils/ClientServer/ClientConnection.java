@@ -51,7 +51,7 @@ public class ClientConnection {
         return msg;
     }
 
-    public ClientProtocol receviceProtocol() throws InvalidProtocolException {
+    public ClientProtocol receiveProtocol() throws InvalidProtocolException {
         String msg = receive();
         return ClientProtocolFactory.parseProtocol(msg);
     }

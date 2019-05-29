@@ -56,10 +56,10 @@ public class ServerConnectionHelper {
             try {
                 clientConnection = new ClientConnection(serverSocket.accept());
 
-                ClientProtocol protocol = clientConnection.receviceProtocol();
+                ClientProtocol protocol = clientConnection.receiveProtocol();
                 handleAuthRequest(clientConnection, protocol);
 
-                protocol = clientConnection.receviceProtocol();
+                protocol = clientConnection.receiveProtocol();
                 ClientProtocolType protocolType = ClientProtocolType.typeOfProtocol(protocol);
 
                 switch (protocolType) {
