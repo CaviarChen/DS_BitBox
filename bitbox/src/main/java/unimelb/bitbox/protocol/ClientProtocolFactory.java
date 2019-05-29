@@ -1,6 +1,7 @@
 package unimelb.bitbox.protocol;
 
 import unimelb.bitbox.util.Document;
+import unimelb.bitbox.util.SecManager;
 
 import static unimelb.bitbox.Constants.PROTOCOL_FIELD_CMD;
 
@@ -24,15 +25,26 @@ public class ClientProtocolFactory {
         try {
 
             Document doc = Document.parse(json);
+
+            boolean isEncrypted = !doc.containsKey(PROTOCOL_FIELD_CMD) && doc.containsKey("payload");
+            if (isEncrypted) {
+                // encrypted
+                String payload = SecManager.getInstance().decryptPayload(doc.getString("payload"));
+                doc = Document.parse(payload);
+            }
+
+            // unencrypted
             String command = doc.getString(PROTOCOL_FIELD_CMD);
-
-
             ClientProtocolType protocolType = ClientProtocolType.typeOfCommand(command);
+
+            if (protocolType.isNeedEncryption() != isEncrypted) {
+                throw new InvalidProtocolException("Security protocol does not match", null);
+            }
+
             ClientProtocol protocol = (ClientProtocol) protocolType.getValue().newInstance();
-
             protocol.unmarshalFromJson(doc);
-
             return protocol;
+
         } catch (Exception e) {
             throw (e instanceof InvalidProtocolException) ? (InvalidProtocolException) e :
                     new InvalidProtocolException("Parse error", e);
@@ -46,15 +58,30 @@ public class ClientProtocolFactory {
      * @param protocol
      * @return
      */
-    public static String marshalProtocol(ClientProtocol protocol) {
+    public static String marshalProtocol(ClientProtocol protocol) throws Exception {
+
+        ClientProtocolType protocolType = ClientProtocolType.typeOfProtocol(protocol);
         Document doc = new Document();
-        doc.append(PROTOCOL_FIELD_CMD, ClientProtocolType.typeOfProtocol(protocol).getKey());
+        doc.append(PROTOCOL_FIELD_CMD, protocolType.getKey());
         protocol.marshalToJson(doc);
-        return doc.toJson();
+        String msg = doc.toJson();
+
+        if (protocolType.isNeedEncryption()) {
+            msg = SecManager.getInstance().encryptJSON(msg);
+            doc = new Document();
+            doc.append("payload", msg);
+            msg = doc.toJson();
+        }
+
+        return msg;
     }
+
+    public static void validateProtocolType(ClientProtocol protocol, ClientProtocolType clientProtocolType) throws Exception {
+        ClientProtocolType protocolType = ClientProtocolType.typeOfProtocol(protocol);
+
+        if (!protocolType.equals(clientProtocolType)) {
+            throw new Exception("Protocol Type not matched: " + "expected: " + clientProtocolType + "actual: " + protocolType);
+        }
+    }
+
 }
-
-
-
-
-

@@ -19,7 +19,7 @@ public class ClientMessageHandler {
             } else {
                 // if we can find a payload field
                 // note that payload: [identity,{json object}]
-                String decryptedMessage = SecManager.decryptPayload(
+                String decryptedMessage = SecManager.getInstance().decryptPayload(
                         Document.parse(message).getString(Constants.PROTOCOL_FIELD_PAYLOAD));
                 String[] messageArray = decryptedMessage.split(",");
                 String jsonProtocol = messageArray[1].substring(0, messageArray[1].length()-1);
@@ -83,7 +83,7 @@ public class ClientMessageHandler {
             response.response.status = true;
             response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_DISCONNECT_PEER;
             doc.append(Constants.PROTOCOL_FIELD_CMD,
-                    SecManager.encryptJSON(ClientProtocolFactory.marshalProtocol(response)));
+                    SecManager.getInstance().encryptJSON(ClientProtocolFactory.marshalProtocol(response)));
             //conn.send(doc.toString());
         } catch (Exception e) {
             //TODO: Handle
@@ -100,7 +100,7 @@ public class ClientMessageHandler {
             response.response.status = true;
             response.response.msg = Constants.PROTOCOL_RESPONSE_MESSAGE_CONNECT_PEER;
             doc.append(Constants.PROTOCOL_FIELD_CMD,
-                    SecManager.encryptJSON(ClientProtocolFactory.marshalProtocol(response)));
+                    SecManager.getInstance().encryptJSON(ClientProtocolFactory.marshalProtocol(response)));
             //conn.send(doc.toString());
         } catch (Exception e) {
             //TODO: Handle

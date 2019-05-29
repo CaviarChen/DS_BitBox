@@ -41,15 +41,15 @@ public class SecManager {
 
     private static final int INT_SIZE_BYTES = 4;
     private static SecManager instance = new SecManager();
-    private static PrivateKey privateKey;
-    private static String privateIdentity;
-    private static HashMap<String, PublicKey> publicKeyHashMap;
-    private static AESKey aesKey;
-
 
     public static SecManager getInstance() {
         return instance;
     }
+
+    private PrivateKey privateKey;
+    private String privateIdentity;
+    private HashMap<String, PublicKey> publicKeyHashMap;
+    private AESKey aesKey;
 
 
     /**
@@ -68,7 +68,7 @@ public class SecManager {
      * @return the encrypted string
      * @throws Exception encryption failed
      */
-    public static String encryptJSON(String json) throws Exception {
+    public String encryptJSON(String json) throws Exception {
         if (aesKey == null) {
             throw new IllegalStateException("No AES key obtained");
         }
@@ -83,7 +83,7 @@ public class SecManager {
      * @return the decrypted message in JSON format
      * @throws Exception decryption failed
      */
-    public static String decryptPayload(String payload) throws Exception {
+    public String decryptPayload(String payload) throws Exception {
         if (aesKey == null) {
             throw new IllegalStateException("No AES key obtained");
         }
@@ -174,7 +174,7 @@ public class SecManager {
     /**
      * Remove the AES key from the SecManager
      */
-    public static void removeAES() {
+    public void removeAES() {
         aesKey = null;
     }
 
@@ -183,11 +183,11 @@ public class SecManager {
      * Get the Identity parsed from Private key file
      * @return Identity
      */
-    public static String getPrivateIdentity() {
+    public String getPrivateIdentity() {
         return privateIdentity;
     }
 
-    public static void setPrivateIdentity(String identity) {
+    public void setPrivateIdentity(String identity) {
         privateIdentity = identity;
     }
 
@@ -306,7 +306,7 @@ public class SecManager {
     }
 
 
-    private static String encryptWithAesKey(AESKey key, String text) throws Exception {
+    private String encryptWithAesKey(AESKey key, String text) throws Exception {
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
         SecretKeySpec keySpec = new SecretKeySpec(key.getKey().getEncoded(), "AES");
         IvParameterSpec ivSpec = new IvParameterSpec(key.getInitializeVector());
@@ -319,7 +319,7 @@ public class SecManager {
     }
 
 
-    private static String decryptWithAesKey(AESKey key, String text) throws Exception {
+    private String decryptWithAesKey(AESKey key, String text) throws Exception {
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
         SecretKeySpec keySpec = new SecretKeySpec(key.getKey().getEncoded(), "AES");
         IvParameterSpec ivSpec = new IvParameterSpec(key.getInitializeVector());
@@ -332,12 +332,12 @@ public class SecManager {
     }
 
 
-    private static byte[] decodeBase64(byte[] text) {
+    private byte[] decodeBase64(byte[] text) {
         return Base64.getDecoder().decode(text);
     }
 
 
-    private static String encodeBase64ToString(byte[] text) {
+    private String encodeBase64ToString(byte[] text) {
         return Base64.getEncoder().encodeToString(text);
     }
 
@@ -347,7 +347,7 @@ public class SecManager {
         private SecretKey key;
 
 
-        public AESKey() throws Exception {
+        private AESKey() throws Exception {
             KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
             keyGenerator.init(128);
 
@@ -357,19 +357,19 @@ public class SecManager {
         }
 
 
-        public AESKey(SecretKey aesKey) {
+        private AESKey(SecretKey aesKey) {
             key = aesKey;
 
             generateInitVector();
         }
 
 
-        public SecretKey getKey() {
+        private SecretKey getKey() {
             return key;
         }
 
 
-        public byte[] getInitializeVector() {
+        private byte[] getInitializeVector() {
             return init_vt;
         }
 

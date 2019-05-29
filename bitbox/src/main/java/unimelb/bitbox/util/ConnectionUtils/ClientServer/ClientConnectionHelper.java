@@ -1,8 +1,8 @@
 package unimelb.bitbox.util.ConnectionUtils.ClientServer;
 
 
-import unimelb.bitbox.protocol.ClientProtocol;
-import unimelb.bitbox.protocol.ClientProtocolType;
+import unimelb.bitbox.Client;
+import unimelb.bitbox.protocol.*;
 import unimelb.bitbox.util.HostPort;
 import unimelb.bitbox.util.SecManager;
 
@@ -18,19 +18,19 @@ public class ClientConnectionHelper {
     public void handleDisConnectPeer(String peer) throws Exception {
         ClientProtocol.DisconnectPeerRequest disconnectPeerRequest = new ClientProtocol.DisconnectPeerRequest();
         disconnectPeerRequest.hostPort = new HostPort(peer);
-        clientConnection.send(disconnectPeerRequest, true);
+        clientConnection.send(disconnectPeerRequest);
     }
 
 
     public void handleConnectPeer(String peer) throws Exception {
         ClientProtocol.ConnectPeerRequest connectPeerRequest = new ClientProtocol.ConnectPeerRequest();
         connectPeerRequest.hostPort = new HostPort(peer);
-        clientConnection.send(connectPeerRequest, true);
+        clientConnection.send(connectPeerRequest);
 
-        String msg = clientConnection.receive();
-        ClientProtocol.ConnectPeerResponse connectPeerResponse =
-                (ClientProtocol.ConnectPeerResponse) clientConnection.validateProtocolType(
-                        ClientProtocolType.CONNECT_PEER_RESPONSE, msg);
+        ClientProtocol protocol = clientConnection.receviceProtocol();
+        ClientProtocolFactory.validateProtocolType(protocol, ClientProtocolType.CONNECT_PEER_RESPONSE);
+        ClientProtocol.ConnectPeerResponse connectPeerResponse = (ClientProtocol.ConnectPeerResponse) protocol;
+
         if (connectPeerResponse.response.status) {
             System.out.println("Successfully connected to " + connectPeerResponse.hostPort.toString());
         } else {
@@ -42,12 +42,11 @@ public class ClientConnectionHelper {
 
     public void handleListPeer() throws Exception {
         ClientProtocol.ListPeersRequest listPeersRequest = new ClientProtocol.ListPeersRequest();
-        clientConnection.send(listPeersRequest, true);
+        clientConnection.send(listPeersRequest);
 
-        String msg = clientConnection.receive();
-        ClientProtocol.ListPeersResponse listPeersResponse =
-                (ClientProtocol.ListPeersResponse) clientConnection.validateProtocolType(
-                        ClientProtocolType.LIST_PEERS_RESPONSE, msg);
+        ClientProtocol protocol = clientConnection.receviceProtocol();
+        ClientProtocolFactory.validateProtocolType(protocol, ClientProtocolType.LIST_PEERS_RESPONSE);
+        ClientProtocol.ListPeersResponse listPeersResponse = (ClientProtocol.ListPeersResponse) protocol;
 
         System.out.println("Connected peers:");
         for (HostPort peer : listPeersResponse.peers.peers) {
@@ -57,14 +56,14 @@ public class ClientConnectionHelper {
 
 
     public void handleAuth() throws Exception {
-        String identity = SecManager.getPrivateIdentity();
+        String identity = SecManager.getInstance().getPrivateIdentity();
         ClientProtocol.AuthRequest authReq = new ClientProtocol.AuthRequest();
         authReq.authIdentity.identity = identity;
-        clientConnection.send(authReq, false);
+        clientConnection.send(authReq);
 
-        String msg = clientConnection.receive();
-        ClientProtocol.AuthResponse authResponse =
-                (ClientProtocol.AuthResponse) clientConnection.validateProtocolType(ClientProtocolType.AUTH_RESPONSE, msg);
+        ClientProtocol protocol = clientConnection.receviceProtocol();
+        ClientProtocolFactory.validateProtocolType(protocol, ClientProtocolType.AUTH_RESPONSE);
+        ClientProtocol.AuthResponse authResponse = (ClientProtocol.AuthResponse) protocol;
 
         if (authResponse.response.status) {
             SecManager.getInstance().decryptAESWithRSA(authResponse.authKey.key);

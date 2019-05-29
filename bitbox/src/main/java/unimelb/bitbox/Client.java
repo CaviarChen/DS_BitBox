@@ -18,7 +18,7 @@ public class Client {
         cmdParser.parse();
 
         SecManager.getInstance().init(SecManager.Mode.ClientMode);
-        SecManager.setPrivateIdentity(cmdParser.getIdentity());
+        SecManager.getInstance().setPrivateIdentity(cmdParser.getIdentity());
 
         // establish connection with the peer using TCP
         HostPort serverHostPort = new HostPort(cmdParser.getServer());

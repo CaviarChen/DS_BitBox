@@ -12,23 +12,25 @@ import unimelb.bitbox.Constants;
  * @author Zijun Chen (813190)
  */
 public enum ClientProtocolType {
-    AUTH_REQUEST(Constants.PROTOCOL_TYPE_AUTH_REQUEST, ClientProtocol.AuthRequest.class),
-    AUTH_RESPONSE(Constants.PROTOCOL_TYPE_AUTH_RESPONSE, ClientProtocol.AuthResponse.class),
-    LIST_PEERS_REQUEST(Constants.PROTOCOL_TYPE_LIST_PEERS_REQUEST, ClientProtocol.ListPeersRequest.class),
-    LIST_PEERS_RESPONSE(Constants.PROTOCOL_TYPE_LIST_PEERS_RESPONSE, ClientProtocol.ListPeersResponse.class),
-    CONNECT_PEER_REQUEST(Constants.PROTOCOL_TYPE_CONNECT_PEER_REQUEST, ClientProtocol.ConnectPeerRequest.class),
-    CONNECT_PEER_RESPONSE(Constants.PROTOCOL_TYPE_CONNECT_PEER_RESPONSE, ClientProtocol.ConnectPeerResponse.class),
-    DISCONNECT_PEER_REQUEST(Constants.PROTOCOL_TYPE_DISCONNECT_PEER_REQUEST, ClientProtocol.DisconnectPeerRequest.class),
-    DISCONNECT_PEER_RESPONSE(Constants.PROTOCOL_TYPE_DISCONNECT_PEER_RESPONSE, ClientProtocol.DisconnectPeerResponse.class);
+    AUTH_REQUEST(Constants.PROTOCOL_TYPE_AUTH_REQUEST, ClientProtocol.AuthRequest.class, false),
+    AUTH_RESPONSE(Constants.PROTOCOL_TYPE_AUTH_RESPONSE, ClientProtocol.AuthResponse.class, false),
+    LIST_PEERS_REQUEST(Constants.PROTOCOL_TYPE_LIST_PEERS_REQUEST, ClientProtocol.ListPeersRequest.class, true),
+    LIST_PEERS_RESPONSE(Constants.PROTOCOL_TYPE_LIST_PEERS_RESPONSE, ClientProtocol.ListPeersResponse.class, true),
+    CONNECT_PEER_REQUEST(Constants.PROTOCOL_TYPE_CONNECT_PEER_REQUEST, ClientProtocol.ConnectPeerRequest.class, true),
+    CONNECT_PEER_RESPONSE(Constants.PROTOCOL_TYPE_CONNECT_PEER_RESPONSE, ClientProtocol.ConnectPeerResponse.class, true),
+    DISCONNECT_PEER_REQUEST(Constants.PROTOCOL_TYPE_DISCONNECT_PEER_REQUEST, ClientProtocol.DisconnectPeerRequest.class, true),
+    DISCONNECT_PEER_RESPONSE(Constants.PROTOCOL_TYPE_DISCONNECT_PEER_RESPONSE, ClientProtocol.DisconnectPeerResponse.class, true);
 
 
     private final String key;
     private final Class value;
+    private final boolean needEncryption;
 
 
-    ClientProtocolType(String key, Class value) {
+    ClientProtocolType(String key, Class value, boolean needEncryption) {
         this.key = key;
         this.value = value;
+        this.needEncryption = needEncryption;
     }
 
 
@@ -41,6 +43,9 @@ public enum ClientProtocolType {
         return value;
     }
 
+    public boolean isNeedEncryption() {
+        return needEncryption;
+    }
 
     /**
      * Get the protocol type of the given command

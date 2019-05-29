@@ -3,8 +3,7 @@ package unimelb.bitbox.util.ConnectionUtils.ClientServer;
 
 import unimelb.bitbox.protocol.ClientProtocol;
 import unimelb.bitbox.protocol.ClientProtocolFactory;
-import unimelb.bitbox.protocol.ClientProtocolType;
-import unimelb.bitbox.util.SecManager;
+import unimelb.bitbox.protocol.InvalidProtocolException;
 
 import java.io.*;
 import java.net.Socket;
@@ -27,17 +26,8 @@ public class ClientConnection {
                 StandardCharsets.UTF_8));
     }
 
-    public void send(ClientProtocol protocol, boolean withEncryption) {
+    public void send(ClientProtocol protocol) throws Exception {
         String msg = ClientProtocolFactory.marshalProtocol(protocol);
-
-        if (withEncryption) {
-            try {
-                msg = SecManager.encryptJSON(msg);
-            } catch (Exception e) {
-                log.severe(socket.toString() + " :: Encryption failed: " + e.toString());
-                return;
-            }
-        }
 
         try {
             bufferedWriter.write(msg + '\n');
@@ -49,7 +39,7 @@ public class ClientConnection {
         }
     }
 
-    public String receive() {
+    private String receive() {
         // TODO: timeout
         String msg = "";
         try {
@@ -61,22 +51,9 @@ public class ClientConnection {
         return msg;
     }
 
-    public ClientProtocolType getMsgProtocolType(String msg) throws Exception{
-
-        ClientProtocol protocol = ClientProtocolFactory.parseProtocol(msg);
-        ClientProtocolType protocolType = ClientProtocolType.typeOfProtocol(protocol);
-
-        return protocolType;
-    }
-
-    public ClientProtocol validateProtocolType(ClientProtocolType clientProtocolType, String msg) throws Exception {
-        ClientProtocol protocol = ClientProtocolFactory.parseProtocol(msg);
-        ClientProtocolType protocolType = ClientProtocolType.typeOfProtocol(protocol);
-
-        if (protocolType.equals(clientProtocolType))
-            return protocol;
-
-        throw new Exception("Protocol Type not matched: " + "expected: " + clientProtocolType + "actual: " + protocolType);
+    public ClientProtocol receviceProtocol() throws InvalidProtocolException {
+        String msg = receive();
+        return ClientProtocolFactory.parseProtocol(msg);
     }
 
     public void close() {
