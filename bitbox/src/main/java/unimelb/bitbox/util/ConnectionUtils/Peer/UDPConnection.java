@@ -22,6 +22,8 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.locks.Lock;
 import java.util.logging.Logger;
 
+// TODO: blockSize
+
 public class UDPConnection extends Connection {
 
     protected static final long UDP_TIMEOUT_MS = Long.parseLong(Configuration.getConfigurationValue("udpTimeout"));
@@ -199,7 +201,7 @@ public class UDPConnection extends Connection {
         synchronized (this) {
             if (!isActive) {
                 if (type == ConnectionType.OUTGOING) {
-                    handshakeResult = outgoingConnectionHelper.handleHandshake(this, msg);
+                    outgoingConnectionHelper.handleHandshake(this, msg);
                 }
                 return;
             }
