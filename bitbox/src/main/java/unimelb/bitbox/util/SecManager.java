@@ -307,11 +307,10 @@ public class SecManager {
 
 
     private String encryptWithAesKey(AESKey key, String text) throws Exception {
-        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
         SecretKeySpec keySpec = new SecretKeySpec(key.getKey().getEncoded(), "AES");
-        IvParameterSpec ivSpec = new IvParameterSpec(key.getInitializeVector());
 
-        cipher.init(Cipher.ENCRYPT_MODE, keySpec, ivSpec);
+        cipher.init(Cipher.ENCRYPT_MODE, keySpec);
 
         byte[] cipherText = cipher.doFinal(text.getBytes());
 
@@ -320,11 +319,10 @@ public class SecManager {
 
 
     private String decryptWithAesKey(AESKey key, String text) throws Exception {
-        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
         SecretKeySpec keySpec = new SecretKeySpec(key.getKey().getEncoded(), "AES");
-        IvParameterSpec ivSpec = new IvParameterSpec(key.getInitializeVector());
 
-        cipher.init(Cipher.DECRYPT_MODE, keySpec, ivSpec);
+        cipher.init(Cipher.DECRYPT_MODE, keySpec);
 
         byte[] decryptedText = cipher.doFinal(decodeBase64(text.getBytes()));
 
@@ -343,7 +341,6 @@ public class SecManager {
 
 
     private class AESKey {
-        private byte[] init_vt;
         private SecretKey key;
 
 
@@ -352,32 +349,16 @@ public class SecManager {
             keyGenerator.init(128);
 
             key = keyGenerator.generateKey();
-
-            generateInitVector();
         }
 
 
         private AESKey(SecretKey aesKey) {
             key = aesKey;
-
-            generateInitVector();
         }
 
 
         private SecretKey getKey() {
             return key;
-        }
-
-
-        private byte[] getInitializeVector() {
-            return init_vt;
-        }
-
-
-        private void generateInitVector() {
-            init_vt = new byte[16];
-            SecureRandom secureRandom = new SecureRandom();
-            secureRandom.nextBytes(init_vt);
         }
     }
 }

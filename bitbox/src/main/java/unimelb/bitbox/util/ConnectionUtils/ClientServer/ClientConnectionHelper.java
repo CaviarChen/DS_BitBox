@@ -5,6 +5,8 @@ import unimelb.bitbox.protocol.*;
 import unimelb.bitbox.util.HostPort;
 import unimelb.bitbox.util.SecManager;
 
+import java.util.ArrayList;
+
 
 public class ClientConnectionHelper {
 
@@ -47,9 +49,14 @@ public class ClientConnectionHelper {
         ClientProtocolFactory.validateProtocolType(protocol, ClientProtocolType.LIST_PEERS_RESPONSE);
         ClientProtocol.ListPeersResponse listPeersResponse = (ClientProtocol.ListPeersResponse) protocol;
 
-        System.out.println("Connected peers:");
-        for (HostPort peer : listPeersResponse.peers.peers) {
-            System.out.println(peer.toString());
+        ArrayList<HostPort> peerHostPorts = listPeersResponse.peers.peers;
+        if (peerHostPorts.size() > 0) {
+            System.out.println("Connected peers:");
+            for (HostPort peer : listPeersResponse.peers.peers) {
+                System.out.println("  - " + peer.toString());
+            }
+        } else {
+            System.out.println("The server does not connect to any peer");
         }
     }
 
