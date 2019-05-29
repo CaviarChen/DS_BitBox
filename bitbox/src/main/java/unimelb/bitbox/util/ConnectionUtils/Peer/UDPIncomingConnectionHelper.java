@@ -45,7 +45,7 @@ public class UDPIncomingConnectionHelper extends IncomingConnectionHelper {
         log.info(String.format("Start listening to port: %d", port));
 
         // register UDP connection timeout check
-        Scheduler.getInstance().addTask(400, TimeUnit.MILLISECONDS,
+        Scheduler.getInstance().addTask(500, TimeUnit.MILLISECONDS,
                 new PriorityTask( "check timeout UDP request",
                         Priority.LOW,
                         UDPConnection::checkTimeoutRequest

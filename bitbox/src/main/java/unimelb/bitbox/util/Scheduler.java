@@ -28,7 +28,8 @@ public class Scheduler {
         log.info("New task added: " + priorityTask.getName() +
                 " Interval: " + timeInterval + timeUnit.toString());
 
-        service.schedule(() -> PriorityThreadPool.getInstance().submitTask(priorityTask), timeInterval, timeUnit);
+        service.scheduleAtFixedRate(() -> PriorityThreadPool.getInstance().submitTask(priorityTask),
+                timeInterval, timeInterval, timeUnit);
 
     }
 }

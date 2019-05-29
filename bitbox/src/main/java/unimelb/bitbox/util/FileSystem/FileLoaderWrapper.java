@@ -131,6 +131,9 @@ public class FileLoaderWrapper {
                 return;
             }
             connectionInfo.lastActiveTime = System.currentTimeMillis();
+
+            log.info(String.format("load process [%s] waiting[%s]: %d, total pending: %d", fileDes.path,
+                    conn.getHostPort(), connectionInfo.waiting.size(), pending.size()));
         }
 
         // write to the file according to the response received
