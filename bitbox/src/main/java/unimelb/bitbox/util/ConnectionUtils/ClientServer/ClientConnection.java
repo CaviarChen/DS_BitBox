@@ -61,9 +61,15 @@ public class ClientConnection {
         return msg;
     }
 
-    public ClientProtocol getMsgProtocolType(ClientProtocolType clientProtocolType) throws Exception{
-        String msg = this.receive();
+    public ClientProtocolType getMsgProtocolType(String msg) throws Exception{
 
+        ClientProtocol protocol = ClientProtocolFactory.parseProtocol(msg);
+        ClientProtocolType protocolType = ClientProtocolType.typeOfProtocol(protocol);
+
+        return protocolType;
+    }
+
+    public ClientProtocol validateProtocolType(ClientProtocolType clientProtocolType, String msg) throws Exception {
         ClientProtocol protocol = ClientProtocolFactory.parseProtocol(msg);
         ClientProtocolType protocolType = ClientProtocolType.typeOfProtocol(protocol);
 

@@ -2,7 +2,6 @@ package unimelb.bitbox.util.ConnectionUtils.ClientServer;
 
 
 import javafx.util.Pair;
-import unimelb.bitbox.Client;
 import unimelb.bitbox.Constants;
 import unimelb.bitbox.protocol.ClientProtocol;
 import unimelb.bitbox.protocol.ClientProtocolType;
@@ -13,7 +12,6 @@ import unimelb.bitbox.util.PublicKeyNotFoundException;
 import unimelb.bitbox.util.SecManager;
 
 import java.net.ServerSocket;
-import java.util.Objects;
 import java.util.logging.Logger;
 
 
@@ -56,14 +54,20 @@ public class ServerConnectionHelper {
             try {
                 clientConnection = new ClientConnection(serverSocket.accept());
 
-                handleAuthRequest(clientConnection);
+                String msg = clientConnection.receive();
+                handleAuthRequest(clientConnection, msg);
 
-                // TODO: Switch
-                handleListPeerRequest(clientConnection);
+                msg = clientConnection.receive();
+                ClientProtocolType protocolType = clientConnection.getMsgProtocolType(msg);
 
-                handleConnectPeerRequest(clientConnection);
-
-                handleDisconnectPeerRequest(clientConnection);
+                switch (protocolType) {
+                    case LIST_PEERS_REQUEST:
+                        handleListPeerRequest(clientConnection, msg);
+                    case CONNECT_PEER_REQUEST:
+                        handleConnectPeerRequest(clientConnection, msg);
+                    case DISCONNECT_PEER_REQUEST:
+                        handleDisconnectPeerRequest(clientConnection, msg);
+                }
 
             } catch (Exception e) {
                 log.severe(e.toString());
@@ -75,10 +79,10 @@ public class ServerConnectionHelper {
     }
 
 
-    private void handleAuthRequest(ClientConnection clientConnection) throws Exception {
+    private void handleAuthRequest(ClientConnection clientConnection, String msg) throws Exception {
         ClientProtocol.AuthRequest authRequest =
-                (ClientProtocol.AuthRequest) clientConnection.getMsgProtocolType(
-                        ClientProtocolType.AUTH_REQUEST);
+                (ClientProtocol.AuthRequest) clientConnection.validateProtocolType(
+                        ClientProtocolType.AUTH_REQUEST, msg);
 
         // send auth response
         ClientProtocol.AuthResponse authResponse = null;
@@ -96,10 +100,10 @@ public class ServerConnectionHelper {
     }
 
 
-    private void handleListPeerRequest(ClientConnection clientConnection) throws Exception {
+    private void handleListPeerRequest(ClientConnection clientConnection, String msg) throws Exception {
         ClientProtocol.ListPeersRequest listPeersRequest =
-                (ClientProtocol.ListPeersRequest) clientConnection.getMsgProtocolType(
-                        ClientProtocolType.LIST_PEERS_REQUEST);
+                (ClientProtocol.ListPeersRequest) clientConnection.validateProtocolType(
+                        ClientProtocolType.LIST_PEERS_REQUEST, msg);
 
         ClientProtocol.ListPeersResponse listPeersResponse = new ClientProtocol.ListPeersResponse();
         listPeersResponse.peers.peers = ConnectionManager.getInstance().getConnectedPeers();
@@ -108,10 +112,10 @@ public class ServerConnectionHelper {
     }
 
 
-    private void handleConnectPeerRequest(ClientConnection clientConnection) throws Exception {
+    private void handleConnectPeerRequest(ClientConnection clientConnection, String msg) throws Exception {
         ClientProtocol.ConnectPeerRequest connectPeerRequest =
-                (ClientProtocol.ConnectPeerRequest) clientConnection.getMsgProtocolType(
-                        ClientProtocolType.CONNECT_PEER_REQUEST);
+                (ClientProtocol.ConnectPeerRequest) clientConnection.validateProtocolType(
+                        ClientProtocolType.CONNECT_PEER_REQUEST, msg);
 
         Pair<Boolean, String> result = outgoingConnectionHelper.connectTo(connectPeerRequest.hostPort);
 
@@ -122,10 +126,10 @@ public class ServerConnectionHelper {
     }
 
 
-    private void handleDisconnectPeerRequest(ClientConnection clientConnection) throws Exception {
+    private void handleDisconnectPeerRequest(ClientConnection clientConnection, String msg) throws Exception {
         ClientProtocol.DisconnectPeerRequest disconnectPeerRequest =
-                (ClientProtocol.DisconnectPeerRequest) clientConnection.getMsgProtocolType(
-                        ClientProtocolType.DISCONNECT_PEER_REQUEST);
+                (ClientProtocol.DisconnectPeerRequest) clientConnection.validateProtocolType(
+                        ClientProtocolType.DISCONNECT_PEER_REQUEST, msg);
 
         ClientProtocol.DisconnectPeerResponse disconnectPeerResponse = new ClientProtocol.DisconnectPeerResponse();
         Pair<Boolean, String> result = ConnectionManager.getInstance().disconnectFrom(disconnectPeerRequest.hostPort);

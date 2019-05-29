@@ -1,9 +1,7 @@
 package unimelb.bitbox.util.ConnectionUtils.ClientServer;
 
 
-import unimelb.bitbox.Client;
 import unimelb.bitbox.protocol.ClientProtocol;
-import unimelb.bitbox.protocol.ClientProtocolFactory;
 import unimelb.bitbox.protocol.ClientProtocolType;
 import unimelb.bitbox.util.HostPort;
 import unimelb.bitbox.util.SecManager;
@@ -29,9 +27,10 @@ public class ClientConnectionHelper {
         connectPeerRequest.hostPort = new HostPort(peer);
         clientConnection.send(connectPeerRequest, true);
 
+        String msg = clientConnection.receive();
         ClientProtocol.ConnectPeerResponse connectPeerResponse =
-                (ClientProtocol.ConnectPeerResponse) clientConnection.getMsgProtocolType(
-                        ClientProtocolType.CONNECT_PEER_RESPONSE);
+                (ClientProtocol.ConnectPeerResponse) clientConnection.validateProtocolType(
+                        ClientProtocolType.CONNECT_PEER_RESPONSE, msg);
         if (connectPeerResponse.response.status) {
             System.out.println("Successfully connected to " + connectPeerResponse.hostPort.toString());
         } else {
@@ -45,9 +44,10 @@ public class ClientConnectionHelper {
         ClientProtocol.ListPeersRequest listPeersRequest = new ClientProtocol.ListPeersRequest();
         clientConnection.send(listPeersRequest, true);
 
+        String msg = clientConnection.receive();
         ClientProtocol.ListPeersResponse listPeersResponse =
-                (ClientProtocol.ListPeersResponse) clientConnection.getMsgProtocolType(
-                        ClientProtocolType.LIST_PEERS_RESPONSE);
+                (ClientProtocol.ListPeersResponse) clientConnection.validateProtocolType(
+                        ClientProtocolType.LIST_PEERS_RESPONSE, msg);
 
         System.out.println("Connected peers:");
         for (HostPort peer : listPeersResponse.peers.peers) {
@@ -62,8 +62,9 @@ public class ClientConnectionHelper {
         authReq.authIdentity.identity = identity;
         clientConnection.send(authReq, false);
 
+        String msg = clientConnection.receive();
         ClientProtocol.AuthResponse authResponse =
-                (ClientProtocol.AuthResponse) clientConnection.getMsgProtocolType(ClientProtocolType.AUTH_RESPONSE);
+                (ClientProtocol.AuthResponse) clientConnection.validateProtocolType(ClientProtocolType.AUTH_RESPONSE, msg);
 
         if (authResponse.response.status) {
             SecManager.getInstance().decryptAESWithRSA(authResponse.authKey.key);
