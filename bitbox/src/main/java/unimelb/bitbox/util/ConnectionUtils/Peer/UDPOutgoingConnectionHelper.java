@@ -66,9 +66,8 @@ public class UDPOutgoingConnectionHelper extends OutgoingConnectionHelper {
 
     }
 
-    // Boolean: true -> success, false -> fail and shouldn't retry, null -> fail and allow retry
     // String: message
-    protected Pair<Boolean, String> handleHandshake(UDPConnection conn, String msg) {
+    protected void handleHandshake(UDPConnection conn, String msg) {
 
         Protocol protocol;
         ProtocolType protocolType;
@@ -77,8 +76,9 @@ public class UDPOutgoingConnectionHelper extends OutgoingConnectionHelper {
             protocol = ProtocolFactory.parseProtocol(msg);
             protocolType = ProtocolType.typeOfProtocol(protocol);
         } catch (InvalidProtocolException e) {
+            conn.handshakeResult = new Pair<>(null, e.getMessage());
             conn.abortWithInvalidProtocol(e.getMessage());
-            return new Pair<>(null, e.getMessage());
+            return;
         }
 
         switch (protocolType) {
@@ -88,28 +88,33 @@ public class UDPOutgoingConnectionHelper extends OutgoingConnectionHelper {
 
                 int res = ConnectionManager.getInstance().addConnection(conn, hostPort);
                 if (res == 0) {
+                    conn.handshakeResult = new Pair<>(true, "Connected");
                     conn.active();
-                    return new Pair<>(true, "Connected");
+                    return;
                 } else {
                     // already exists
+                    conn.handshakeResult = new Pair<>(false, "A connection with the same HostPort is already existed");
                     conn.abortWithInvalidProtocol("A connection with the same HostPort is already existed");
-                    return new Pair<>(false, "A connection with the same HostPort is already existed");
+                    return;
                 }
             case CONNECTION_REFUSED:
                 Protocol.ConnectionRefused connectionRefused = (Protocol.ConnectionRefused) protocol;
+                conn.handshakeResult = new Pair<>(false, "Connection refused: " + connectionRefused.msg);
                 ArrayList<HostPort> hostPorts = connectionRefused.peers;
                 conn.close();
                 for (HostPort hostPort1: hostPorts) {
                     this.scheduleConnectionTask(hostPort1, 0);
                 }
-                return new Pair<>(false, "Connection refused: " + connectionRefused.msg);
+                return;
             case INVALID_PROTOCOL:
                 Protocol.InvalidProtocol invalidProtocol = (Protocol.InvalidProtocol) protocol;
+                conn.handshakeResult = new Pair<>(null, "Invalid protocol: " + invalidProtocol.msg);
                 conn.close();
-                return new Pair<>(null, "Invalid protocol: " + invalidProtocol.msg);
+                return;
             default:
+                conn.handshakeResult = new Pair<>(null, "Unexpected protocol: " + protocol.getClass().getName());
                 conn.abortWithInvalidProtocol("Unexpected protocol: " + protocol.getClass().getName());
-                return new Pair<>(null, "Unexpected protocol: " + protocol.getClass().getName());
+                return;
         }
     }
 }
