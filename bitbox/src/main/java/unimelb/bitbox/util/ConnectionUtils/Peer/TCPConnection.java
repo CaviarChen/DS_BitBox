@@ -1,13 +1,11 @@
 package unimelb.bitbox.util.ConnectionUtils.Peer;
 
 
+import unimelb.bitbox.Constants;
 import unimelb.bitbox.protocol.IResponse;
 import unimelb.bitbox.protocol.Protocol;
 import unimelb.bitbox.protocol.ProtocolFactory;
-import unimelb.bitbox.util.ConnectionManager;
-import unimelb.bitbox.util.HostPort;
-import unimelb.bitbox.util.MessageHandler;
-import unimelb.bitbox.util.SyncManager;
+import unimelb.bitbox.util.*;
 import unimelb.bitbox.util.ThreadPool.Priority;
 import unimelb.bitbox.util.ThreadPool.PriorityTask;
 import unimelb.bitbox.util.ThreadPool.PriorityThreadPool;
@@ -31,6 +29,9 @@ import java.util.logging.Logger;
 class TCPConnection extends Connection {
 
     private static Logger log = Logger.getLogger(TCPConnection.class.getName());
+
+    private static final long BLOCK_SIZE =
+            Long.parseLong(Configuration.getConfigurationValue(Constants.CONFIG_FIELD_BLOCKSIZE));
 
     private final Socket socket;
     private final BufferedReader bufferedReader;
@@ -173,6 +174,11 @@ class TCPConnection extends Connection {
     @Override
     public boolean allowInvalidMessage() {
         return false;
+    }
+
+    @Override
+    public long getBlockSize() {
+        return BLOCK_SIZE;
     }
 
 

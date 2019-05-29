@@ -29,8 +29,8 @@ import java.util.logging.Logger;
 public class FileLoaderWrapper {
     private static Logger log = Logger.getLogger(Connection.class.getName());
 
-    private static final long BLOCK_SIZE =
-            Long.parseLong(Configuration.getConfigurationValue(Constants.CONFIG_FIELD_BLOCKSIZE));
+
+
     private static final int REQUEST_LIMIT = 10; // the number of requests in the first batch
     private static final long TIMEOUT_IN_MILLIS = 20000;
 
@@ -64,7 +64,7 @@ public class FileLoaderWrapper {
             while (remaining > 0) {
                 ProtocolField.FilePosition pos = new ProtocolField.FilePosition();
                 pos.pos = base;
-                pos.len = Math.min(remaining, BLOCK_SIZE);
+                pos.len = Math.min(remaining, conn.getBlockSize());
                 base += pos.len;
                 remaining -= pos.len;
                 pending.addLast(pos);

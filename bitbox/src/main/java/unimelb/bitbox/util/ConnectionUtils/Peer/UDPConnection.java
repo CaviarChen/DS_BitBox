@@ -1,6 +1,7 @@
 package unimelb.bitbox.util.ConnectionUtils.Peer;
 
 import javafx.util.Pair;
+import unimelb.bitbox.Constants;
 import unimelb.bitbox.protocol.IRequest;
 import unimelb.bitbox.protocol.IResponse;
 import unimelb.bitbox.protocol.Protocol;
@@ -22,9 +23,10 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.locks.Lock;
 import java.util.logging.Logger;
 
-// TODO: blockSize
-
 public class UDPConnection extends Connection {
+
+    private static final long BLOCK_SIZE =
+            Math.min(Long.parseLong(Configuration.getConfigurationValue(Constants.CONFIG_FIELD_BLOCKSIZE)), 8192);
 
     protected static final long UDP_TIMEOUT_MS = Long.parseLong(Configuration.getConfigurationValue("udpTimeout"));
     protected static final int MAX_RETRY = Integer.parseInt(Configuration.getConfigurationValue("udpRetries"));
@@ -268,6 +270,11 @@ public class UDPConnection extends Connection {
     @Override
     public boolean allowInvalidMessage() {
         return true;
+    }
+
+    @Override
+    public long getBlockSize() {
+        return BLOCK_SIZE;
     }
 
     public boolean isActive() {
