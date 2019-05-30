@@ -75,6 +75,7 @@ public class UDPIncomingConnectionHelper extends IncomingConnectionHelper {
 
     private void handleHandshake(DatagramSocket serverSocket, String msg, InetAddress hostAddress, int actualPort) {
         String replyMsg = "";
+        boolean unexpectedProtocol = false;
         int res = -1;
         try {
             Protocol protocol = ProtocolFactory.parseProtocol(msg);
@@ -101,6 +102,7 @@ public class UDPIncomingConnectionHelper extends IncomingConnectionHelper {
                     replyMsg = ProtocolFactory.marshalProtocol(connectionRefused);
                 }
             } else {
+                unexpectedProtocol = true;
                 throw new InvalidProtocolException("Expected HandshakeRequest but got: " + ((protocol == null) ? "null" : protocol.getClass().getName()), null);
             }
 
@@ -110,17 +112,27 @@ public class UDPIncomingConnectionHelper extends IncomingConnectionHelper {
             replyMsg = ProtocolFactory.marshalProtocol(invalidProtocol);
         }
 
-        // send reply
-        log.info("Handshake Finished Result: " + res +
-                " reply: " + replyMsg.substring(0, Math.min(UDPConnection.MAX_LOG_LEN, replyMsg.length())));
+        if (unexpectedProtocol) {
+            // do not sent invalid protocol in this case to prevent message storm
+            log.info("Handshake Finished Result: " + res +
+                    " no reply is sent (prevent message storm): " +
+                    replyMsg.substring(0, Math.min(UDPConnection.MAX_LOG_LEN, replyMsg.length())));
 
-        byte[] buffer = replyMsg.getBytes(StandardCharsets.UTF_8);
-        DatagramPacket packet = new DatagramPacket(buffer, buffer.length, hostAddress, actualPort);
-        try {
-            serverSocket.send(packet);
-        } catch (IOException e) {
-            log.warning("unable reply to: " + hostAddress.getHostAddress() + ":" + actualPort);
+
+        } else {
+            // send reply
+            log.info("Handshake Finished Result: " + res +
+                    " reply: " + replyMsg.substring(0, Math.min(UDPConnection.MAX_LOG_LEN, replyMsg.length())));
+
+            byte[] buffer = replyMsg.getBytes(StandardCharsets.UTF_8);
+            DatagramPacket packet = new DatagramPacket(buffer, buffer.length, hostAddress, actualPort);
+            try {
+                serverSocket.send(packet);
+            } catch (IOException e) {
+                log.warning("unable reply to: " + hostAddress.getHostAddress() + ":" + actualPort);
+            }
         }
+
 
     }
 }
