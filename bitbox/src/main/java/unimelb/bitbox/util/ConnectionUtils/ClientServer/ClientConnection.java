@@ -11,6 +11,14 @@ import java.nio.charset.StandardCharsets;
 import java.util.logging.Logger;
 
 
+/**
+ * Connection for client and server
+ *
+ * @author Weizhi Xu (752454)
+ * @author Wenqing Xue (813044)
+ * @author Zijie Shen (741404)
+ * @author Zijun Chen (813190)
+ */
 public class ClientConnection {
     private static Logger log = Logger.getLogger(ClientConnection.class.getName());
 
@@ -18,6 +26,13 @@ public class ClientConnection {
     private BufferedWriter bufferedWriter;
     private BufferedReader bufferedReader;
 
+
+    /**
+     * ClientConnectin constructor which initializes buffers
+     *
+     * @param socket the socket used to communicate
+     * @throws IOException socket having trouble get Input or Output Stream
+     */
     public ClientConnection(Socket socket) throws IOException {
         this.socket = socket;
         bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream(),
@@ -26,6 +41,13 @@ public class ClientConnection {
                 StandardCharsets.UTF_8));
     }
 
+
+    /**
+     * Marshall and send given protocol message
+     *
+     * @param protocol the protocol message wanted to be sent
+     * @throws Exception having error sending the message
+     */
     public void send(ClientProtocol protocol) throws Exception {
         String msg = ClientProtocolFactory.marshalProtocol(protocol);
 
@@ -39,6 +61,12 @@ public class ClientConnection {
         }
     }
 
+
+    /**
+     * Read from the socket buffer to receive a message
+     *
+     * @return the message
+     */
     private String receive() {
         // TODO: timeout
         String msg = "";
@@ -51,11 +79,22 @@ public class ClientConnection {
         return msg;
     }
 
+
+    /**
+     * Receive message and parse to protocol
+     *
+     * @return the received protocol
+     * @throws InvalidProtocolException having error parse the received message
+     */
     public ClientProtocol receiveProtocol() throws InvalidProtocolException {
         String msg = receive();
         return ClientProtocolFactory.parseProtocol(msg);
     }
 
+
+    /**
+     * close the connection and related buffers
+     */
     public void close() {
         try {
             bufferedWriter.close();

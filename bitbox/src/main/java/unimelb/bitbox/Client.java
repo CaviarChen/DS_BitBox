@@ -40,6 +40,10 @@ public class Client {
             case "disconnect_peer":
                 clientConnectionHelper.handleDisConnectPeer(cmdParser.getPeer());
                 break;
+            default:
+                throw new Exception("The command " + cmdParser.getCmd() + "is not supported: ");
         }
+
+        clientConn.close();
     }
 }

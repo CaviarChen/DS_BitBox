@@ -166,6 +166,8 @@ public class UDPConnection extends Connection {
 
     private void sendDatagram(Protocol protocol) {
         String msg = ProtocolFactory.marshalProtocol(protocol);
+        log.info(currentHostPort() + " Message sent: "
+                + msg.substring(0, Math.min(MAX_LOG_LEN, msg.length())));
         byte[] buffer = msg.getBytes(StandardCharsets.UTF_8);
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length, hostAddress, hostPort.port);
         try {

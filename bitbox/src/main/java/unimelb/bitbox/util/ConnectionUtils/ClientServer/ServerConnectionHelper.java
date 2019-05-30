@@ -7,13 +7,24 @@ import unimelb.bitbox.protocol.ClientProtocol;
 import unimelb.bitbox.protocol.ClientProtocolFactory;
 import unimelb.bitbox.protocol.ClientProtocolType;
 import unimelb.bitbox.protocol.InvalidProtocolException;
-import unimelb.bitbox.util.*;
+import unimelb.bitbox.util.Configuration;
+import unimelb.bitbox.util.ConnectionManager;
 import unimelb.bitbox.util.ConnectionUtils.Peer.OutgoingConnectionHelper;
+import unimelb.bitbox.util.PublicKeyNotFoundException;
+import unimelb.bitbox.util.SecManager;
 
 import java.net.ServerSocket;
 import java.util.logging.Logger;
 
 
+/**
+ * Helper class for server connection
+ *
+ * @author Weizhi Xu (752454)
+ * @author Wenqing Xue (813044)
+ * @author Zijie Shen (741404)
+ * @author Zijun Chen (813190)
+ */
 public class ServerConnectionHelper {
     private final OutgoingConnectionHelper outgoingConnectionHelper;
     private Logger log = Logger.getLogger(ServerConnectionHelper.class.getName());
@@ -22,6 +33,12 @@ public class ServerConnectionHelper {
     private String port;
 
 
+    /**
+     * ServerConnectionHelper constructor
+     *
+     * @param outgoingConnectionHelper the helper for outgoing connection
+     * @throws Exception failed to create server socket
+     */
     public ServerConnectionHelper(OutgoingConnectionHelper outgoingConnectionHelper) throws Exception {
         thread = null;
         this.outgoingConnectionHelper = outgoingConnectionHelper;
@@ -30,6 +47,9 @@ public class ServerConnectionHelper {
     }
 
 
+    /**
+     * Start listening client connection
+     */
     public void start() {
         if (thread != null) throw new RuntimeException("Already started");
 
@@ -44,6 +64,9 @@ public class ServerConnectionHelper {
     }
 
 
+    /**
+     * Handle client protocols
+     */
     private void execute() {
         log.info("Server start to listen for clients on port " + port);
 
@@ -72,6 +95,8 @@ public class ServerConnectionHelper {
                     default:
                         throw new InvalidProtocolException("Unexpected protocol:" + protocolType.toString(), null);
                 }
+
+                clientConnection.close();
 
             } catch (Exception e) {
                 log.severe(e.toString());
@@ -106,6 +131,7 @@ public class ServerConnectionHelper {
     private void handleListPeerRequest(ClientConnection clientConnection, ClientProtocol protocol) throws Exception {
         ClientProtocolFactory.validateProtocolType(protocol, ClientProtocolType.LIST_PEERS_REQUEST);
 
+        // construct response
         ClientProtocol.ListPeersResponse listPeersResponse = new ClientProtocol.ListPeersResponse();
         listPeersResponse.peers.peers = ConnectionManager.getInstance().getConnectedPeers();
 
@@ -119,10 +145,12 @@ public class ServerConnectionHelper {
 
         Pair<Boolean, String> result = outgoingConnectionHelper.connectTo(connectPeerRequest.hostPort);
 
+        // construct response
         ClientProtocol.ConnectPeerResponse connectPeerResponse = new ClientProtocol.ConnectPeerResponse();
         connectPeerResponse.hostPort = connectPeerRequest.hostPort;
         connectPeerResponse.response.status = result.getKey();
         connectPeerResponse.response.msg = result.getValue();
+
         clientConnection.send(connectPeerResponse);
     }
 
@@ -131,11 +159,15 @@ public class ServerConnectionHelper {
         ClientProtocolFactory.validateProtocolType(protocol, ClientProtocolType.DISCONNECT_PEER_REQUEST);
         ClientProtocol.DisconnectPeerRequest disconnectPeerRequest = (ClientProtocol.DisconnectPeerRequest) protocol;
 
+        // try to disconnect
         ClientProtocol.DisconnectPeerResponse disconnectPeerResponse = new ClientProtocol.DisconnectPeerResponse();
         Pair<Boolean, String> result = ConnectionManager.getInstance().disconnectFrom(disconnectPeerRequest.hostPort);
+
+        // construct response
         disconnectPeerResponse.hostPort = disconnectPeerRequest.hostPort;
         disconnectPeerResponse.response.status = result.getKey();
         disconnectPeerResponse.response.msg = result.getValue();
+
         clientConnection.send(disconnectPeerResponse);
     }
 

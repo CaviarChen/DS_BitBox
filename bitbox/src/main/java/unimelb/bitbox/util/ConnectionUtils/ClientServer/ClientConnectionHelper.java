@@ -1,21 +1,44 @@
 package unimelb.bitbox.util.ConnectionUtils.ClientServer;
 
 
-import unimelb.bitbox.protocol.*;
+import unimelb.bitbox.protocol.ClientProtocol;
+import unimelb.bitbox.protocol.ClientProtocolFactory;
+import unimelb.bitbox.protocol.ClientProtocolType;
 import unimelb.bitbox.util.HostPort;
 import unimelb.bitbox.util.SecManager;
 
 import java.util.ArrayList;
 
 
+/**
+ * Helper class for client connection
+ *
+ * @author Weizhi Xu (752454)
+ * @author Wenqing Xue (813044)
+ * @author Zijie Shen (741404)
+ * @author Zijun Chen (813190)
+ */
 public class ClientConnectionHelper {
 
     private ClientConnection clientConnection;
 
+
+    /**
+     * ClientConnectionHelper constructor
+     *
+     * @param clientConnection related clientConnection
+     */
     public ClientConnectionHelper(ClientConnection clientConnection) {
         this.clientConnection = clientConnection;
     }
 
+
+    /**
+     * Handle Disconnect Peer Protocol
+     *
+     * @param peer the peer wanted to be disconnected from
+     * @throws Exception failed to disconnect
+     */
     public void handleDisConnectPeer(String peer) throws Exception {
         ClientProtocol.DisconnectPeerRequest disconnectPeerRequest = new ClientProtocol.DisconnectPeerRequest();
         disconnectPeerRequest.hostPort = new HostPort(peer);
@@ -36,6 +59,12 @@ public class ClientConnectionHelper {
     }
 
 
+    /**
+     * Handle Connect Peer Protocol
+     *
+     * @param peer the peer wanted to be connected to
+     * @throws Exception failed to connect
+     */
     public void handleConnectPeer(String peer) throws Exception {
         ClientProtocol.ConnectPeerRequest connectPeerRequest = new ClientProtocol.ConnectPeerRequest();
         connectPeerRequest.hostPort = new HostPort(peer);
@@ -55,6 +84,12 @@ public class ClientConnectionHelper {
         }
     }
 
+
+    /**
+     * Handle List Peer protocol
+     *
+     * @throws Exception failed to find a list of connected peers
+     */
     public void handleListPeer() throws Exception {
         ClientProtocol.ListPeersRequest listPeersRequest = new ClientProtocol.ListPeersRequest();
         clientConnection.send(listPeersRequest);
@@ -75,12 +110,19 @@ public class ClientConnectionHelper {
     }
 
 
+    /**
+     * Handle challenge request and response
+     *
+     * @throws Exception failed to authorize
+     */
     public void handleAuth() throws Exception {
+        // send request
         String identity = SecManager.getInstance().getPrivateIdentity();
         ClientProtocol.AuthRequest authReq = new ClientProtocol.AuthRequest();
         authReq.authIdentity.identity = identity;
         clientConnection.send(authReq);
 
+        // receive
         ClientProtocol protocol = clientConnection.receiveProtocol();
         ClientProtocolFactory.validateProtocolType(protocol, ClientProtocolType.AUTH_RESPONSE);
         ClientProtocol.AuthResponse authResponse = (ClientProtocol.AuthResponse) protocol;

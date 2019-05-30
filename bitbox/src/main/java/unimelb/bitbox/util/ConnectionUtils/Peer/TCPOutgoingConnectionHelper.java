@@ -10,6 +10,7 @@ import unimelb.bitbox.util.ConnectionManager;
 import unimelb.bitbox.util.HostPort;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
@@ -29,6 +30,7 @@ public class TCPOutgoingConnectionHelper extends OutgoingConnectionHelper{
 
     private static Logger log = Logger.getLogger(TCPOutgoingConnectionHelper.class.getName());
 
+    private static final int TCP_CONNECTION_TIMEOUT = 20000;
     /**
      * Constructor
      * @param advertisedName from config
@@ -57,7 +59,8 @@ public class TCPOutgoingConnectionHelper extends OutgoingConnectionHelper{
         try {
             log.info("Start connecting to peer: " + hostPort);
 
-            Socket clientSocket = new Socket(hostPort.host, hostPort.port);
+            Socket clientSocket = new Socket();
+            clientSocket.connect(new InetSocketAddress(hostPort.host, hostPort.port), TCP_CONNECTION_TIMEOUT);
             TCPConnection conn = new TCPConnection(clientSocket, this);
             conn.send(ProtocolFactory.marshalProtocol(handshakeRequest));
 

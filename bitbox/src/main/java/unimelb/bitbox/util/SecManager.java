@@ -2,7 +2,6 @@ package unimelb.bitbox.util;
 
 
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
-import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openssl.PEMKeyPair;
 import org.bouncycastle.openssl.PEMParser;
@@ -12,51 +11,57 @@ import unimelb.bitbox.Constants;
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
-import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.FileReader;
-import java.io.StringReader;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.security.*;
-import java.security.spec.InvalidKeySpecException;
 import java.security.spec.RSAPublicKeySpec;
-import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 
 
-// https://stackoverflow.com/questions/44681737/get-a-privatekey-from-a-rsa-pem-file
-// https://artofcode.wordpress.com/2017/05/26/rsa-signatures-in-java-with-bouncy-castle/
-// https://www.javainterviewpoint.com/aes-encryption-and-decryption/
-// https://stackoverflow.com/questions/43978146/how-to-convert-ssh-rsa-public-key-to-pem-pkcs1-public-key-format-using-java-7
+/**
+ * Security Manager class for Bitbox, including RSA and AES related methods
+ *
+ * @author Weizhi Xu (752454)
+ * @author Wenqing Xue (813044)
+ * @author Zijie Shen (741404)
+ * @author Zijun Chen (813190)
+ * <p>
+ * Reference:
+ * - stackoverflow.com/questions/44681737/get-a-privatekey-from-a-rsa-pem-file
+ * - artofcode.wordpress.com/2017/05/26/rsa-signatures-in-java-with-bouncy-castle/
+ * - www.javainterviewpoint.com/aes-encryption-and-decryption/
+ * - stackoverflow.com/questions/43978146/how-to-convert-ssh-rsa-public-key-to-pem-pkcs1-public-key-format-using-java-7
+ */
 public class SecManager {
 
     private static Logger log = Logger.getLogger(SecManager.class.getName());
 
     private static final int AES_BLOCK_SIZE = 16;
     private static final int INT_SIZE_BYTES = 4;
+
+    // letters in bytes used to pad when encrypting using AES
     private static final byte[] PADDING_LETTERS = {
             0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4a, 0x4b, 0x4c, 0x4d, 0x4e, 0x4f,
             0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57, 0x58, 0x59, 0x5a
     };
     private static SecManager instance = new SecManager();
 
+
     public static SecManager getInstance() {
         return instance;
     }
+
 
     private static PrivateKey privateKey;
     private static String privateIdentity;
     private static HashMap<String, PublicKey> publicKeyHashMap;
     private static AESKey aesKey;
-
 
 
     /**
@@ -83,6 +88,7 @@ public class SecManager {
         return encryptWithAesKey(aesKey, json);
     }
 
+
     /**
      * Decrypt the base64 encoded and AES-128 encrypted string
      *
@@ -97,6 +103,7 @@ public class SecManager {
 
         return decryptWithAesKey(aesKey, payload);
     }
+
 
     /**
      * Initialize the SecManager, read necessary data into the calss
@@ -114,7 +121,6 @@ public class SecManager {
 
         switch (m) {
             case ClientMode:
-                //readIdentityFromPrivateKey();
                 readPrivateKey();
                 break;
             case ServerMode:
@@ -188,41 +194,37 @@ public class SecManager {
 
     /**
      * Get the Identity parsed from Private key file
+     *
      * @return Identity
      */
     public String getPrivateIdentity() {
         return privateIdentity;
     }
 
+
+    /**
+     * Set the Identity of current Client
+     *
+     * @param identity
+     */
     public void setPrivateIdentity(String identity) {
         privateIdentity = identity;
     }
 
 
-    private void SecurityHelper() {
-    }
-
-
     private void readPublicKeyFromProperties() throws Exception {
+        // read a list of public keys from properties
         String config = Configuration.getConfigurationValue(Constants.CONFIG_FIELD_AUTHORIZED_KEYS);
         String[] keys = config.split(",");
         for (String key : keys) {
             String[] parts = key.split(" ");
             if (parts.length >= 3) {
+                // generate public key
                 PublicKey publickey = getPublicKey(parts[1].trim());
                 String identity = parts[2].trim();
 
                 publicKeyHashMap.put(identity, publickey);
             }
-
-
-//            String[] parts = key.split(" ");
-//            if (parts.length == 3 && !((parts[0].trim()).equals("ssh-rsa"))) {
-//                PublicKey publickey = getPublicKey(parts[1].trim());
-//                String identity = parts[2].trim();
-//
-//                publicKeyHashMap.put(identity, publickey);
-//            }
         }
     }
 
@@ -236,31 +238,6 @@ public class SecManager {
         privateKey = converter.getPrivateKey(privateKeyInfo);
 
         pem.close();
-    }
-
-
-    private void readIdentityFromPrivateKey() throws Exception {
-        byte[] textBytes = Files.readAllBytes(Paths.get(Constants.SECURITY_PRIVATE_KEY_FILENAME));
-        String text = new String(textBytes);
-
-        // remove BEGIN Header and END footer in private key file
-        text = text.trim();
-        String[] parts = text.split("\n");
-        text = "";
-        for (int i = 1; i < parts.length-1; i++) {
-            text += parts[i];
-        }
-
-        System.out.println(text);
-        text = new String(decodeBase64(text.getBytes()));
-        System.out.println(text);
-
-        parts = text.split(" ");
-        if (parts.length < 3) {
-            throw new Exception("Invalid private key from file " + Constants.SECURITY_PRIVATE_KEY_FILENAME);
-        }
-
-        privateIdentity = parts[parts.length - 1];
     }
 
 
@@ -286,26 +263,32 @@ public class SecManager {
         return publicKey;
     }
 
-    private BigInteger readMpint(ByteBuffer buffer, AtomicInteger pos){
+
+    private BigInteger readMpint(ByteBuffer buffer, AtomicInteger pos) {
+        // read big integer from buffer
         byte[] bytes = readBytes(buffer, pos);
-        if(bytes.length == 0){
+        if (bytes.length == 0) {
             return BigInteger.ZERO;
         }
         return new BigInteger(bytes);
     }
 
-    private String readString(ByteBuffer buffer, AtomicInteger pos){
+
+    private String readString(ByteBuffer buffer, AtomicInteger pos) {
+        // read string from buffer
         byte[] bytes = readBytes(buffer, pos);
-        if(bytes.length == 0){
+        if (bytes.length == 0) {
             return "";
         }
         return new String(bytes, StandardCharsets.US_ASCII);
     }
 
-    private byte[] readBytes(ByteBuffer buffer, AtomicInteger pos){
+
+    private byte[] readBytes(ByteBuffer buffer, AtomicInteger pos) {
+        // read given number of bytes
         int len = buffer.getInt(pos.get());
-        byte buff[] = new byte[len];
-        for(int i = 0; i < len; i++) {
+        byte[] buff = new byte[len];
+        for (int i = 0; i < len; i++) {
             buff[i] = buffer.get(i + pos.get() + INT_SIZE_BYTES);
         }
         pos.set(pos.get() + INT_SIZE_BYTES + len);
@@ -333,8 +316,8 @@ public class SecManager {
         byte[] paddingBytes = new byte[paddingLength];
         SecureRandom rand = new SecureRandom();
         for (int i = 0; i < paddingLength; i++) {
-             int index = rand.nextInt(PADDING_LETTERS.length);
-             paddingBytes[i] = PADDING_LETTERS[index];
+            int index = rand.nextInt(PADDING_LETTERS.length);
+            paddingBytes[i] = PADDING_LETTERS[index];
         }
 
         // copy bytes
@@ -377,6 +360,7 @@ public class SecManager {
 
 
     private class AESKey {
+        // class containing AES key
         private SecretKey key;
 
 
