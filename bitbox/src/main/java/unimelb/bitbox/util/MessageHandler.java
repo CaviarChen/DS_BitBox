@@ -226,7 +226,7 @@ public class MessageHandler {
     // handle FileModifyRequest
     private static void handleSpecificProtocol(Protocol.FileModifyRequest fileModifyRequest, Connection conn) {
         ProtocolField.FileDes fd = fileModifyRequest.fileDes;
-        Protocol.FileCreateResponse response = new Protocol.FileCreateResponse();
+        Protocol.FileModifyResponse response = new Protocol.FileModifyResponse();
         response.fileDes = fd;
 
         if (!fileSystemManager.isSafePathName(fd.path)) {
