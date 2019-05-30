@@ -19,7 +19,7 @@ import java.util.logging.Logger;
 
 
 /**
- * Class for a specific connection with other peer
+ * Class for TCP connection with other peer
  *
  * @author Weizhi Xu (752454)
  * @author Wenqing Xue (813044)

@@ -4,6 +4,15 @@ import unimelb.bitbox.protocol.IResponse;
 import unimelb.bitbox.protocol.Protocol;
 import unimelb.bitbox.util.HostPort;
 
+/**
+ * Connection is an abstract class for TCP and UDP
+ *
+ * @author Weizhi Xu (752454)
+ * @author Wenqing Xue (813044)
+ * @author Zijie Shen (741404)
+ * @author Zijun Chen (813190)
+ */
+
 public abstract class Connection {
 
     protected Connection(ConnectionType type) {

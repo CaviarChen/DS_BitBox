@@ -20,6 +20,15 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
+/**
+ * UDPIncomingConnectionHelper deals with all UDP incoming connections
+ *
+ * @author Weizhi Xu (752454)
+ * @author Wenqing Xue (813044)
+ * @author Zijie Shen (741404)
+ * @author Zijun Chen (813190)
+ */
+
 public class UDPIncomingConnectionHelper extends IncomingConnectionHelper {
     private static Logger log = Logger.getLogger(UDPIncomingConnectionHelper.class.getName());
     private static final int BUFFER_SIZE = 65536;
@@ -28,6 +37,12 @@ public class UDPIncomingConnectionHelper extends IncomingConnectionHelper {
 
     private final DatagramSocket serverSocket;
 
+    /**
+     * Constructor
+     * @param advertisedName    from config
+     * @param port              listening port from config
+     * @throws SocketException
+     */
     public UDPIncomingConnectionHelper(String advertisedName, int port) throws SocketException {
         super(advertisedName, port);
         this.port = port;
@@ -38,6 +53,7 @@ public class UDPIncomingConnectionHelper extends IncomingConnectionHelper {
         return serverSocket;
     }
 
+    // main work thread
     @Override
     protected void execute() throws Exception {
         byte[] buffer = new byte[BUFFER_SIZE];
@@ -73,6 +89,7 @@ public class UDPIncomingConnectionHelper extends IncomingConnectionHelper {
         }
     }
 
+    // handle the handshake process (run in thread pool)
     private void handleHandshake(DatagramSocket serverSocket, String msg, InetAddress hostAddress, int actualPort) {
         String replyMsg = "";
         boolean unexpectedProtocol = false;

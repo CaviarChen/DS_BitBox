@@ -8,6 +8,15 @@ import unimelb.bitbox.util.HostPort;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 
+/**
+ * IncomingConnectionHelper is an abstract class for TCP and UDP
+ *
+ * @author Weizhi Xu (752454)
+ * @author Wenqing Xue (813044)
+ * @author Zijie Shen (741404)
+ * @author Zijun Chen (813190)
+ */
+
 public abstract class IncomingConnectionHelper {
     private static final long PEERS_CACHE_TIMEOUT = 10000;
 

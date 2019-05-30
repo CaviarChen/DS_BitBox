@@ -18,7 +18,7 @@ import java.util.logging.Logger;
 
 
 /**
- * OutgoingConnectionHelper deal with all outgoing connections
+ * TCPOutgoingConnectionHelper deals with all TCP outgoing connections
  *
  * @author Weizhi Xu (752454)
  * @author Wenqing Xue (813044)
@@ -55,7 +55,7 @@ public class TCPOutgoingConnectionHelper extends OutgoingConnectionHelper{
     protected Pair<Boolean, String> tryConnectTo(HostPort hostPort) {
         // try to connect to the peer
         try {
-            log.info("Start connecting to peer: %d" + hostPort);
+            log.info("Start connecting to peer: " + hostPort);
 
             Socket clientSocket = new Socket(hostPort.host, hostPort.port);
             TCPConnection conn = new TCPConnection(clientSocket, this);

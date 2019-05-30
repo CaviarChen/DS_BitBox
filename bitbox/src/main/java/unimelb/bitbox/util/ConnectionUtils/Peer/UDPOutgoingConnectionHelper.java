@@ -15,12 +15,27 @@ import java.util.logging.Logger;
 
 import static java.lang.Thread.sleep;
 
+/**
+ * UDPOutgoingConnectionHelper deals with all UDP outgoing connections
+ *
+ * @author Weizhi Xu (752454)
+ * @author Wenqing Xue (813044)
+ * @author Zijie Shen (741404)
+ * @author Zijun Chen (813190)
+ */
+
 public class UDPOutgoingConnectionHelper extends OutgoingConnectionHelper {
 
 //    private static Logger log = Logger.getLogger(UDPOutgoingConnectionHelper.class.getName());
 
     private final DatagramSocket serverSocket;
 
+    /**
+     * Constructor
+     * @param advertisedName    from config
+     * @param port              from config
+     * @param serverSocket      created in UDPIncomingConnectionHelper
+     */
     public UDPOutgoingConnectionHelper(String advertisedName, int port, DatagramSocket serverSocket) {
         super(advertisedName, port);
         this.serverSocket = serverSocket;

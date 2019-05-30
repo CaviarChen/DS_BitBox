@@ -18,6 +18,7 @@ import java.io.FileReader;
 import java.io.StringReader;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -39,7 +40,12 @@ public class SecManager {
 
     private static Logger log = Logger.getLogger(SecManager.class.getName());
 
+    private static final int AES_BLOCK_SIZE = 16;
     private static final int INT_SIZE_BYTES = 4;
+    private static final byte[] PADDING_LETTERS = {
+            0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4a, 0x4b, 0x4c, 0x4d, 0x4e, 0x4f,
+            0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57, 0x58, 0x59, 0x5a
+    };
     private static SecManager instance = new SecManager();
 
     public static SecManager getInstance() {
@@ -50,6 +56,7 @@ public class SecManager {
     private static String privateIdentity;
     private static HashMap<String, PublicKey> publicKeyHashMap;
     private static AESKey aesKey;
+
 
 
     /**
@@ -307,26 +314,55 @@ public class SecManager {
 
 
     private String encryptWithAesKey(AESKey key, String text) throws Exception {
-        Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
+        Cipher cipher = Cipher.getInstance("AES/ECB/NoPadding");
         SecretKeySpec keySpec = new SecretKeySpec(key.getKey().getEncoded(), "AES");
 
-        cipher.init(Cipher.ENCRYPT_MODE, keySpec);
+        // separate text and padding as required
+        text += "\n";
 
-        byte[] cipherText = cipher.doFinal(text.getBytes());
+        byte[] textBytes = text.getBytes(StandardCharsets.UTF_8);
+
+        // padding
+        int remainingBytes = textBytes.length % AES_BLOCK_SIZE;
+        int paddingLength = 0;
+        if (remainingBytes != 0) {
+            paddingLength = AES_BLOCK_SIZE - remainingBytes;
+        }
+
+        // securely random letters as padding
+        byte[] paddingBytes = new byte[paddingLength];
+        SecureRandom rand = new SecureRandom();
+        for (int i = 0; i < paddingLength; i++) {
+             int index = rand.nextInt(PADDING_LETTERS.length);
+             paddingBytes[i] = PADDING_LETTERS[index];
+        }
+
+        // copy bytes
+        byte[] finalBytes = new byte[textBytes.length + paddingLength];
+        System.arraycopy(textBytes, 0, finalBytes, 0, textBytes.length);
+        System.arraycopy(paddingBytes, 0, finalBytes, textBytes.length, paddingBytes.length);
+
+        // encrypt
+        cipher.init(Cipher.ENCRYPT_MODE, keySpec);
+        byte[] cipherText = cipher.doFinal(finalBytes);
 
         return encodeBase64ToString(cipherText);
     }
 
 
     private String decryptWithAesKey(AESKey key, String text) throws Exception {
-        Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
+        Cipher cipher = Cipher.getInstance("AES/ECB/NoPadding");
         SecretKeySpec keySpec = new SecretKeySpec(key.getKey().getEncoded(), "AES");
 
         cipher.init(Cipher.DECRYPT_MODE, keySpec);
 
-        byte[] decryptedText = cipher.doFinal(decodeBase64(text.getBytes()));
+        byte[] decryptedBytes = cipher.doFinal(decodeBase64(text.getBytes()));
 
-        return new String(decryptedText);
+        // find the last newline character
+        String decryptedText = new String(decryptedBytes);
+        int lastNewLinePos = decryptedText.lastIndexOf('\n');
+
+        return decryptedText.substring(0, lastNewLinePos);
     }
 
 

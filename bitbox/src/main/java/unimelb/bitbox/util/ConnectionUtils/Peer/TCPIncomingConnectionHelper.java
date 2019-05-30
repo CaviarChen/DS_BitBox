@@ -19,7 +19,7 @@ import java.util.logging.Logger;
 
 
 /**
- * IncomingConnectionHelper deals with all incoming connections
+ * TCPIncomingConnectionHelper deals with all TCP incoming connections
  *
  * @author Weizhi Xu (752454)
  * @author Wenqing Xue (813044)

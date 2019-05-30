@@ -13,11 +13,20 @@ import java.util.logging.Logger;
 
 import static java.lang.Thread.sleep;
 
+/**
+ * OutgoingConnectionHelper is an abstract class for TCP and UDP
+ *
+ * @author Weizhi Xu (752454)
+ * @author Wenqing Xue (813044)
+ * @author Zijie Shen (741404)
+ * @author Zijun Chen (813190)
+ */
+
 public abstract class OutgoingConnectionHelper {
 
     private static final int CHECK_INTERVAL = 10000;
     protected static final int HANDSHAKE_TIMEOUT = 10000;
-    // 4 mins
+    // 4 minutes
     protected static final long RECONNECT_INTERVAL = 4 * 60 * 1000;
 
     private static Logger log = Logger.getLogger(OutgoingConnectionHelper.class.getName());
@@ -71,6 +80,7 @@ public abstract class OutgoingConnectionHelper {
     }
 
     protected abstract int getRetryCount();
+
     protected abstract long getRetryInterval();
 
     public Pair<Boolean, String> connectTo(HostPort hostPort) {

@@ -20,6 +20,19 @@ public class ClientConnectionHelper {
         ClientProtocol.DisconnectPeerRequest disconnectPeerRequest = new ClientProtocol.DisconnectPeerRequest();
         disconnectPeerRequest.hostPort = new HostPort(peer);
         clientConnection.send(disconnectPeerRequest);
+        System.out.println("Disconnecting...");
+
+        ClientProtocol protocol = clientConnection.receiveProtocol();
+        ClientProtocolFactory.validateProtocolType(protocol, ClientProtocolType.DISCONNECT_PEER_RESPONSE);
+        ClientProtocol.DisconnectPeerResponse disconnectPeerResponse = (ClientProtocol.DisconnectPeerResponse) protocol;
+
+        if (disconnectPeerResponse.response.status) {
+            System.out.println("Successfully disconnected from " + disconnectPeerResponse.hostPort.toString());
+        } else {
+            System.out.println("Failed to disconnect from " + disconnectPeerResponse.hostPort.toString() +
+                    "\n" +
+                    disconnectPeerResponse.response.msg);
+        }
     }
 
 
@@ -27,6 +40,7 @@ public class ClientConnectionHelper {
         ClientProtocol.ConnectPeerRequest connectPeerRequest = new ClientProtocol.ConnectPeerRequest();
         connectPeerRequest.hostPort = new HostPort(peer);
         clientConnection.send(connectPeerRequest);
+        System.out.println("Connecting...");
 
         ClientProtocol protocol = clientConnection.receiveProtocol();
         ClientProtocolFactory.validateProtocolType(protocol, ClientProtocolType.CONNECT_PEER_RESPONSE);
@@ -35,9 +49,9 @@ public class ClientConnectionHelper {
         if (connectPeerResponse.response.status) {
             System.out.println("Successfully connected to " + connectPeerResponse.hostPort.toString());
         } else {
-            System.out.println("Failed to connect: " + connectPeerResponse.hostPort.toString()
-                    + "\n" +
-                    connectPeerResponse.response.status);
+            System.out.println("Failed to connect to " + connectPeerResponse.hostPort.toString() +
+                    "\n" +
+                    connectPeerResponse.response.msg);
         }
     }
 
