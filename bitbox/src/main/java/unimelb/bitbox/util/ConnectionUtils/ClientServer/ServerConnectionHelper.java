@@ -7,11 +7,8 @@ import unimelb.bitbox.protocol.ClientProtocol;
 import unimelb.bitbox.protocol.ClientProtocolFactory;
 import unimelb.bitbox.protocol.ClientProtocolType;
 import unimelb.bitbox.protocol.InvalidProtocolException;
-import unimelb.bitbox.util.Configuration;
-import unimelb.bitbox.util.ConnectionManager;
+import unimelb.bitbox.util.*;
 import unimelb.bitbox.util.ConnectionUtils.Peer.OutgoingConnectionHelper;
-import unimelb.bitbox.util.PublicKeyNotFoundException;
-import unimelb.bitbox.util.SecManager;
 
 import java.net.ServerSocket;
 import java.util.logging.Logger;
@@ -123,6 +120,7 @@ public class ServerConnectionHelper {
         Pair<Boolean, String> result = outgoingConnectionHelper.connectTo(connectPeerRequest.hostPort);
 
         ClientProtocol.ConnectPeerResponse connectPeerResponse = new ClientProtocol.ConnectPeerResponse();
+        connectPeerResponse.hostPort = connectPeerRequest.hostPort;
         connectPeerResponse.response.status = result.getKey();
         connectPeerResponse.response.msg = result.getValue();
         clientConnection.send(connectPeerResponse);
@@ -135,6 +133,7 @@ public class ServerConnectionHelper {
 
         ClientProtocol.DisconnectPeerResponse disconnectPeerResponse = new ClientProtocol.DisconnectPeerResponse();
         Pair<Boolean, String> result = ConnectionManager.getInstance().disconnectFrom(disconnectPeerRequest.hostPort);
+        disconnectPeerResponse.hostPort = disconnectPeerRequest.hostPort;
         disconnectPeerResponse.response.status = result.getKey();
         disconnectPeerResponse.response.msg = result.getValue();
         clientConnection.send(disconnectPeerResponse);
