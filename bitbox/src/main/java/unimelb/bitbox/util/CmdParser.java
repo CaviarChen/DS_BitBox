@@ -8,6 +8,14 @@ import org.kohsuke.args4j.Option;
 import java.io.IOException;
 import java.util.logging.Logger;
 
+/**
+ * Class for command line parser
+ *
+ * @author Weizhi Xu (752454)
+ * @author Wenqing Xue (813044)
+ * @author Zijie Shen (741404)
+ * @author Zijun Chen (813190)
+ */
 
 public class CmdParser {
     private static Logger log = Logger.getLogger(CmdParser.class.getName());

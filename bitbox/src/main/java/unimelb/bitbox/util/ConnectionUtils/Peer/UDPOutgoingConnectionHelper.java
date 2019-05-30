@@ -11,9 +11,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
 
-import static java.lang.Thread.sleep;
 
 /**
  * UDPOutgoingConnectionHelper deals with all UDP outgoing connections

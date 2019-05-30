@@ -1,7 +1,6 @@
 package unimelb.bitbox.util;
 
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import javafx.util.Pair;
 import unimelb.bitbox.protocol.Protocol;
 import unimelb.bitbox.util.ConnectionUtils.Peer.Connection;
