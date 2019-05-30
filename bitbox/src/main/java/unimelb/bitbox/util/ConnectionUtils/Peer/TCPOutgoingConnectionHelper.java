@@ -18,7 +18,7 @@ import java.util.logging.Logger;
 
 
 /**
- * OutgoingConnectionHelper deal with all outgoing connections
+ * TCPOutgoingConnectionHelper deals with all TCP outgoing connections
  *
  * @author Weizhi Xu (752454)
  * @author Wenqing Xue (813044)

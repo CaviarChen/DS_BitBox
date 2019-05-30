@@ -23,6 +23,16 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.locks.Lock;
 import java.util.logging.Logger;
 
+
+/**
+ * Class for UDP connection with other peer
+ *
+ * @author Weizhi Xu (752454)
+ * @author Wenqing Xue (813044)
+ * @author Zijie Shen (741404)
+ * @author Zijun Chen (813190)
+ */
+
 public class UDPConnection extends Connection {
 
     private static final long BLOCK_SIZE =
@@ -77,7 +87,14 @@ public class UDPConnection extends Connection {
         }
     }
 
-    // for incoming
+    /**
+     * Constructor for incoming connection
+     * @param serverSocket      the established socket
+     * @param hostPort          host and port information
+     * @param hostAddress       host address
+     * @param actualPort        actual port
+     * @throws CException       customized exception
+     */
     public UDPConnection(DatagramSocket serverSocket, HostPort hostPort, InetAddress hostAddress, int actualPort) throws CException {
         super(ConnectionType.INCOMING);
         try {
@@ -99,7 +116,14 @@ public class UDPConnection extends Connection {
         }
     }
 
-    // for outgoing
+    /**
+     * Constructor for outgoing connection
+     * @param serverSocket                  the established socket
+     * @param hostPort                      host and port information
+     * @param hostAddress                   host address
+     * @param outgoingConnectionHelper      the established outgoing connection helper
+     * @throws CException                   customized exception
+     */
     public UDPConnection(DatagramSocket serverSocket, HostPort hostPort, InetAddress hostAddress, UDPOutgoingConnectionHelper outgoingConnectionHelper) throws CException {
         super(ConnectionType.OUTGOING);
         try {
@@ -116,7 +140,7 @@ public class UDPConnection extends Connection {
         }
     }
 
-
+    // Send protocol asynchronously
     @Override
     public void sendAsync(Protocol protocol) {
         // add to waiting list if the protocol requires retry
@@ -132,7 +156,7 @@ public class UDPConnection extends Connection {
                     waitingInfo.timestamp = System.currentTimeMillis();
                 }
 
-                // put in the back
+                // put at the back of waiting list
                 waitingList.put(request, waitingInfo);
             }
         }
@@ -251,6 +275,10 @@ public class UDPConnection extends Connection {
         SyncManager.getInstance().syncWithOneAsync(this);
     }
 
+    /**
+     * Send invalid protocol with additional message, and close the connection
+     * @param additionalMsg     message in invalid protocol
+     */
     @Override
     public void abortWithInvalidProtocol(String additionalMsg) {
         Protocol.InvalidProtocol invalidProtocol = new Protocol.InvalidProtocol();
@@ -259,6 +287,11 @@ public class UDPConnection extends Connection {
         close();
     }
 
+
+    /**
+     * Remove the corresponded request in waiting list
+     * @param response received response protocol
+     */
     @Override
     public void markRequestAsDone(IResponse response) {
         IRequest request = ProtocolFactory.identifyRes(response);
