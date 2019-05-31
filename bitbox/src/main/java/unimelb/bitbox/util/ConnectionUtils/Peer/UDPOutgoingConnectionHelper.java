@@ -2,7 +2,10 @@ package unimelb.bitbox.util.ConnectionUtils.Peer;
 
 
 import javafx.util.Pair;
-import unimelb.bitbox.protocol.*;
+import unimelb.bitbox.protocol.InvalidProtocolException;
+import unimelb.bitbox.protocol.Protocol;
+import unimelb.bitbox.protocol.ProtocolFactory;
+import unimelb.bitbox.protocol.ProtocolType;
 import unimelb.bitbox.util.ConnectionManager;
 import unimelb.bitbox.util.HostPort;
 
@@ -21,18 +24,16 @@ import java.util.concurrent.TimeUnit;
  * @author Zijie Shen (741404)
  * @author Zijun Chen (813190)
  */
-
 public class UDPOutgoingConnectionHelper extends OutgoingConnectionHelper {
-
-//    private static Logger log = Logger.getLogger(UDPOutgoingConnectionHelper.class.getName());
 
     private final DatagramSocket serverSocket;
 
     /**
      * Constructor
-     * @param advertisedName    from config
-     * @param port              from config
-     * @param serverSocket      created in UDPIncomingConnectionHelper
+     *
+     * @param advertisedName from config
+     * @param port           from config
+     * @param serverSocket   created in UDPIncomingConnectionHelper
      */
     public UDPOutgoingConnectionHelper(String advertisedName, int port, DatagramSocket serverSocket) {
         super(advertisedName, port);
@@ -115,7 +116,7 @@ public class UDPOutgoingConnectionHelper extends OutgoingConnectionHelper {
                 conn.handshakeResult = new Pair<>(false, "Connection refused: " + connectionRefused.msg);
                 ArrayList<HostPort> hostPorts = connectionRefused.peers;
                 conn.close();
-                for (HostPort hostPort1: hostPorts) {
+                for (HostPort hostPort1 : hostPorts) {
                     this.scheduleConnectionTask(hostPort1, 0);
                 }
                 return;

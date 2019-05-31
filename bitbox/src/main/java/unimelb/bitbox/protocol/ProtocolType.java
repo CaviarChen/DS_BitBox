@@ -53,6 +53,7 @@ public enum ProtocolType {
 
     /**
      * Get the protocol type of the given command
+     *
      * @param command the command string to match
      * @return a corresponding protocol type
      * @throws InvalidProtocolException the command does not match any of the protocol in the system
@@ -69,6 +70,7 @@ public enum ProtocolType {
 
     /**
      * Get the protocol type from a protocol
+     *
      * @param protocol a protocol
      * @return protocol type
      */

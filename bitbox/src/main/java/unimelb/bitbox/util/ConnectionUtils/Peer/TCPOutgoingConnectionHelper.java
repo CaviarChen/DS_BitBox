@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.logging.Logger;
 
 
-
 /**
  * TCPOutgoingConnectionHelper deals with all TCP outgoing connections
  *
@@ -26,15 +25,17 @@ import java.util.logging.Logger;
  * @author Zijie Shen (741404)
  * @author Zijun Chen (813190)
  */
-public class TCPOutgoingConnectionHelper extends OutgoingConnectionHelper{
+public class TCPOutgoingConnectionHelper extends OutgoingConnectionHelper {
 
     private static Logger log = Logger.getLogger(TCPOutgoingConnectionHelper.class.getName());
 
     private static final int TCP_CONNECTION_TIMEOUT = 20000;
+
     /**
      * Constructor
+     *
      * @param advertisedName from config
-     * @param port from config
+     * @param port           from config
      */
     public TCPOutgoingConnectionHelper(String advertisedName, int port) {
         super(advertisedName, port);
@@ -82,7 +83,6 @@ public class TCPOutgoingConnectionHelper extends OutgoingConnectionHelper{
                 return new Pair<>(false, e.getMessage());
             }
 
-
             switch (protocolType) {
                 case HANDSHAKE_RESPONSE:
                     Protocol.HandshakeResponse handshakeResponse = (Protocol.HandshakeResponse) protocol;
@@ -100,7 +100,7 @@ public class TCPOutgoingConnectionHelper extends OutgoingConnectionHelper{
                     Protocol.ConnectionRefused connectionRefused = (Protocol.ConnectionRefused) protocol;
                     ArrayList<HostPort> hostPorts = connectionRefused.peers;
                     conn.close();
-                    for (HostPort hostPort1: hostPorts) {
+                    for (HostPort hostPort1 : hostPorts) {
                         this.scheduleConnectionTask(hostPort1, 0);
                     }
                     return new Pair<>(false, "Connection refused: " + connectionRefused.msg);

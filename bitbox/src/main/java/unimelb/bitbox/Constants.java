@@ -14,7 +14,7 @@ public class Constants {
     // Thread pool
     public static final int THREAD_POOL_CORE_POOL_SIZE = 200;
     public static final int THREAD_POOL_MAX_POOL_SZIE = 5000;
-    public static final int THREAD_POOL_QUEUE_SIZE= 5000;
+    public static final int THREAD_POOL_QUEUE_SIZE = 5000;
     public static final long THREAD_POOL_KEEP_ALIVE_TIME = 2000L;
 
     // Configurations

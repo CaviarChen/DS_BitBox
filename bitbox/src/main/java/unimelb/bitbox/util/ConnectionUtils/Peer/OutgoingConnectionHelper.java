@@ -21,7 +21,6 @@ import static java.lang.Thread.sleep;
  * @author Zijie Shen (741404)
  * @author Zijun Chen (813190)
  */
-
 public abstract class OutgoingConnectionHelper {
 
     private static final int CHECK_INTERVAL = 10000;
@@ -42,7 +41,7 @@ public abstract class OutgoingConnectionHelper {
         queue = new PriorityQueue<>(Comparator.comparingLong(ConnectionTask::getExecutionTime));
 
         String[] peers = Configuration.getConfigurationValue(Constants.CONFIG_FIELD_PEERS)
-                                                        .split(Constants.CONFIG_PEERS_SEPARATOR);
+                .split(Constants.CONFIG_PEERS_SEPARATOR);
 
         // add all init peers to the queue
         for (String peer : peers) {
@@ -68,7 +67,7 @@ public abstract class OutgoingConnectionHelper {
             }
 
             if (peer != null) {
-                    connectTo(peer.hostPort);
+                connectTo(peer.hostPort);
             } else {
                 // sleep 10 seconds if there is no job
                 try {
@@ -106,7 +105,8 @@ public abstract class OutgoingConnectionHelper {
 
                 try {
                     Thread.sleep(getRetryInterval());
-                } catch (Exception ignored) {}
+                } catch (Exception ignored) {
+                }
             }
 
         }
@@ -119,14 +119,14 @@ public abstract class OutgoingConnectionHelper {
 
     public void scheduleConnectionTask(HostPort hostPort, long executionDelayTime) {
         synchronized (queue) {
-            queue.add(new ConnectionTask(hostPort, System.currentTimeMillis() +  executionDelayTime));
+            queue.add(new ConnectionTask(hostPort, System.currentTimeMillis() + executionDelayTime));
         }
     }
 
     /**
      * internal class for a peer that waiting to be connected and it's retry info
      */
-     private class ConnectionTask {
+    private class ConnectionTask {
 
         private HostPort hostPort;
         private long executionTime;

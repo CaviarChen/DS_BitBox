@@ -1,9 +1,9 @@
 package unimelb.bitbox.util;
 
 
-import unimelb.bitbox.util.ConnectionUtils.Peer.Connection;
 import unimelb.bitbox.Constants;
 import unimelb.bitbox.protocol.*;
+import unimelb.bitbox.util.ConnectionUtils.Peer.Connection;
 import unimelb.bitbox.util.FileSystem.FileLoaderWrapper;
 import unimelb.bitbox.util.FileSystem.FileSystemManager;
 import unimelb.bitbox.util.ThreadPool.Priority;
@@ -38,6 +38,7 @@ public class MessageHandler {
     /**
      * Initialize the messageHandler
      * Not thread-safe, should be called during the initialization stage
+     *
      * @param fsm an instance of the fileSystemManager
      */
     public static void init(FileSystemManager fsm) {
@@ -54,8 +55,9 @@ public class MessageHandler {
 
     /**
      * handle a given message
+     *
      * @param message the given message string
-     * @param conn corresponding connection
+     * @param conn    corresponding connection
      */
     public static void handleMessage(String message, Connection conn) {
 
@@ -123,8 +125,9 @@ public class MessageHandler {
 
     /**
      * remove a specific fileLoaderWrapper from the active map
+     *
      * @param fileLoaderWrapper
-     * @param filePath the path of th fileLoader corresponding to
+     * @param filePath          the path of th fileLoader corresponding to
      */
     public static void removeFileLoaderWrapper(FileLoaderWrapper fileLoaderWrapper, String filePath) {
         fileLoaderWrapperMap.remove(filePath, fileLoaderWrapper);

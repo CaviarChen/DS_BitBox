@@ -31,7 +31,6 @@ import java.util.logging.Logger;
  * @author Zijie Shen (741404)
  * @author Zijun Chen (813190)
  */
-
 public class UDPConnection extends Connection {
 
     private static final long BLOCK_SIZE =
@@ -63,7 +62,6 @@ public class UDPConnection extends Connection {
     protected Pair<Boolean, String> handshakeResult = null;
 
 
-
     protected static boolean distributeMessage(DatagramPacket packet) {
         UDPConnection connection =
                 udpConnectionMap.get(new HostPort(packet.getAddress().getHostAddress(), packet.getPort()));
@@ -88,17 +86,19 @@ public class UDPConnection extends Connection {
 
     /**
      * Constructor for incoming connection
-     * @param serverSocket      the established socket
-     * @param hostPort          host and port information
-     * @param hostAddress       host address
-     * @param actualPort        actual port
-     * @throws CException       customized exception
+     *
+     * @param serverSocket the established socket
+     * @param hostPort     host and port information
+     * @param hostAddress  host address
+     * @param actualPort   actual port
+     * @throws CException customized exception
      */
     public UDPConnection(DatagramSocket serverSocket, HostPort hostPort, InetAddress hostAddress, int actualPort) throws CException {
         super(ConnectionType.INCOMING);
         try {
             activeSemaphore.acquire();
-        } catch (InterruptedException ignored) { }
+        } catch (InterruptedException ignored) {
+        }
         this.serverSocket = serverSocket;
         this.hostPort = hostPort;
         // allow the advertisedName be fake
@@ -117,17 +117,19 @@ public class UDPConnection extends Connection {
 
     /**
      * Constructor for outgoing connection
-     * @param serverSocket                  the established socket
-     * @param hostPort                      host and port information
-     * @param hostAddress                   host address
-     * @param outgoingConnectionHelper      the established outgoing connection helper
-     * @throws CException                   customized exception
+     *
+     * @param serverSocket             the established socket
+     * @param hostPort                 host and port information
+     * @param hostAddress              host address
+     * @param outgoingConnectionHelper the established outgoing connection helper
+     * @throws CException customized exception
      */
     public UDPConnection(DatagramSocket serverSocket, HostPort hostPort, InetAddress hostAddress, UDPOutgoingConnectionHelper outgoingConnectionHelper) throws CException {
         super(ConnectionType.OUTGOING);
         try {
             activeSemaphore.acquire();
-        } catch (InterruptedException ignored) { }
+        } catch (InterruptedException ignored) {
+        }
         this.serverSocket = serverSocket;
         this.hostPort = hostPort;
         this.outgoingConnectionHelper = outgoingConnectionHelper;
@@ -271,14 +273,16 @@ public class UDPConnection extends Connection {
             // to reduce the chance that sync message received before handshake response
             try {
                 Thread.sleep(INCOMING_CONNECTION_FIRST_SYNC_WAIT_TIME);
-            } catch (Exception ignored) { }
+            } catch (Exception ignored) {
+            }
         }
         SyncManager.getInstance().syncWithOneAsync(this);
     }
 
     /**
      * Send invalid protocol with additional message, and close the connection
-     * @param additionalMsg     message in invalid protocol
+     *
+     * @param additionalMsg message in invalid protocol
      */
     @Override
     public void abortWithInvalidProtocol(String additionalMsg) {
@@ -291,6 +295,7 @@ public class UDPConnection extends Connection {
 
     /**
      * Remove the corresponded request in waiting list
+     *
      * @param response received response protocol
      */
     @Override

@@ -1,9 +1,6 @@
 package unimelb.bitbox.protocol;
 
 
-import unimelb.bitbox.util.Document;
-
-
 /**
  * Top-level interface for protocols.
  *

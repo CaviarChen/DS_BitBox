@@ -26,6 +26,7 @@ import java.util.logging.Logger;
  * @author Zijie Shen (741404)
  * @author Zijun Chen (813190)
  */
+
 class TCPConnection extends Connection {
 
     private static Logger log = Logger.getLogger(TCPConnection.class.getName());
@@ -55,7 +56,8 @@ class TCPConnection extends Connection {
     }
 
     /**
-     * Constructor
+     * Constructor for incoming connection
+     *
      * @param socket the established socket
      * @throws IOException
      */
@@ -65,8 +67,9 @@ class TCPConnection extends Connection {
 
 
     /**
-     * Constructor
-     * @param socket the established socket
+     * Constructor for outgoing connection
+     *
+     * @param socket                   the established socket
      * @param outgoingConnectionHelper the helper which established the given connection
      * @throws IOException
      */
@@ -80,6 +83,7 @@ class TCPConnection extends Connection {
      * Wait and get one message form this connection
      * blocking & not thread-safe, should only be called outside during the handshake
      * should only be used internally after the handshake
+     *
      * @return a message string or null
      */
     public String waitForOneMessage() {
@@ -98,8 +102,9 @@ class TCPConnection extends Connection {
      * Wait and get one message form this connection
      * blocking & not thread-safe, should only be called outside during the handshake
      * should only be used internally after the handshake
+     *
      * @param timeout in millis
-     * @return  a message string or null
+     * @return a message string or null
      * @throws SocketTimeoutException if timeout
      */
     public String waitForOneMessage(int timeout) throws SocketTimeoutException {
@@ -156,6 +161,7 @@ class TCPConnection extends Connection {
 
     /**
      * send InvalidProtocol and close this connection
+     *
      * @param additionalMsg additional message in the InvalidProtocol
      */
     @Override
@@ -225,6 +231,7 @@ class TCPConnection extends Connection {
     /**
      * active connection will create its own thread for waiting for request
      * A better way could be waiting all requests using non-blocking method
+     *
      * @param hostPort the host&port got from handshake process
      */
     public void active(HostPort hostPort) {

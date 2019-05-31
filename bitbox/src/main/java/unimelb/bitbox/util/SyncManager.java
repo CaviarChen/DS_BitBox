@@ -1,9 +1,9 @@
 package unimelb.bitbox.util;
 
 
-import unimelb.bitbox.util.ConnectionUtils.Peer.Connection;
 import unimelb.bitbox.protocol.Protocol;
 import unimelb.bitbox.protocol.ProtocolField;
+import unimelb.bitbox.util.ConnectionUtils.Peer.Connection;
 import unimelb.bitbox.util.FileSystem.FileSystemManager;
 import unimelb.bitbox.util.FileSystem.FileSystemManager.FileSystemEvent;
 import unimelb.bitbox.util.ThreadPool.Priority;
@@ -40,6 +40,7 @@ public class SyncManager {
 
     /**
      * initialize this manager
+     *
      * @param fileSystemManager
      */
     public void init(FileSystemManager fileSystemManager) {
@@ -69,6 +70,7 @@ public class SyncManager {
     /**
      * Sync everything with a given peer
      * Async method
+     *
      * @param conn the connection of the given peer
      */
     public void syncWithOneAsync(Connection conn) {
@@ -83,6 +85,7 @@ public class SyncManager {
     /**
      * Send a given fileSystemEvent to all the peers
      * Async method
+     *
      * @param fileSystemEvent the given fileSystemEvent
      */
     public void sendEventToAllAsync(FileSystemEvent fileSystemEvent) {

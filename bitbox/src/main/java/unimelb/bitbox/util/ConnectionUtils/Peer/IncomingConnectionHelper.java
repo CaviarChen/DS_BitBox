@@ -16,7 +16,6 @@ import java.util.logging.Logger;
  * @author Zijie Shen (741404)
  * @author Zijun Chen (813190)
  */
-
 public abstract class IncomingConnectionHelper {
     private static final long PEERS_CACHE_TIMEOUT = 10000;
 

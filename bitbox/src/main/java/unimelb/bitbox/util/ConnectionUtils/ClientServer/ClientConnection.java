@@ -28,7 +28,7 @@ public class ClientConnection {
 
 
     /**
-     * ClientConnectin constructor which initializes buffers
+     * ClientConnection constructor which initializes buffers
      *
      * @param socket the socket used to communicate
      * @throws IOException socket having trouble get Input or Output Stream

@@ -40,9 +40,10 @@ public class ConnectionManager {
 
     /**
      * Add a new connection
-     * @param conn connection
+     *
+     * @param conn     connection
      * @param hostPort host&port of this connection
-     * @return  0: ok, -1: exceed connection limit, -2: connection already exists
+     * @return 0: ok, -1: exceed connection limit, -2: connection already exists
      */
     public int addConnection(Connection conn, HostPort hostPort) {
         synchronized (this) {
@@ -86,6 +87,7 @@ public class ConnectionManager {
 
     /**
      * Remove a connection from the active list
+     *
      * @param conn connection
      * @return true if success
      */

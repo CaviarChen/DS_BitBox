@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.stream.Stream;
 
-import static unimelb.bitbox.Constants.*;
+import static unimelb.bitbox.Constants.PROTOCOL_FIELD_HOST;
 import static unimelb.bitbox.Constants.PROTOCOL_FIELD_PORT;
 
 /**
@@ -20,7 +20,7 @@ import static unimelb.bitbox.Constants.PROTOCOL_FIELD_PORT;
  * @author Zijie Shen (741404)
  * @author Zijun Chen (813190)
  */
-public class ClientProtocol implements IProtocol{
+public class ClientProtocol implements IProtocol {
     @Override
     public void unmarshalFromJson(Document doc) {
         for (ProtocolField protocolField : getAllProtocolFields()) {
@@ -46,7 +46,7 @@ public class ClientProtocol implements IProtocol{
         public ProtocolField.AuthKey authKey = new ProtocolField.AuthKey();
     }
 
-    public static class ListPeersRequest extends ClientProtocol  {
+    public static class ListPeersRequest extends ClientProtocol {
     }
 
     public static class ListPeersResponse extends ClientProtocol {
@@ -60,7 +60,7 @@ public class ClientProtocol implements IProtocol{
         public void unmarshalFromJson(Document doc) {
             super.unmarshalFromJson(doc);
             this.hostPort = new HostPort(doc.getString(PROTOCOL_FIELD_HOST),
-                    (int)doc.getLong(PROTOCOL_FIELD_PORT));
+                    (int) doc.getLong(PROTOCOL_FIELD_PORT));
         }
 
 

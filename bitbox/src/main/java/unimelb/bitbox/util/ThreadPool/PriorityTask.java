@@ -23,9 +23,9 @@ public class PriorityTask implements Runnable, Comparable<PriorityTask> {
     /**
      * Constructor for a task with priority
      *
-     * @param name The name of the task
+     * @param name     The name of the task
      * @param priority The priority of the task
-     * @param task The actual task need to run
+     * @param task     The actual task need to run
      */
     public PriorityTask(String name, Priority priority, Runnable task) {
         this.name = name;
@@ -36,6 +36,7 @@ public class PriorityTask implements Runnable, Comparable<PriorityTask> {
 
     /**
      * Get the priority of the task
+     *
      * @return the priority of the task
      */
     public Priority getPriority() {
@@ -49,6 +50,7 @@ public class PriorityTask implements Runnable, Comparable<PriorityTask> {
 
     /**
      * Set the priority of the task
+     *
      * @param priority the priority of the task wanted to be set
      */
     public void setPriority(Priority priority) {

@@ -26,18 +26,19 @@ import java.util.logging.Logger;
  * @author Zijie Shen (741404)
  * @author Zijun Chen (813190)
  */
-public class TCPIncomingConnectionHelper extends IncomingConnectionHelper{
+public class TCPIncomingConnectionHelper extends IncomingConnectionHelper {
+
     private static Logger log = Logger.getLogger(TCPIncomingConnectionHelper.class.getName());
 
     private static final int HANDSHAKE_TIMEOUT = 10000;
-
 
     private int port;
 
     /**
      * Constructor
+     *
      * @param advertisedName from config
-     * @param port listening port from config
+     * @param port           listening port from config
      */
     public TCPIncomingConnectionHelper(String advertisedName, int port) {
         super(advertisedName, port);

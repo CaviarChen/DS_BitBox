@@ -16,7 +16,6 @@ import java.util.logging.Logger;
  * @author Zijie Shen (741404)
  * @author Zijun Chen (813190)
  */
-
 public class Scheduler {
     private static Logger log = Logger.getLogger(Scheduler.class.getName());
 

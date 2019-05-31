@@ -5,7 +5,6 @@ import unimelb.bitbox.Constants;
 import unimelb.bitbox.util.Document;
 
 
-
 /**
  * A factory of protocols.
  * Used to convert from JSON string to corresponding protocol class
@@ -44,6 +43,7 @@ public class ProtocolFactory {
 
     /**
      * marshal protocol class to JSON string
+     *
      * @param protocol
      * @return
      */
@@ -54,7 +54,7 @@ public class ProtocolFactory {
         return doc.toJson();
     }
 
-    public static IRequest identifyRes(IResponse protocol){
+    public static IRequest identifyRes(IResponse protocol) {
         switch (ProtocolType.typeOfProtocol((Protocol) protocol)) {
             case FILE_CREATE_RESPONSE:
                 Protocol.FileCreateResponse fileCreateResponse = (Protocol.FileCreateResponse) protocol;
@@ -68,7 +68,7 @@ public class ProtocolFactory {
                 return fileDeleteRequest;
             case FILE_MODIFY_RESPONSE:
                 Protocol.FileModifyResponse fileModifyResponse = (Protocol.FileModifyResponse) protocol;
-                Protocol.FileModifyRequest fileModifyRequest= new Protocol.FileModifyRequest();
+                Protocol.FileModifyRequest fileModifyRequest = new Protocol.FileModifyRequest();
                 fileModifyRequest.fileDes = fileModifyResponse.fileDes;
                 return fileModifyRequest;
             case FILE_BYTES_RESPONSE:
@@ -82,12 +82,12 @@ public class ProtocolFactory {
                 return fileBytesRequest;
             case DIRECTORY_CREATE_RESPONSE:
                 Protocol.DirectoryCreateResponse directoryCreateResponse = (Protocol.DirectoryCreateResponse) protocol;
-                Protocol.DirectoryCreateRequest directoryCreateRequest= new Protocol.DirectoryCreateRequest();
+                Protocol.DirectoryCreateRequest directoryCreateRequest = new Protocol.DirectoryCreateRequest();
                 directoryCreateRequest.dirPath = directoryCreateResponse.dirPath;
                 return directoryCreateRequest;
             case DIRECTORY_DELETE_RESPONSE:
                 Protocol.DirectoryDeleteResponse directoryDeleteResponse = (Protocol.DirectoryDeleteResponse) protocol;
-                Protocol.DirectoryDeleteRequest directoryDeleteRequest= new Protocol.DirectoryDeleteRequest();
+                Protocol.DirectoryDeleteRequest directoryDeleteRequest = new Protocol.DirectoryDeleteRequest();
                 directoryDeleteRequest.dirPath = directoryDeleteResponse.dirPath;
                 return directoryDeleteRequest;
         }

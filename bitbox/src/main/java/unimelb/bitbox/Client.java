@@ -2,8 +2,8 @@ package unimelb.bitbox;
 
 
 import unimelb.bitbox.util.CmdParser;
-import unimelb.bitbox.util.ConnectionUtils.ClientServer.ClientConnectionHelper;
 import unimelb.bitbox.util.ConnectionUtils.ClientServer.ClientConnection;
+import unimelb.bitbox.util.ConnectionUtils.ClientServer.ClientConnectionHelper;
 import unimelb.bitbox.util.HostPort;
 import unimelb.bitbox.util.SecManager;
 
@@ -18,7 +18,6 @@ import java.net.Socket;
  * @author Zijie Shen (741404)
  * @author Zijun Chen (813190)
  */
-
 public class Client {
 
     public static void main(String[] args) throws Exception {

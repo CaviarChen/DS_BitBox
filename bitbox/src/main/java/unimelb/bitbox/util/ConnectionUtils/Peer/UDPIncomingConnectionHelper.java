@@ -28,7 +28,6 @@ import java.util.logging.Logger;
  * @author Zijie Shen (741404)
  * @author Zijun Chen (813190)
  */
-
 public class UDPIncomingConnectionHelper extends IncomingConnectionHelper {
     private static Logger log = Logger.getLogger(UDPIncomingConnectionHelper.class.getName());
     private static final int BUFFER_SIZE = 65536;
@@ -39,8 +38,9 @@ public class UDPIncomingConnectionHelper extends IncomingConnectionHelper {
 
     /**
      * Constructor
-     * @param advertisedName    from config
-     * @param port              listening port from config
+     *
+     * @param advertisedName from config
+     * @param port           listening port from config
      * @throws SocketException
      */
     public UDPIncomingConnectionHelper(String advertisedName, int port) throws SocketException {
@@ -62,7 +62,7 @@ public class UDPIncomingConnectionHelper extends IncomingConnectionHelper {
 
         // register UDP connection timeout check
         Scheduler.getInstance().addTask(500, TimeUnit.MILLISECONDS,
-                new PriorityTask( "check timeout UDP request",
+                new PriorityTask("check timeout UDP request",
                         Priority.LOW,
                         UDPConnection::checkTimeoutRequest
                 ));
@@ -135,7 +135,6 @@ public class UDPIncomingConnectionHelper extends IncomingConnectionHelper {
                     " no reply is sent (prevent message storm): " +
                     replyMsg.substring(0, Math.min(UDPConnection.MAX_LOG_LEN, replyMsg.length())));
 
-
         } else {
             // send reply
             log.info("Handshake Finished Result: " + res +
@@ -149,7 +148,5 @@ public class UDPIncomingConnectionHelper extends IncomingConnectionHelper {
                 log.warning("unable reply to: " + hostAddress.getHostAddress() + ":" + actualPort);
             }
         }
-
-
     }
 }

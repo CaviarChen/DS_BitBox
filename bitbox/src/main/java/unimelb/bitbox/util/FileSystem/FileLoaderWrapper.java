@@ -1,10 +1,8 @@
 package unimelb.bitbox.util.FileSystem;
 
 
-import unimelb.bitbox.Constants;
 import unimelb.bitbox.protocol.Protocol;
 import unimelb.bitbox.protocol.ProtocolField;
-import unimelb.bitbox.util.Configuration;
 import unimelb.bitbox.util.ConnectionUtils.Peer.Connection;
 import unimelb.bitbox.util.MessageHandler;
 
@@ -28,7 +26,6 @@ import java.util.logging.Logger;
  */
 public class FileLoaderWrapper {
     private static Logger log = Logger.getLogger(Connection.class.getName());
-
 
 
     private static final int REQUEST_LIMIT = 10; // the number of requests in the first batch

@@ -16,7 +16,6 @@ import java.util.logging.Logger;
  * @author Zijie Shen (741404)
  * @author Zijun Chen (813190)
  */
-
 public class CmdParser {
     private static Logger log = Logger.getLogger(CmdParser.class.getName());
 
@@ -62,7 +61,9 @@ public class CmdParser {
         return peer;
     }
 
-    public String getIdentity() { return identity; }
+    public String getIdentity() {
+        return identity;
+    }
 
     @Override
     public String toString() {

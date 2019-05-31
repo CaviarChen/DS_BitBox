@@ -43,15 +43,13 @@ import java.util.logging.Logger;
  *
  * @author Aaron Harwood
  * @author Andrew Linxi Wang (contributions to Windows compatibility)
- *
+ * <p>
  * Modified createFileLoader so that it overwrites the older file.
  * Modified modifyFileLoader so that the new file can have a larger size than the original one.
- *
  * @author Weizhi Xu (752454)
  * @author Wenqing Xue (813044)
  * @author Zijie Shen (741404)
  * @author Zijun Chen (813190)
- *
  */
 public class FileSystemManager extends Thread {
     private static Logger log = Logger.getLogger(FileSystemManager.class.getName());
@@ -426,7 +424,8 @@ public class FileSystemManager extends Thread {
         pathName = separatorsToSystem(pathName);
         synchronized (this) {
             String fullPathName = root + FileSystems.getDefault().getSeparator() + pathName;
-            if (watchedFiles.containsKey(fullPathName) && watchedFiles.get(fullPathName).lastModified >= lastModified) return false;
+            if (watchedFiles.containsKey(fullPathName) && watchedFiles.get(fullPathName).lastModified >= lastModified)
+                return false;
             if (loadingFiles.containsKey(fullPathName)) return false;
             loadingFiles.put(fullPathName, new FileLoader(fullPathName, md5, length, lastModified));
         }

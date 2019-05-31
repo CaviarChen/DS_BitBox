@@ -29,6 +29,7 @@ public class PriorityThreadPool {
 
     /**
      * Get the instance of PriorityThreadPool
+     *
      * @return the instance of PriorityThreadPool
      */
     public static PriorityThreadPool getInstance() {
@@ -38,7 +39,7 @@ public class PriorityThreadPool {
 
     /**
      * Constructor of PriorityThreadPool.
-     *
+     * <p>
      * if the number of tasks is less than core pool size, a new thread will be allocated for each of them.
      * if the number of tasks exceeds the core pool size but less than maximum pool size,
      * they will be added to a PriorityBlockingQueue.

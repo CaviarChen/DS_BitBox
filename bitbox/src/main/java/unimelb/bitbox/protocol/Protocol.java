@@ -136,7 +136,7 @@ public abstract class Protocol implements IProtocol {
     }
 
 
-    public static class FileCreateResponse extends Protocol implements IResponse  {
+    public static class FileCreateResponse extends Protocol implements IResponse {
         public ProtocolField.FileDes fileDes = new ProtocolField.FileDes();
         public ProtocolField.Response response = new ProtocolField.Response();
     }
@@ -182,7 +182,7 @@ public abstract class Protocol implements IProtocol {
     }
 
 
-    public static class FileBytesRequest extends Protocol implements IRequest  {
+    public static class FileBytesRequest extends Protocol implements IRequest {
         public ProtocolField.FilePosition filePos = new ProtocolField.FilePosition();
         public ProtocolField.FileDes fileDes = new ProtocolField.FileDes();
 
@@ -201,19 +201,19 @@ public abstract class Protocol implements IProtocol {
 
         @Override
         public int hashCode() {
-            return Objects.hash(fileDes,filePos);
+            return Objects.hash(fileDes, filePos);
         }
     }
 
 
-    public static class FileBytesResponse extends Protocol implements IResponse  {
+    public static class FileBytesResponse extends Protocol implements IResponse {
         public ProtocolField.FileDes fileDes = new ProtocolField.FileDes();
         public ProtocolField.FileContent fileContent = new ProtocolField.FileContent();
         public ProtocolField.Response response = new ProtocolField.Response();
     }
 
 
-    public static class DirectoryCreateRequest extends Protocol implements IRequest  {
+    public static class DirectoryCreateRequest extends Protocol implements IRequest {
         public ProtocolField.Path dirPath = new ProtocolField.Path();
 
         @Override
@@ -235,7 +235,7 @@ public abstract class Protocol implements IProtocol {
     }
 
 
-    public static class DirectoryCreateResponse extends Protocol implements IResponse  {
+    public static class DirectoryCreateResponse extends Protocol implements IResponse {
         public ProtocolField.Path dirPath = new ProtocolField.Path();
         public ProtocolField.Response response = new ProtocolField.Response();
     }

@@ -1,10 +1,13 @@
 package unimelb.bitbox;
 
 
-import unimelb.bitbox.util.*;
-import unimelb.bitbox.util.ConnectionUtils.Peer.*;
+import unimelb.bitbox.util.Configuration;
 import unimelb.bitbox.util.ConnectionUtils.ClientServer.ServerConnectionHelper;
+import unimelb.bitbox.util.ConnectionUtils.Peer.*;
 import unimelb.bitbox.util.FileSystem.FileSystemManager;
+import unimelb.bitbox.util.MessageHandler;
+import unimelb.bitbox.util.SecManager;
+import unimelb.bitbox.util.SyncManager;
 
 import java.util.logging.Logger;
 
@@ -25,6 +28,7 @@ public class Peer {
 
     /**
      * Entry point
+     *
      * @param args arguments
      * @throws Exception
      */
@@ -58,7 +62,7 @@ public class Peer {
             int port = Integer.parseInt(Configuration.getConfigurationValue("udpPort"));
             incomingConnectionManager = new UDPIncomingConnectionHelper(advertisedName, port);
             outgoingConnectionHelper = new UDPOutgoingConnectionHelper(advertisedName, port,
-                    ((UDPIncomingConnectionHelper)incomingConnectionManager).getServerSocket());
+                    ((UDPIncomingConnectionHelper) incomingConnectionManager).getServerSocket());
 
         }
         serverConnectionHelper = new ServerConnectionHelper(outgoingConnectionHelper);

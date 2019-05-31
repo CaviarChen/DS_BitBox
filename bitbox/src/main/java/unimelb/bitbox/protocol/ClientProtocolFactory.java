@@ -55,6 +55,7 @@ public class ClientProtocolFactory {
 
     /**
      * marshal protocol class to JSON string
+     *
      * @param protocol
      * @return
      */
