@@ -47,9 +47,16 @@ public class CmdParser {
             cmdLineParser.parseArgument(args);
 
             switch (cmd) {
+                case Constants.CLIENT_CMD_LIST_PEERS:
+                    break;
                 case Constants.CLIENT_CMD_CONNECT_PEER:
                 case Constants.CLIENT_CMD_DISCONNECT_PEER:
-                    if (peer != null) break;
+                    if (peer != null && server != null) {
+                        if (peer.split(Constants.CONFIG_HOSTNAME_PORT_SEPARATOR).length == 2 &&
+                            server.split(Constants.CONFIG_HOSTNAME_PORT_SEPARATOR).length == 2) {
+                            break;
+                        }
+                    }
                     throw new CmdLineException(cmdLineParser, "Missing peer host post", null);
                 default:
                     throw new CmdLineException(cmdLineParser, "Command does not exist", null);
