@@ -4,9 +4,11 @@ package unimelb.bitbox.util;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
+import unimelb.bitbox.Constants;
 
 import java.io.IOException;
 import java.util.logging.Logger;
+
 
 /**
  * Class for command line parser
@@ -27,11 +29,12 @@ public class CmdParser {
     @Option(required = true, name = "-c", usage = "Set the cmd [list_peers, connect_peer, disconnect_peer]")
     private String cmd;
 
-    @Option(name = "-s", usage = "Set the server's Host and IP")
+    @Option(required = true, name = "-s", usage = "Set the server's Host and IP")
     private String server;
 
     @Option(name = "-p", usage = "Set the peer's Host and IP")
     private String peer;
+
 
     public CmdParser(String[] args) {
         this.args = args;
@@ -42,28 +45,42 @@ public class CmdParser {
         CmdLineParser cmdLineParser = new CmdLineParser(this);
         try {
             cmdLineParser.parseArgument(args);
+
+            switch (cmd) {
+                case Constants.CLIENT_CMD_CONNECT_PEER:
+                case Constants.CLIENT_CMD_DISCONNECT_PEER:
+                    if (peer != null) break;
+                    throw new CmdLineException(cmdLineParser, "Missing peer host post", null);
+                default:
+                    throw new CmdLineException(cmdLineParser, "Command does not exist", null);
+            }
         } catch (CmdLineException e) {
             log.severe(e.toString());
             cmdLineParser.printUsage(System.err);
-            throw new IOException(e);
+            System.exit(1);
         }
     }
+
 
     public String getCmd() {
         return cmd;
     }
 
+
     public String getServer() {
         return server;
     }
+
 
     public String getPeer() {
         return peer;
     }
 
+
     public String getIdentity() {
         return identity;
     }
+
 
     @Override
     public String toString() {

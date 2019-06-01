@@ -31,6 +31,11 @@ public class Constants {
     // Security
     public static final String SECURITY_PRIVATE_KEY_FILENAME = "bitboxclient_rsa";
 
+    // Client command
+    public static final String CLIENT_CMD_LIST_PEERS = "list_peers";
+    public static final String CLIENT_CMD_CONNECT_PEER = "connect_peer";
+    public static final String CLIENT_CMD_DISCONNECT_PEER = "disconnect_peer";
+
     // Protocol fields
     public static final String PROTOCOL_FIELD_CMD = "command";
     public static final String PROTOCOL_FIELD_MSG = "message";

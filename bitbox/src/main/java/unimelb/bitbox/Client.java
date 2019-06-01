@@ -39,13 +39,13 @@ public class Client {
         clientConnectionHelper.handleAuth();
 
         switch (cmdParser.getCmd()) {
-            case "list_peers":
+            case Constants.CLIENT_CMD_LIST_PEERS:
                 clientConnectionHelper.handleListPeer();
                 break;
-            case "connect_peer":
+            case Constants.CLIENT_CMD_CONNECT_PEER:
                 clientConnectionHelper.handleConnectPeer(cmdParser.getPeer());
                 break;
-            case "disconnect_peer":
+            case Constants.CLIENT_CMD_DISCONNECT_PEER:
                 clientConnectionHelper.handleDisConnectPeer(cmdParser.getPeer());
                 break;
             default:
